@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 2 · Lesson 1 — Smoke, Sanity, Regression &amp; Retesting</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:52px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:22px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 14px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:16px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 14px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:15px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 2 — Testing Types &nbsp;·&nbsp; Lesson 1</div>
+        <h1 class="title">Smoke, Sanity, Regression &amp; Retesting</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The four testing types candidates mix up most in interviews — and the four that build-verification actually runs on, in order, every single release.</p>
+    <div class="lesson-nav"><a href="level1-lesson3.html" style="color:inherit;">← Level 1, Lesson 3: Manual/Automation, Requirements, Test Env &amp; Data</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#smoke" data-track="smoke">1. Smoke Testing</a>
+    <a href="#sanity" data-track="sanity">2. Sanity Testing</a>
+    <a href="#smoke-vs-sanity" data-track="smoke-vs-sanity">3. Smoke vs Sanity</a>
+    <a href="#regression" data-track="regression">4. Regression Testing</a>
+    <a href="#retesting" data-track="retesting">5. Retesting</a>
+    <a href="#retest-vs-regression" data-track="retest-vs-regression">6. Retesting vs Regression</a>
+    <a href="#all-four" data-track="all-four">7. All Four, Side by Side</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="smoke">
+      <h2>1. Smoke Testing</h2>
+      <p><b>Concept.</b> Smoke testing is a quick, broad, shallow check of a new build's most critical functions — done to answer one question: <i>is this build stable enough to even bother testing further?</i> It's also called "build verification testing."</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Imagine spending a full day running detailed test cases against a build, only to discover the app doesn't even launch. Smoke testing exists to prevent exactly that waste — it's a five-minute sanity check on the whole system before committing real testing time to it.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Pick the handful of flows that, if broken, make the entire build unusable — not edge cases, just "does the front door open." Run them immediately after every new build. If any fail, the build gets rejected and sent back to development without further testing.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>For an e-commerce site: does the homepage load, can a user log in, can they add an item to the cart, does the checkout page open? Four checks, a few minutes, covering the entire critical path. If "add to cart" is broken, there's no point testing 200 detailed checkout test cases yet.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Confusing "broad and shallow" with "thorough." Smoke testing deliberately skips depth — it's a gate, not a full test pass.</p>
+    </section>
+
+    <section class="block" id="sanity">
+      <h2>2. Sanity Testing</h2>
+      <p><b>Concept.</b> Sanity testing is a quick, narrow, but deep check of one specific area of the application — usually run right after a minor code change or bug fix, to confirm that specific piece of functionality behaves rationally before investing in a full regression pass.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>After a developer fixes a bug or tweaks a small feature, you want a fast answer to "did this actually work, and does it still make sense?" before scheduling a heavier regression cycle. It's usually unscripted — more a rational once-over than a formal documented run.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Take the specific feature or fix, and test it — and its immediate surroundings — thoroughly, but don't touch unrelated parts of the app. It's the opposite shape of smoke testing: narrow instead of broad, deep instead of shallow.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A developer fixes a bug where a coupon code wasn't applying the discount correctly. Sanity testing means thoroughly checking the coupon flow — valid codes, expired codes, the discount math — but not re-testing the entire checkout process end to end.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Treating sanity testing as "a smaller smoke test." They're shaped differently on purpose — smoke is broad/shallow across the whole app, sanity is narrow/deep on one specific change.</p>
+    </section>
+
+    <section class="block" id="smoke-vs-sanity">
+      <h2>3. Smoke vs Sanity — side by side</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Smoke Testing</th><th>Sanity Testing</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Shape</td><td>Broad and shallow</td><td>Narrow and deep</td></tr>
+            <tr><td class="k">Scope</td><td>Whole application's critical paths</td><td>One specific feature or recent change</td></tr>
+            <tr><td class="k">Run when</td><td>Every new build, before deeper testing begins</td><td>After a minor fix or small change</td></tr>
+            <tr><td class="k">Scripted?</td><td>Usually yes — a fixed, documented checklist</td><td>Usually no — quick, informal check</td></tr>
+            <tr><td class="k">Answers</td><td>"Is this build stable enough to test at all?"</td><td>"Does this specific change actually work?"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="regression">
+      <h2>4. Regression Testing</h2>
+      <p><b>Concept.</b> Regression testing re-runs existing test cases across the application after a change, to confirm that the change didn't break anything that used to work. "Regression" here means the software has regressed — gotten worse in some area it wasn't supposed to touch.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Code is interconnected in ways that aren't always obvious. A change meant to fix the shipping calculator can quietly break the tax calculator if they share a piece of logic. Regression testing is how you catch that side effect before a customer does.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Maintain a suite of test cases covering existing functionality — often automated, since it needs to run repeatedly and consistently. After any change (new feature, bug fix, even a config update), run the relevant slice of that suite, or the full suite before a major release.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A team adds a new "buy now, pay later" payment option. Regression testing re-checks that existing payment methods — credit card, PayPal — still work correctly, since the checkout code was touched to add the new option.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Assuming regression testing only matters for big releases. Even a "tiny" one-line fix can regress an unrelated area — this is exactly why automated regression suites exist, so re-checking is cheap enough to do constantly.</p>
+    </section>
+
+    <section class="block" id="retesting">
+      <h2>5. Retesting (Confirmation Testing)</h2>
+      <p><b>Concept.</b> Retesting means re-running the exact test case that previously failed and produced a logged defect, now that a developer claims to have fixed it — to confirm the specific bug is actually resolved.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>A defect isn't safely "closed" just because a developer says "fixed" — someone independent needs to verify it against the original failing scenario. This is the single, focused check that closes the loop on one specific bug report.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Go back to the exact steps that originally reproduced the defect, run them again against the new build, and confirm the actual result now matches the expected result. If it still fails, the defect gets reopened rather than closed.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A tester logs a bug: "clicking 'Apply' on an expired coupon still applies the discount." A developer fixes it. Retesting means running that exact scenario — an expired coupon, clicking Apply — again, to confirm it's now correctly rejected.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Calling this "regression testing." It's easy to conflate them because both happen after a fix — but retesting checks the fix itself; regression checks everything around the fix that wasn't supposed to change.</p>
+    </section>
+
+    <section class="block" id="retest-vs-regression">
+      <h2>6. Retesting vs Regression — the pairing interviewers love</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Retesting</th><th>Regression Testing</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Purpose</td><td>Confirm a specific, known defect is fixed</td><td>Confirm nothing else got broken by the change</td></tr>
+            <tr><td class="k">Test cases used</td><td>The exact case that previously failed</td><td>A broader existing suite, unrelated to the specific bug</td></tr>
+            <tr><td class="k">Planned or not</td><td>Always planned — tied to a specific bug ID</td><td>Planned as part of the test cycle, often automated</td></tr>
+            <tr><td class="k">Can be automated?</td><td>Rarely — it's usually a targeted, one-off manual check</td><td>Yes — regression suites are prime automation candidates</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">Memory hook: retesting is defect-specific ("did <i>this</i> get fixed?"); regression is side-effect-general ("did fixing <i>this</i> break something <i>else</i>?"). They usually happen together, back to back, after a fix — which is exactly why they get confused.</p>
+    </section>
+
+    <section class="block" id="all-four">
+      <h2>7. All Four, Side by Side</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th></th><th>Smoke</th><th>Sanity</th><th>Retesting</th><th>Regression</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Trigger</td><td>New build</td><td>Minor change/fix</td><td>Bug marked "fixed"</td><td>Any change</td></tr>
+            <tr><td class="k">Scope</td><td>Whole app, shallow</td><td>One feature, deep</td><td>One exact failing case</td><td>Broad existing suite</td></tr>
+            <tr><td class="k">Question answered</td><td>Is this build usable at all?</td><td>Does this change work?</td><td>Is this bug actually fixed?</td><td>Did we break something else?</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 2, Lesson 1</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 2 · Lesson 2 — Unit, Integration, System, End-to-End &amp; Acceptance Testing</b></div>
+    <div class="l"><span class="mono">Coming soon</span></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What's the difference between smoke testing and sanity testing?",
+    tests: "The single most common comparison question in this cluster — checks whether you know the shape difference (broad/shallow vs narrow/deep), not just that they're 'both quick tests.'",
+    simple: "Smoke testing is a broad, shallow check of the whole app's critical paths on a new build. Sanity testing is a narrow, deep check of one specific area after a small change or fix.",
+    strong: "Smoke testing runs on every new build and checks the most critical end-to-end flows across the whole application — broad but shallow — purely to decide whether the build is stable enough to test further at all. Sanity testing runs after a specific minor change or bug fix and goes deep on just that one area to confirm it actually works, without touching the rest of the app. So they're almost opposite shapes: smoke is wide and thin, sanity is narrow and thick, and they trigger at different moments — smoke at build intake, sanity after a targeted change.",
+    example: "Smoke: after a new build, check login, homepage load, add-to-cart, and checkout all open. Sanity: after fixing a coupon bug, thoroughly test just the coupon logic.",
+    followups: ["Which one would you automate, and why?", "Can a build fail smoke testing but pass sanity testing?"],
+    good: ["Use the 'broad/shallow vs narrow/deep' framing — it's the cleanest way to say this in one breath.", "Give one example for each, unprompted."],
+    bad: ["Saying they're 'basically the same thing done at different times' — that misses the shape difference entirely."]
+  },
+  {
+    q: "What's the difference between retesting and regression testing? Why do people mix these up?",
+    tests: "Checks whether you understand these serve different purposes even though they usually happen in the same moment, right after a fix.",
+    simple: "Retesting re-runs the exact test case that previously failed, to confirm that specific bug is fixed. Regression testing re-runs a broader set of existing tests to confirm the fix didn't break anything else. People mix them up because both happen right after a bug fix.",
+    strong: "Retesting is defect-specific — you take the exact steps that originally reproduced a bug and re-run them against the new build to confirm that particular defect is resolved. Regression testing is side-effect-general — you re-run a broader suite of existing, often unrelated test cases to make sure the fix didn't accidentally break something else. They're easy to confuse because they typically happen back to back on the same build, right after a developer marks a bug fixed, but they're answering two different questions: 'is this bug actually gone?' versus 'did fixing it break anything nearby?'",
+    example: "A bug says the discount field accepts negative numbers. Retesting: try a negative number again and confirm it's now rejected. Regression: also check that positive discounts, empty fields, and the total calculation still work correctly.",
+    followups: ["Which of the two is more commonly automated, and why?", "If you only have time for one, which do you prioritize?"],
+    good: ["Explicitly state why they get confused (same trigger point) before explaining why they're different — shows deeper understanding than just reciting definitions."],
+    bad: ["Defining only one of the two and assuming the other is 'basically the same.'"]
+  },
+  {
+    q: "A new build just landed and you have 15 minutes before a demo. What do you do?",
+    tests: "A scenario question that's really asking 'do you know when and how to run a smoke test under time pressure.'",
+    simple: "Run a quick smoke test on the critical path the demo will actually use — not a full test pass, just enough to confirm the build won't embarrassingly break during the demo.",
+    strong: "With 15 minutes, I'm not attempting broad coverage — I'm running a fast, targeted smoke test focused specifically on whatever the demo is going to show, since that's the actual risk right now. I'd walk through exactly the flow the presenter will click through, check nothing crashes or errors, and flag anything broken immediately so there's still time to either fix it or adjust the demo script. This is smoke testing applied with a very specific lens: not 'is the whole app stable,' but 'will this exact 10-minute walkthrough go smoothly.'",
+    example: "If the demo is going to show the new checkout flow, I'd run through that flow end to end once, rather than spot-checking unrelated areas like account settings.",
+    followups: ["What would you do differently if you had a full day instead of 15 minutes?", "What do you do if you find a blocking bug 5 minutes before the demo starts?"],
+    good: ["Explicitly tie the answer back to smoke testing and explain why scope should match the actual risk (the demo path), not the whole app."],
+    bad: ["Trying to test broadly and superficially cover unrelated areas instead of focusing tightly on what the demo needs."]
+  },
+  {
+    q: "Should regression testing always be automated? Why or why not?",
+    tests: "A nuanced question checking whether you understand automation trade-offs rather than reflexively saying 'yes, always automate regression.'",
+    simple: "Automation is usually the right default for regression because it's repetitive and needs to run consistently and often, but it's not automatic — the suite still needs upfront investment and ongoing maintenance, and a very new or unstable feature might not be worth automating yet.",
+    strong: "Automating regression is usually the right long-term move because regression tests are repetitive by nature and need to run frequently and reliably — exactly where automation pays off. But 'always' oversimplifies it: writing and maintaining automated tests has real upfront and ongoing cost, so a feature that's still actively changing shape might not be stable enough yet to be worth automating — you'd end up rewriting the scripts every sprint. I'd automate the regression suite for stable, high-value, frequently-run areas, and keep newer or fast-changing areas manual until they settle down.",
+    example: "A payment flow that's been stable for a year is a strong automation candidate; a feature still being redesigned every sprint isn't, yet.",
+    followups: ["How do you decide when a feature is 'stable enough' to automate?", "What's the maintenance cost of an automated regression suite look like in practice?"],
+    good: ["Give a real caveat instead of a flat 'yes, always' — that's the nuance this question is fishing for."],
+    bad: ["A flat 'yes, everything should be automated' with no acknowledgment of cost or timing trade-offs."]
+  },
+  {
+    q: "A developer marks a bug as 'Fixed' and it moves to your queue for retesting. Walk me through exactly what you do.",
+    tests: "A practical process question — checks whether you understand retesting as a disciplined, repeatable step, not a vague 'check if it works.'",
+    simple: "Go back to the original bug report's exact steps to reproduce, run them again on the new build, and confirm the actual result now matches what was expected — then also do a quick sanity check of the immediate area before closing it.",
+    strong: "First, I'd pull up the original defect report and re-run the exact steps to reproduce that were logged — same inputs, same environment where possible — because retesting only means something if it's checking the identical scenario that failed before. If the actual result now matches the expected result, I'd mark it verified and move toward closing the defect; if it still fails, or fails differently, I'd reopen it with updated notes rather than assume partial credit. I'd also usually do a quick sanity check of the immediately surrounding functionality while I'm in that area, since that's a natural moment to catch related issues, even though the formal regression pass is a separate, broader step.",
+    example: "For a bug about an expired coupon still applying a discount, I'd re-enter that same expired coupon on checkout and confirm it's now rejected — not just glance at the code diff and assume it's fine.",
+    followups: ["What do you do if the original bug is fixed but you notice a new, different bug in the same area?", "Who should retest a bug — the original reporter, or can it be anyone?"],
+    good: ["Emphasize using the exact original repro steps — that precision is the whole point of retesting."],
+    bad: ["Describing retesting as just 'opening the app and clicking around' instead of reproducing the exact original scenario."]
+  },
+  {
+    q: "Can a build pass smoke testing but still fail sanity testing later? Give a realistic example.",
+    tests: "A tricky question checking you understand these operate at different scopes and moments, not as a strict pass/fail hierarchy.",
+    simple: "Yes — smoke testing only checks the broad critical paths at build intake; a specific recent change could still be broken even if the overall app is stable enough to test.",
+    strong: "Yes, easily — smoke testing only verifies that the handful of critical, broad flows work at all; it says nothing about a specific recent change in an area outside that critical path. A build can smoke-test cleanly — homepage loads, login works, checkout opens — and still have a freshly broken sanity check in, say, a 'save address' feature that a developer just modified, because that feature was never part of the smoke suite to begin with. They're not sequential gates checking the same thing at different depths — they're checking different scopes for different purposes.",
+    example: "A build passes smoke testing because core login/checkout works, but the wishlist feature a developer just touched now crashes — sanity testing on that specific change catches it, smoke testing never would have.",
+    followups: ["Would you ever skip smoke testing and go straight to sanity testing? When?", "How do you decide what belongs in your smoke test checklist?"],
+    good: ["Give a concrete example showing the scopes don't overlap, rather than just asserting 'yes' abstractly."],
+    bad: ["Saying 'no, sanity is basically a subset of smoke' — that treats them as strictly nested, which they aren't."]
+  },
+  {
+    q: "How would you build a smoke test checklist for a product you're new to?",
+    tests: "A practical, scenario-flavored question about prioritization — checks whether you know how to identify 'critical path' without already having tribal knowledge of the product.",
+    simple: "Identify the small number of flows that generate the most business value or that every user relies on, and limit the checklist to just those — not an exhaustive feature list.",
+    strong: "I'd start by figuring out what the product's core value proposition actually is and what flow delivers it — for most products that's a short, obvious list: can a user sign in, can they do the one or two things the product exists for, does data save and reload correctly. I'd talk to the team about past incidents too, since 'what has broken badly before' is a strong signal for what deserves a permanent spot on the smoke checklist. I'd deliberately keep it short — five to ten checks, a few minutes to run — because the moment it becomes a lengthy pass, it's stopped being a smoke test and turned into a regression suite.",
+    example: "For a food delivery app: can a user browse a restaurant, add an item, and place an order. Not: does the loyalty points animation render correctly — that's not critical-path.",
+    followups: ["How would you keep the smoke suite from growing out of control over time?", "Would you automate the smoke suite? Why might that be a high-value place to start automating?"],
+    good: ["Emphasize deliberately keeping the list short — that discipline is the actual skill being tested here."],
+    bad: ["Describing a process that would produce a long, comprehensive checklist — that defeats the purpose of a smoke test."]
+  },
+  {
+    q: "Your regression suite has 500 test cases but you only have time to run 50 before a release. How do you choose which 50?",
+    tests: "A prioritization scenario — checks risk-based thinking under real time constraints, connecting back to defect clustering and risk-based testing from Level 1.",
+    simple: "Prioritize by what actually changed in this release, what's historically been defect-prone, and what would hurt the business most if it broke — not by running the first 50 in the list.",
+    strong: "I wouldn't run an arbitrary or alphabetical subset — I'd prioritize by risk. First, anything that touches code changed in this release gets priority, since that's where regressions are most likely to appear. Second, I'd weight toward areas with a history of defects — this connects back to defect clustering, since a small number of modules usually account for most bugs. Third, I'd weight toward the highest-business-impact flows — checkout and payment over a settings page nobody uses. That combination of 'recently changed,' 'historically fragile,' and 'business-critical' is how I'd narrow 500 down to the 50 that actually matter most for this release.",
+    example: "If this release only touched the shipping calculator, I'd prioritize shipping-related and checkout-adjacent test cases over, say, the profile-picture upload feature that wasn't touched at all.",
+    followups: ["How would you communicate the risk of only running 50/500 cases to a stakeholder pushing for a release?", "Would this be a good moment to advocate for more regression automation?"],
+    good: ["Connect explicitly to defect clustering and change-based risk — this shows retention of earlier lessons and real prioritization skill, not just a generic answer."],
+    bad: ["Suggesting you'd just run 'the most important-looking' 50 without a concrete method for identifying them."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 2 · LESSON 1</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
