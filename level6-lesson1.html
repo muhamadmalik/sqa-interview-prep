@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 6 · Lesson 1 — Agile, Scrum &amp; QA's Role in Real-World Delivery</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:46px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  /* hierarchy flow reuse */
+  .flow{ display:flex; flex-direction:column; gap:0; margin:20px 0 8px; }
+  .flow-step{ display:grid; grid-template-columns: 140px 1fr; align-items:center; gap:14px; padding:10px 0; }
+  .flow-name{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; font-weight:700; color:var(--accent-ink); background:var(--accent); padding:8px 10px; border-radius:2px; text-align:center; }
+  .flow-desc{ font-size:14px; color:var(--ink-muted); }
+  .flow-arrow{ text-align:center; color:var(--ink-faint); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:14px; margin-left:70px; padding:2px 0; }
+  /* sprint timeline */
+  .sprint-timeline{ display:flex; flex-direction:column; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--surface); margin:18px 0 28px; }
+  .st-row{ display:grid; grid-template-columns: 130px 1fr; border-bottom:1px solid var(--line); }
+  .st-row:last-child{ border-bottom:none; }
+  .st-day{ background:var(--surface-2); padding:12px 14px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; font-weight:700; color:var(--accent); border-right:1px solid var(--line); display:flex; align-items:center; }
+  .st-body{ padding:12px 16px; font-size:14.5px; }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 6 — Agile / Scrum &amp; Real-World QA &nbsp;·&nbsp; Lesson 1</div>
+        <h1 class="title">Agile, Scrum &amp; QA's Role in Real-World Delivery</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The vocabulary of a sprint, the three "definition" terms everyone confuses, and what a tester is actually doing on each day of a two-week cycle.</p>
+    <div class="lesson-nav"><a href="level5-lesson2.html" style="color:inherit;">← Level 5, Lesson 2: Writing Bug Reports + Real-World Scenarios</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#agile-scrum" data-track="agile-scrum">1. Agile &amp; Scrum</a>
+    <a href="#hierarchy" data-track="hierarchy">2. Epic → User Story → Task</a>
+    <a href="#backlogs" data-track="backlogs">3. Product Backlog vs Sprint Backlog</a>
+    <a href="#definitions" data-track="definitions">4. AC vs Definition of Done vs Ready</a>
+    <a href="#ceremonies" data-track="ceremonies">5. The Ceremonies</a>
+    <a href="#sprint-day" data-track="sprint-day">6. A Sprint, Day by Day, From QA's Seat</a>
+    <a href="#shiftleft" data-track="shiftleft">7. Shift-Left &amp; Continuous Testing</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="agile-scrum">
+      <h2>1. Agile &amp; Scrum</h2>
+      <p><b>Agile</b> is a mindset for building software iteratively and incrementally — small, working slices delivered frequently, with the plan deliberately open to changing as real feedback comes in, rather than one huge upfront plan executed rigidly to the end.</p>
+      <p><b>Scrum</b> is the most widely used framework for actually doing Agile: work is organized into fixed-length iterations called <b>Sprints</b> (commonly two weeks), with defined roles, a small set of recurring ceremonies, and a few core artifacts — all of which this lesson unpacks.</p>
+      <h3 class="sub">Why it matters for QA specifically</h3>
+      <p>In a Waterfall-style project, testing is a phase at the end. In Scrum, a slice of testing happens inside <i>every single sprint</i>, continuously — which is the practical, everyday form of the "early testing" principle and shift-left testing from Level 1.</p>
+    </section>
+
+    <section class="block" id="hierarchy">
+      <h2>2. Epic → User Story → Task</h2>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-name">Epic</div><div class="flow-desc">A large body of work, too big for one sprint — "Redesign checkout."</div></div>
+        <div class="flow-arrow">↓ broken into</div>
+        <div class="flow-step"><div class="flow-name">User Story</div><div class="flow-desc">One small, deliverable slice, written from the user's perspective — "As a shopper, I want to save my card, so I can check out faster next time."</div></div>
+        <div class="flow-arrow">↓ broken into</div>
+        <div class="flow-step"><div class="flow-name">Task</div><div class="flow-desc">The granular technical to-dos needed to deliver the story — a dev task, a QA task, maybe a design task.</div></div>
+      </div>
+      <h3 class="sub">Story Points</h3>
+      <p>A relative, unitless estimate of a story's effort, complexity, and uncertainty combined — not hours. Teams commonly use a Fibonacci-like scale (1, 2, 3, 5, 8, 13) specifically because it forces coarser judgment as size grows, matching how much harder it genuinely is to estimate a big story precisely.</p>
+    </section>
+
+    <section class="block" id="backlogs">
+      <h2>3. Product Backlog vs Sprint Backlog</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Product Backlog</th><th>Sprint Backlog</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Scope</td><td>Everything that could ever be built for the product</td><td>Just what the team committed to this sprint</td></tr>
+            <tr><td class="k">Owner</td><td>Product Owner</td><td>The team, for the sprint's duration</td></tr>
+            <tr><td class="k">Changes</td><td>Constantly, as priorities shift</td><td>Mostly fixed once the sprint starts</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="definitions">
+      <h2>4. Acceptance Criteria vs Definition of Done vs Definition of Ready</h2>
+      <p>Three "what does done/ready mean" terms that get conflated constantly — and a very common interview comparison because of it.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Term</th><th>Applies to</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Acceptance Criteria</td><td>One specific story</td><td>The specific, testable conditions <i>this story</i> must satisfy — different for every story.</td></tr>
+            <tr><td class="k">Definition of Ready</td><td>Every story, before a sprint</td><td>The team-wide entry checklist a story must meet before it can be pulled into a sprint (e.g. AC written, estimated, dependencies known).</td></tr>
+            <tr><td class="k">Definition of Done</td><td>Every story, after work</td><td>The team-wide exit checklist every story must meet to count as complete (e.g. code reviewed, tests passing, deployed to staging).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">Memory hook: Acceptance Criteria is story-specific content; Definition of Ready and Definition of Done are standing, team-wide gates — one at entry, one at exit.</p>
+    </section>
+
+    <section class="block" id="ceremonies">
+      <h2>5. The Ceremonies — and QA's Job in Each</h2>
+      <ul class="tight">
+        <li><b>Daily Standup:</b> a short daily sync — what I did, what's next, any blockers. QA reports testing progress and flags blockers (an unstable build, a missing test environment) early.</li>
+        <li><b>Backlog Refinement:</b> an ongoing session reviewing and clarifying upcoming stories before they're planned. This is shift-left in its most literal form — QA reviews stories for ambiguity and testability before a single line of code exists.</li>
+        <li><b>Sprint Planning:</b> the team selects and estimates the work for the upcoming sprint. QA gives testability input and flags high-risk stories that will need more testing time.</li>
+        <li><b>Sprint Review (Demo):</b> the team demonstrates completed work to stakeholders. QA helps confirm what's genuinely demo-ready and done, not just "looks done."</li>
+        <li><b>Sprint Retrospective:</b> the team reflects on what worked and what didn't, to improve the process. QA raises quality-related patterns — recurring bug types, testing bottlenecks, environment issues.</li>
+      </ul>
+    </section>
+
+    <section class="block" id="sprint-day">
+      <h2>6. A Sprint, Day by Day, From QA's Seat</h2>
+      <div class="sprint-timeline">
+        <div class="st-row"><div class="st-day">Day 1</div><div class="st-body">Sprint Planning — QA flags that one story's acceptance criteria is vague before it's committed to.</div></div>
+        <div class="st-row"><div class="st-day">Day 2–3</div><div class="st-body">Development begins. QA writes test cases against the (now-clarified) acceptance criteria and preps test data.</div></div>
+        <div class="st-row"><div class="st-day">Day 4</div><div class="st-body">First build with the new feature lands in the test environment. QA runs a quick smoke test, then begins full execution.</div></div>
+        <div class="st-row"><div class="st-day">Day 5–7</div><div class="st-body">Bugs get logged, retested once fixed, and a regression pass runs against related areas.</div></div>
+        <div class="st-row"><div class="st-day">Day 8</div><div class="st-body">Backlog refinement for next sprint — QA reviews upcoming stories for testability.</div></div>
+        <div class="st-row"><div class="st-day">Day 9</div><div class="st-body">Final testing wraps up; QA confirms the story meets the Definition of Done.</div></div>
+        <div class="st-row"><div class="st-day">Day 10</div><div class="st-body">Sprint Review — QA confirms the demo will actually work. Retrospective — QA raises that test environment setup cost the team half a day this sprint.</div></div>
+      </div>
+    </section>
+
+    <section class="block" id="shiftleft">
+      <h2>7. Shift-Left &amp; Continuous Testing, in Practice</h2>
+      <p><b>Shift-left testing</b> (Level 1) means moving testing activities earlier — in Scrum, this is concretely what happens at backlog refinement, when QA reviews a story before development even starts, instead of waiting for a finished build.</p>
+      <p><b>Continuous testing</b> means testing runs constantly throughout the pipeline — often automated checks firing on every code change — rather than being a distinct phase that happens once at the end. This connects forward to CI/CD, covered in Level 12.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 6, Lesson 1</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 6.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 6 complete<b>Level 7 — API Testing</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What's the difference between Acceptance Criteria, Definition of Ready, and Definition of Done?",
+    tests: "The signature comparison for this lesson — checks whether you know AC is story-specific while DoR/DoD are standing, team-wide gates.",
+    simple: "Acceptance Criteria are the specific conditions one particular story must meet — different for every story. Definition of Ready is the team-wide checklist a story must pass before entering a sprint. Definition of Done is the team-wide checklist every story must pass to count as complete.",
+    strong: "Acceptance Criteria are written per story and describe exactly what that specific piece of work needs to do to be considered correct — they're different every time. Definition of Ready and Definition of Done are both standing, team-wide checklists that apply identically to every story, but at opposite ends: Definition of Ready is the entry gate a story must clear before it can be pulled into a sprint at all (criteria written, estimated, dependencies known), and Definition of Done is the exit gate every story must clear to be considered actually finished (code reviewed, tests passing, deployed to the right environment). The distinction that trips people up is that AC is content specific to one story, while DoR/DoD are process gates applied uniformly to all of them.",
+    example: "'User can filter search results by price' is an acceptance criterion specific to one story; 'all code must pass review before merge' is part of Definition of Done, applying to every story regardless of content.",
+    followups: ["Who typically owns writing acceptance criteria versus defining the DoD?", "What happens if a story is pulled into a sprint without meeting the Definition of Ready?"],
+    good: ["Nail the story-specific vs. team-wide-gate distinction, and correctly identify which end (entry/exit) DoR and DoD each apply to."],
+    bad: ["Treating all three as interchangeable synonyms for 'requirements.'"]
+  },
+  {
+    q: "What does a QA engineer actually do throughout a two-week sprint, beyond just 'testing at the end'?",
+    tests: "Checks whether you understand QA's involvement as continuous across the sprint, not concentrated only in the final days.",
+    simple: "QA is involved from day one — reviewing story clarity during planning and refinement, writing test cases as development starts, executing and logging bugs once a build lands, retesting fixes, running regression, and contributing to the review and retrospective at the end.",
+    strong: "QA's involvement spans the whole sprint, not just its final days. It starts at backlog refinement and sprint planning, reviewing upcoming stories for clarity and testability before development even begins. Once development starts, QA writes test cases and prepares test data. When a build lands in the test environment, QA runs a smoke test, then full execution, logging and retesting bugs as fixes come in, along with regression on related areas. Toward the end of the sprint, QA confirms stories genuinely meet the Definition of Done, contributes to the sprint review by confirming what's demo-ready, and raises quality-related process issues in the retrospective. The throughline is that QA is present at every stage, not summoned only once code is 'finished.'",
+    example: "In a real sprint, a tester might flag an ambiguous acceptance criterion on day 1 and log a regression bug on day 7 — both are QA's job, days apart.",
+    followups: ["How would this change on a team without a dedicated QA role, where developers test their own code?", "What would you do if a build consistently doesn't land in the test environment until the last two days of a sprint?"],
+    good: ["Walk through the sprint chronologically, showing QA involvement at multiple distinct points, not just 'testing.'"],
+    bad: ["Describing QA's role as only happening at the end of the sprint, once development is 'done.'"]
+  },
+  {
+    q: "What's the difference between an Epic, a User Story, and a Task?",
+    tests: "A structural hierarchy question — checks whether you understand the size and ownership progression from Epic down to Task.",
+    simple: "An Epic is a large body of work too big for one sprint. A User Story is one small, deliverable piece of it, written from the user's perspective. A Task is the granular technical work needed to actually build one story.",
+    strong: "An Epic represents a large initiative or body of work that's too big to complete within a single sprint — something like 'redesign checkout.' It gets broken down into User Stories, each a small, independently deliverable slice of functionality written from the user's point of view, typically in an 'as a [user], I want [goal], so that [reason]' format. Each story then gets broken down further into Tasks — the specific technical to-dos needed to actually deliver it, which might include separate development, QA, and design tasks.",
+    example: "Epic: 'Redesign checkout.' Story: 'As a shopper, I want to save my card so I can check out faster next time.' Tasks: 'build the save-card API endpoint,' 'write test cases for the save-card flow,' 'design the save-card UI.'",
+    followups: ["Who typically writes user stories?", "Can a single sprint contain work from multiple different epics?"],
+    good: ["Use a consistent example that flows from Epic through Story to Task, showing the size progression concretely."],
+    bad: ["Confusing the direction — implying tasks are bigger than stories, or stories bigger than epics."]
+  },
+  {
+    q: "Why do teams use story points instead of just estimating in hours?",
+    tests: "Checks whether you understand story points as a deliberate choice about relative, uncertainty-aware estimation rather than an arbitrary quirky convention.",
+    simple: "Story points measure relative effort and complexity together, including uncertainty, rather than a precise time prediction — hours imply false precision, especially for less-understood work, while points let a team compare 'how big' without pretending to know exactly how long something will take.",
+    strong: "Story points intentionally avoid the false precision of hour-based estimates. A task might take one developer 3 hours and another 6, depending on familiarity with the code — an hour estimate implies a precision that usually isn't real, especially early on when uncertainty is highest. Story points instead capture relative size — effort, complexity, and uncertainty combined — by comparing new work against previously completed work the team has a shared feel for. Using a Fibonacci-like scale (1, 2, 3, 5, 8, 13) reinforces this: the gaps between larger numbers get wider on purpose, because the ability to precisely judge a big, complex story is genuinely lower than for a small, well-understood one.",
+    example: "Two stories might both be estimated at '5 points' even though one is expected to take a bit longer in raw hours, because they're judged similarly complex and similarly uncertain relative to stories the team has done before.",
+    followups: ["How does a team calibrate what a '3-point story' actually means when they're new to story pointing?", "What's 'velocity,' and how does it relate to story points?"],
+    good: ["Explain why hours specifically create false precision, and connect the Fibonacci-like scale to increasing uncertainty at larger sizes."],
+    bad: ["Saying story points are 'just hours in disguise' or that the specific number doesn't matter at all."]
+  },
+  {
+    q: "What would you do if the requirements or acceptance criteria for a story you're about to test are unclear or incomplete?",
+    tests: "A very common scenario question — checks whether you proactively resolve ambiguity rather than guessing, and whether you understand this connects to shift-left and Definition of Ready.",
+    simple: "I'd flag it and ask clarifying questions to whoever owns the story — product owner or business analyst — before writing test cases based on a guess, and if this keeps happening, I'd push for stricter Definition of Ready enforcement so ambiguous stories don't get pulled into a sprint in the first place.",
+    strong: "I wouldn't guess and write test cases against an assumption — I'd go directly to whoever owns the story, usually the product owner, with specific questions about the exact gap I've found, ideally before or right at the start of the sprint rather than midway through testing. This connects directly to Definition of Ready and shift-left testing: ideally this ambiguity gets caught during backlog refinement, before the story is even committed to a sprint, which is exactly the point of QA reviewing stories early. If I notice this happening repeatedly across many stories, that's a signal worth raising in a retrospective — the team's Definition of Ready may need to be enforced more strictly so vague stories stop entering sprints at all.",
+    example: "If a story says 'users can filter results' with no detail on which fields are filterable, I'd ask that specific question rather than testing against my own assumption and potentially missing what was actually intended.",
+    followups: ["What would you do if the product owner is unavailable and you're blocked on this ambiguity?", "How would you document the clarification once you get an answer, so it doesn't get lost?"],
+    good: ["Connect this to Definition of Ready and backlog refinement — showing this isn't just a one-off fix but a process-level pattern worth addressing."],
+    bad: ["Saying you'd just guess and proceed with testing based on your own interpretation."]
+  },
+  {
+    q: "With limited time in a sprint, how do you decide what to test first?",
+    tests: "Another very common scenario question — checks risk-based prioritization applied specifically to a sprint's competing stories and testing tasks.",
+    simple: "I'd prioritize by risk: stories with the highest business impact, the most complex or most likely to have introduced regressions, and anything blocking other stories or the sprint demo — not just testing whatever's ready first in whatever order it happens to land.",
+    strong: "I'd prioritize based on risk and impact rather than just testing order of arrival. High-business-impact stories (core user flows, revenue-related features) go first. Complex or heavily-changed areas of the code are more likely to have introduced regressions, so those get priority over simple, low-risk changes. I'd also weight anything that's a dependency for other stories or for the sprint's demo — if a story is blocking someone else's work or is the centerpiece of the sprint review, it can't be left until the last day. This is the same risk-based thinking from earlier in the course — defect clustering, regression prioritization — just applied at the level of an entire sprint's worth of competing work instead of a single feature.",
+    example: "A high-risk payment-related story gets tested before a low-risk cosmetic tweak to a settings page, even if the settings page build landed first.",
+    followups: ["How would you communicate to the team that some lower-priority stories might not get fully tested this sprint?", "What would you do if two equally high-risk stories both need attention on the same day?"],
+    good: ["Explicitly connect this to risk-based prioritization concepts from earlier in the course, applied at the sprint level."],
+    bad: ["Saying you'd test in whatever order stories happen to be finished by developers, with no independent prioritization."]
+  },
+  {
+    q: "What does shift-left testing look like concretely inside a real Scrum sprint, beyond the abstract principle?",
+    tests: "Checks whether you can translate the Level 1 principle into a specific, real Scrum ceremony, rather than just repeating the definition.",
+    simple: "It shows up specifically at backlog refinement — QA reviews and questions upcoming stories for clarity and testability before they're even pulled into a sprint, catching ambiguity and gaps before a single line of code is written.",
+    strong: "In the abstract, shift-left means moving testing activities earlier in the development timeline. In a real Scrum sprint, that's not abstract at all — it's specifically what happens during backlog refinement, when QA reviews upcoming stories, asks clarifying questions, and flags missing or ambiguous acceptance criteria before that story is ever pulled into a sprint for development. It also shows up in sprint planning, when QA gives input on testability and risk before work is committed to. The effect is that ambiguity and design gaps get caught while they're still cheap to fix — a clarifying question in a refinement meeting versus a defect found after a feature is fully built are enormously different in cost.",
+    example: "QA questioning 'what happens if a user searches with an empty string?' during backlog refinement, before development starts, versus discovering that same gap as a bug three days after the feature is built.",
+    followups: ["What's the risk of a team skipping backlog refinement or treating it as optional?", "How does shift-left testing interact with Definition of Ready?"],
+    good: ["Name backlog refinement specifically as the concrete ceremony where shift-left happens, not just restate the abstract principle."],
+    bad: ["Describing shift-left only in the abstract without connecting it to a specific real Scrum ceremony."]
+  },
+  {
+    q: "What's an example of a quality-related issue you, as a tester, might raise in a sprint retrospective?",
+    tests: "Checks whether you see the retrospective as a real tool for process improvement (tying back to QA as prevention, from Level 1), not just a ceremony you sit through.",
+    simple: "A recurring pattern, like 'the test environment was unstable for two days this sprint, costing us testing time,' or 'three bugs this sprint all stemmed from the same kind of date-formatting mistake, and we should add that to our code review checklist.'",
+    strong: "I'd raise a pattern, not a one-off complaint — retrospectives are most valuable when they surface something systemic. That could be a process gap, like 'the test environment was down for a day and a half this sprint, which meant testing got compressed into the final two days' — a concrete, fixable process issue. Or it could be a recurring defect pattern, like noticing that three separate bugs this sprint all stemmed from the same category of mistake, such as date/timezone handling, which suggests a specific addition to the team's code review checklist or Definition of Done would prevent a whole class of future bugs. This connects directly back to Level 1's distinction between QA and QC — QC finds the individual bugs, but raising the pattern in a retrospective is the QA move: fixing the process so that category of bug stops recurring.",
+    example: "'We've now had three bugs this quarter caused by not handling empty API responses — should that become a standard check in our test template?' is exactly the kind of process-level observation a retrospective is for.",
+    followups: ["How would you turn a raised issue into an actual, tracked action item so it doesn't get forgotten?", "What's the difference between a retrospective complaint and a genuinely actionable one?"],
+    good: ["Connect the answer back to the QA-vs-QC distinction from Level 1 — raising a pattern in a retro is literally QA-style prevention in action."],
+    bad: ["Giving an example that's really just complaining about a specific bug rather than identifying a systemic, actionable pattern."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 6 · LESSON 1</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
