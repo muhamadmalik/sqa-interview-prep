@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 10 · Lesson 1 — Performance Testing Deep Dive</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:46px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  /* load pattern sparkline-style visuals */
+  .pattern-row{ display:flex; gap:16px; flex-wrap:wrap; margin:18px 0 10px; }
+  .pattern-item{ flex:1; min-width:150px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px; box-shadow:var(--shadow); }
+  .pattern-item svg{ width:100%; height:60px; display:block; }
+  .pattern-item h5{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); margin:8px 0 4px; }
+  .pattern-item p{ font-size:12.5px; color:var(--ink-muted); margin:0; }
+  .bp-item{ display:grid; grid-template-columns: 26px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .bp-item:last-child{ border-bottom:none; }
+  .bp-num{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color:var(--accent); font-weight:700; }
+  .bp-item h4{ font-size:15.5px; margin:0 0 4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .bp-item p{ font-size:14.5px; margin:0; color:var(--ink-muted); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 10 — Performance Testing</div>
+        <h1 class="title">Performance Testing Deep Dive</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Level 2 introduced Load and Stress testing as categories. This is the full family, the metrics that make them measurable, and the tool everyone references.</p>
+    <div class="lesson-nav"><a href="level9-lesson2.html" style="color:inherit;">← Level 9, Lesson 2: Page Object Model, Data-Driven Testing, Assertions &amp; Flaky Tests</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#family" data-track="family">1. The Performance Testing Family</a>
+    <a href="#metrics" data-track="metrics">2. Response Time, Throughput &amp; Concurrent Users</a>
+    <a href="#bottleneck" data-track="bottleneck">3. Bottlenecks</a>
+    <a href="#baseline" data-track="baseline">4. Performance Baseline</a>
+    <a href="#jmeter" data-track="jmeter">5. JMeter, Conceptually</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="family">
+      <h2>1. The Performance Testing Family</h2>
+      <p>Load and Stress testing were introduced back in Level 2 as testing types. Here's the fuller family, distinguished by exactly what's being varied — user count, time, or data volume.</p>
+
+      <div class="pattern-row">
+        <div class="pattern-item">
+          <svg viewBox="0 0 100 40"><line x1="5" y1="30" x2="95" y2="30" stroke="var(--accent)" stroke-width="2.5"/></svg>
+          <h5>Load</h5>
+          <p>Steady, expected traffic level.</p>
+        </div>
+        <div class="pattern-item">
+          <svg viewBox="0 0 100 40"><polyline points="5,32 40,26 70,14 95,4" fill="none" stroke="var(--accent)" stroke-width="2.5"/></svg>
+          <h5>Stress</h5>
+          <p>Push gradually past normal limits.</p>
+        </div>
+        <div class="pattern-item">
+          <svg viewBox="0 0 100 40"><polyline points="5,30 45,30 50,4 55,30 95,30" fill="none" stroke="var(--accent)" stroke-width="2.5"/></svg>
+          <h5>Spike</h5>
+          <p>A sudden, sharp burst, then back down.</p>
+        </div>
+        <div class="pattern-item">
+          <svg viewBox="0 0 100 40"><line x1="5" y1="20" x2="95" y2="20" stroke="var(--accent)" stroke-width="2.5"/><line x1="5" y1="10" x2="95" y2="10" stroke="var(--line-strong)" stroke-width="1" stroke-dasharray="2,2"/></svg>
+          <h5>Soak / Endurance</h5>
+          <p>Moderate load, held for hours or days.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Type</th><th>What's varied</th><th>What it's designed to catch</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Load</td><td>Concurrent users, at expected/normal levels</td><td>Whether the system performs acceptably under realistic traffic</td></tr>
+            <tr><td class="k">Stress</td><td>Concurrent users, deliberately beyond normal limits</td><td>Where the breaking point is, and whether failure is graceful</td></tr>
+            <tr><td class="k">Spike</td><td>Suddenness — an abrupt jump, not a gradual ramp</td><td>Whether the system survives an instant surge (a flash sale, a viral moment)</td></tr>
+            <tr><td class="k">Soak / Endurance</td><td>Time — moderate load sustained for hours or days</td><td>Issues that only appear over time: memory leaks, resource exhaustion, gradual slowdown</td></tr>
+            <tr><td class="k">Volume</td><td>Data volume, not necessarily concurrent users</td><td>Whether performance holds up against a huge dataset — a 100-million-row table, not many simultaneous users</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout example">
+        <span class="tag">Volume vs Load — the subtle distinction</span>
+        <p>A single user running a search against a database with 100 million records is a volume test, not a load test — nobody else needs to be using the system at the same time for this kind of problem to show up. Load testing is about many people at once; volume testing is about a lot of data, even with just one.</p>
+      </div>
+    </section>
+
+    <section class="block" id="metrics">
+      <h2>2. Response Time, Throughput &amp; Concurrent Users</h2>
+      <ul class="tight">
+        <li><b>Response time</b> — how long a single request takes to complete, from sent to fully received.</li>
+        <li><b>Throughput</b> — how many requests or transactions the system can handle per unit of time (e.g. requests per second).</li>
+        <li><b>Concurrent users</b> — how many users are actively using the system at the same moment.</li>
+      </ul>
+      <div class="callout example">
+        <span class="tag">Response time vs throughput — not the same axis</span>
+        <p>A system can have a fast response time for a single user (200ms) but low throughput overall (it falls over past 50 simultaneous users) — or the reverse, handling thousands of requests per second in aggregate while each individual response feels sluggish. They measure different things and can move independently of each other.</p>
+      </div>
+    </section>
+
+    <section class="block" id="bottleneck">
+      <h2>3. Bottlenecks</h2>
+      <p><b>Concept.</b> A bottleneck is the specific component — database, network, CPU, a single slow API — that limits the system's overall performance. Under load, the system's total capacity is only ever as good as its worst-performing piece.</p>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A web server can handle 10,000 requests per second, but a poorly indexed database query underneath it only supports 500 per second — the database is the bottleneck, and no amount of adding more web servers will fix the actual limiting factor.</p>
+      </div>
+    </section>
+
+    <section class="block" id="baseline">
+      <h2>4. Performance Baseline</h2>
+      <p><b>Concept.</b> A baseline is a recorded set of performance metrics captured under normal, known conditions — established before a change — used afterward as the reference point for detecting a regression.</p>
+      <p>Without a baseline, "the app feels slow" is unfalsifiable — slow compared to what? A baseline turns a vague impression into a measurable comparison: was this response time always 800ms, or did it used to be 300ms before last week's release?</p>
+    </section>
+
+    <section class="block" id="jmeter">
+      <h2>5. JMeter, Conceptually</h2>
+      <p>Apache JMeter is one of the most widely referenced open-source tools for load and performance testing. Conceptually, using it involves building a <b>test plan</b>: which requests to send, how many virtual users to simulate, how quickly to ramp them up, and for how long to sustain the load. JMeter then fires all of that simulated traffic at the system under test and reports back response times, throughput, and error rates — turning "let's see if it can handle a big sale" into an actual, repeatable, measurable test.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 10</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 10.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 10 complete<b>Level 11 — Security Basics for QA</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "Explain the difference between load, stress, spike, and soak testing.",
+    tests: "The signature comparison for this lesson — checks whether you know exactly what's being varied in each (user count, suddenness, or duration) rather than treating them as vague synonyms for 'lots of traffic.'",
+    simple: "Load testing checks behavior under expected, steady traffic. Stress testing pushes past normal limits to find the breaking point. Spike testing hits the system with a sudden, sharp burst rather than a gradual increase. Soak testing sustains a moderate load for a long period — hours or days — to catch issues that only appear over time.",
+    strong: "Load testing validates performance under realistic, expected traffic levels. Stress testing deliberately exceeds those levels to find where and how the system breaks. Spike testing is distinguished by suddenness rather than magnitude — an abrupt jump in traffic, like a flash sale starting instantly, rather than a gradual ramp, testing whether the system survives a shock rather than a slow climb. Soak (or endurance) testing holds a moderate, sustainable load for an extended period — hours or days — specifically to catch problems that don't show up in a short test, like memory leaks or gradually accumulating resource exhaustion.",
+    example: "A ticket-sale site needs spike testing specifically because tickets go on sale at an exact instant, producing a traffic pattern no gradual load or stress test would replicate.",
+    followups: ["Which of these four would be most important for a service that runs continuously for weeks without a restart?", "Could a system pass stress testing but fail soak testing? Why?"],
+    good: ["Distinguish spike from stress by suddenness, not just magnitude — that's the detail candidates most often miss."],
+    bad: ["Describing all of these as basically the same thing ('testing with lots of users')."]
+  },
+  {
+    q: "What's the difference between volume testing and load testing? Aren't they both about 'a lot' of something?",
+    tests: "Checks the subtle but important distinction between many concurrent users (load) and a large amount of data (volume) — they can be independent of each other.",
+    simple: "Load testing is about many concurrent users; volume testing is about a large amount of data, which can matter even with just one user — a single query against a 100-million-row table can be slow regardless of how many other people are using the system.",
+    strong: "They vary different things. Load testing is about concurrency — how the system performs with many simultaneous users. Volume testing is about data scale — how the system performs against a very large amount of stored data, which is a completely independent variable from how many people are using it at once. A single user running a search against a database with 100 million rows is purely a volume test; no other users need to be involved for that kind of performance problem to surface. In practice, a system can pass load testing cleanly while still having serious volume-related performance issues nobody would catch without specifically testing at realistic data scale.",
+    example: "A reporting feature might work fine in a demo environment with 500 rows of data, then become unusably slow in production against a real dataset of 50 million rows, even with just one person using it.",
+    followups: ["How would you realistically generate enough test data to properly volume-test a feature?", "Can a system have a volume-related bottleneck and a load-related bottleneck at the same time?"],
+    good: ["Give the concrete example of a single-user volume problem — that's what makes the distinction from load testing click."],
+    bad: ["Treating volume testing as just another word for load testing with more users."]
+  },
+  {
+    q: "What's the difference between response time and throughput? Can a system have great response time and terrible throughput, or vice versa?",
+    tests: "A classic performance metrics question — checks whether you understand these as genuinely independent measurements, not two names for the same thing.",
+    simple: "Response time is how long a single request takes; throughput is how many requests the system can handle per unit of time in aggregate. Yes, a system can be fast for one user but collapse under many simultaneous users (great response time, poor throughput), or handle huge volume while each individual response feels sluggish (great throughput, mediocre response time).",
+    strong: "Response time measures the latency of a single request — how long it takes from being sent to fully received. Throughput measures aggregate capacity — how many requests or transactions the system can process per unit of time, like requests per second. These are genuinely independent: a system might respond to a single request in 200ms, which looks excellent, but only support 50 concurrent users before falling over — great response time, poor throughput. Conversely, a system might handle thousands of requests per second in aggregate while each individual response takes a comparatively sluggish 2 seconds — strong throughput, mediocre response time. Neither metric alone tells the full performance story.",
+    example: "A system passing a single-user response-time test with flying colors can still completely fail a real-world load test the moment throughput becomes the actual constraint under concurrent traffic.",
+    followups: ["Which metric would matter more for a real-time chat application versus a nightly batch reporting job?", "How would degrading throughput while response time stays flat show up in monitoring data?"],
+    good: ["Give a concrete example showing the two metrics moving independently in either direction — that's the substance of the distinction."],
+    bad: ["Treating response time and throughput as interchangeable measures of 'how fast the system is.'"]
+  },
+  {
+    q: "What is a bottleneck, and how would you go about identifying one?",
+    tests: "Checks understanding of the bottleneck concept and a practical, structured approach to isolating it rather than guessing.",
+    simple: "A bottleneck is the specific component limiting overall system performance — under load, the whole system is only as fast as its worst-performing piece. I'd identify it by monitoring each layer (application, database, network, infrastructure) under load to see which one hits its limit first, rather than assuming based on intuition.",
+    strong: "A bottleneck is whichever specific component — a database query, a particular API, network bandwidth, CPU or memory on a specific server — limits the system's overall capacity, since under load the whole system can only perform as well as its most constrained piece, regardless of how well everything else is provisioned. To identify one, I'd monitor each layer independently while running a load test — application server metrics, database query times, network latency, infrastructure resource usage — looking for which specific component reaches its limit first as load increases, rather than guessing based on where I assume the problem is. Adding more capacity anywhere except the actual bottleneck won't meaningfully improve overall performance.",
+    example: "Doubling the number of web servers won't help at all if the real constraint is a single, poorly indexed database table that every request has to query.",
+    followups: ["What tools or techniques would you use to monitor each layer during a load test?", "What would you do if fixing one bottleneck just revealed a different one underneath it?"],
+    good: ["Emphasize systematic, layer-by-layer monitoring rather than guessing, and note that fixing the wrong component doesn't help."],
+    bad: ["Describing a bottleneck only vaguely as 'something slow' without a concrete method for actually finding it."]
+  },
+  {
+    q: "Why would you establish a performance baseline before testing a change, rather than just testing the change on its own?",
+    tests: "Checks understanding of baselines as the thing that makes a performance claim falsifiable and comparable, not just a nice-to-have extra step.",
+    simple: "Without a baseline, there's nothing to compare against — 'the app feels slow' is meaningless without knowing what it used to be. A baseline turns performance testing from a subjective impression into an objective, measurable comparison.",
+    strong: "A baseline is what makes a performance claim actually verifiable. Testing a change in isolation only tells you its absolute numbers — response time of 800ms, say — but without a prior baseline, there's no way to know whether that's actually a regression, an improvement, or unchanged from before. Establishing baseline metrics under known, normal conditions before a change gives a concrete reference point, turning a vague impression like 'it feels slower' into a precise, falsifiable comparison: was it 300ms before this release and is now 800ms, or was it always around 800ms.",
+    example: "Without a baseline, a team might spend days investigating a 'performance regression' that turns out to have always been the app's normal behavior — the baseline is what would have prevented that wasted investigation entirely.",
+    followups: ["How often should a performance baseline be re-established, given that a system's normal behavior can shift over time?", "What conditions need to stay consistent between the baseline measurement and the later comparison for it to be valid?"],
+    good: ["Frame the baseline as making performance claims falsifiable and comparable — that's the real reasoning, not just 'it's good practice.'"],
+    bad: ["Describing a baseline as simply 'a starting measurement' without explaining why the comparison it enables actually matters."]
+  },
+  {
+    q: "After a new release, response time on a key endpoint has doubled. How would you investigate?",
+    tests: "A scenario connecting baseline and bottleneck concepts together into a real investigative workflow.",
+    simple: "I'd compare the new response time against the established baseline to confirm this is a genuine regression, then investigate layer by layer — checking whether the release touched the database, added a new dependency, or changed application logic — to isolate which component is now the bottleneck.",
+    strong: "First, I'd confirm this against the baseline rather than trusting a single anecdotal observation — same test conditions, same load level, comparing today's number directly to the recorded baseline to confirm it's a genuine regression and not noise or a one-off measurement fluke. Once confirmed, I'd look specifically at what changed in this release — new code paths, a new external dependency, a database schema or query change — since a doubled response time right after a release is a strong signal the regression is connected to something specific that shipped, not a coincidence. I'd then monitor each layer under load to isolate exactly which component's timing actually changed — is the database query now slower, is a newly added external API call adding latency, or is it something in the application logic itself — rather than guessing, applying the same bottleneck-isolation approach from earlier in this lesson.",
+    example: "If a query profiler shows the database query behind this endpoint went from 50ms to 400ms after the release, that's a strong, specific lead pointing at a likely missing index or an inefficient new query introduced by this release.",
+    followups: ["What would you do if the regression doesn't correlate with anything in this specific release's changes?", "How would you prevent this kind of regression from reaching production undetected next time?"],
+    good: ["Structure this as baseline confirmation followed by systematic bottleneck isolation, connecting both concepts from this lesson."],
+    bad: ["Jumping straight to a guess about the cause without first confirming the regression against a baseline or systematically isolating the bottleneck."]
+  },
+  {
+    q: "Why would soak/endurance testing catch a bug that load testing wouldn't?",
+    tests: "Checks understanding of time-dependent failure modes — the specific reason soak testing exists as distinct from load testing.",
+    simple: "Some problems, like memory leaks or gradually accumulating resource exhaustion, only become visible after sustained use over a long period — a load test running for 30 minutes would never accumulate enough of the underlying problem to actually surface a failure, even under heavy concurrent traffic.",
+    strong: "Load testing typically runs for a relatively short, intense window, which is well suited to catching problems related to concurrency and volume at a moment in time. But some defects are fundamentally time-dependent rather than concurrency-dependent — a memory leak that leaks a small amount with every request will look completely fine after 30 minutes under heavy load, because the total accumulated leak is still small, but after 12 continuous hours at even moderate load, that same slow leak can exhaust available memory and bring the system down. Soak testing exists specifically to surface that class of bug, which requires sustained duration, not necessarily high concurrency, to become visible at all.",
+    example: "A service that handles 10,000 requests per minute perfectly for the first hour of a load test might start throwing out-of-memory errors on hour 14 of a soak test, from a slow leak that a short load test would never run long enough to expose.",
+    followups: ["What metrics would you specifically watch during a soak test to catch a slow leak early, rather than waiting for a full crash?", "How would you decide how long a soak test needs to run to be meaningful?"],
+    good: ["Explain the mechanism clearly — small per-request accumulation that only becomes visible over sustained time — not just assert that soak testing 'runs longer.'"],
+    bad: ["Saying soak testing is 'just a longer load test' without explaining why duration specifically matters for this class of bug."]
+  },
+  {
+    q: "Conceptually, how would you set up a load test for a checkout API using a tool like JMeter?",
+    tests: "Checks whether you understand the conceptual shape of a load test plan, even without hands-on JMeter syntax experience.",
+    simple: "I'd define a test plan specifying which requests to simulate (the checkout endpoint, with realistic data), how many virtual users to simulate, how quickly to ramp them up to that level rather than hitting it instantly, and how long to sustain the load — then run it and review the resulting response time, throughput, and error rate.",
+    strong: "I'd start by defining a test plan: which specific requests to simulate — likely the checkout endpoint, with realistic-looking test data rather than a single hardcoded example — and roughly how many virtual users I want to simulate, based on real or expected traffic levels rather than an arbitrary number. I'd configure a ramp-up period, gradually increasing simulated users to that target level rather than hitting it instantly, unless I'm specifically doing spike testing, in which case instant would be the point. I'd decide how long to sustain the load once it reaches target level, then run the test and review the results: response time distribution (not just an average, since averages can hide a slow tail), throughput actually achieved, and error rate under load. I'd compare all of that against an established baseline to know whether these numbers represent acceptable performance or a real problem.",
+    example: "Simulating a ramp from 0 to 500 virtual users over 5 minutes, holding 500 users for 10 minutes hitting the checkout endpoint, and reviewing whether response times stayed within an acceptable range and error rate stayed near zero throughout.",
+    followups: ["Why might looking at the average response time alone be misleading, compared to looking at percentiles like p95 or p99?", "How would this test plan differ if you were specifically doing a spike test instead of a load test?"],
+    good: ["Describe the full test plan shape (target users, ramp-up, duration, review of results) rather than a single vague step."],
+    bad: ["Describing this only as 'run JMeter against the API' with no structure around ramp-up, duration, or what to actually review afterward."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 10</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
