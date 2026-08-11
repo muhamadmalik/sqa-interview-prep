@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 3 · Lesson 2 — Decision Tables, State Transition, Use Case, Error Guessing &amp; Pairwise</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:48px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  table.dt th, table.dt td{ text-align:center; }
+  table.dt td.rule-label, table.dt th.rule-label{ text-align:left; font-weight:600; }
+  table.dt td.action{ font-weight:700; color:var(--accent); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 3 — Test Design Techniques &nbsp;·&nbsp; Lesson 2 (final of Level 3)</div>
+        <h1 class="title">Decision Tables, State Transition, Use Case, Error Guessing &amp; Pairwise Testing</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Where EP and BVA stop being enough: when multiple conditions combine, when history matters, or when the number of variables explodes.</p>
+    <div class="lesson-nav"><a href="level3-lesson1.html" style="color:inherit;">← Level 3, Lesson 1: Equivalence Partitioning &amp; Boundary Value Analysis</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#decision" data-track="decision">1. Decision Table Testing</a>
+    <a href="#state" data-track="state">2. State Transition Testing</a>
+    <a href="#usecase" data-track="usecase">3. Use Case Testing</a>
+    <a href="#error" data-track="error">4. Error Guessing</a>
+    <a href="#pairwise" data-track="pairwise">5. Pairwise Testing</a>
+    <a href="#posneg" data-track="posneg">6. Positive vs Negative Testing</a>
+    <a href="#which" data-track="which">7. Which Technique, When</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="decision">
+      <h2>1. Decision Table Testing</h2>
+      <p><b>Concept.</b> A decision table lists every meaningful combination of input <b>conditions</b> and the <b>action</b> the system should take for each combination — used when a business rule depends on two or more conditions together, which EP and BVA (single-field techniques) can't capture.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>A field can pass every individual EP/BVA test and still have a bug that only appears when two conditions combine in a specific way. Decision tables make every combination explicit, so none get silently skipped.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A loan approval rule depends on two conditions: <b>good credit score</b> (Y/N) and <b>income above threshold</b> (Y/N).</p>
+      </div>
+
+      <div class="table-wrap">
+        <table class="spec dt">
+          <thead><tr><th class="rule-label">Condition</th><th>Rule 1</th><th>Rule 2</th><th>Rule 3</th><th>Rule 4</th></tr></thead>
+          <tbody>
+            <tr><td class="rule-label">Good credit score?</td><td>Y</td><td>Y</td><td>N</td><td>N</td></tr>
+            <tr><td class="rule-label">Income above threshold?</td><td>Y</td><td>N</td><td>Y</td><td>N</td></tr>
+            <tr><td class="rule-label">Action</td><td class="action">Approve</td><td class="action">Manual review</td><td class="action">Manual review</td><td class="action">Reject</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">Two conditions with two values each gives 4 combinations (2²), and the table forces you to define — and test — the outcome of every single one, including the ones that are easy to forget, like "good credit but low income."</p>
+    </section>
+
+    <section class="block" id="state">
+      <h2>2. State Transition Testing</h2>
+      <p><b>Concept.</b> State transition testing applies when a system's behavior depends on its <b>current state</b> and history — the same action can be valid or invalid depending on what state the system is already in. You model the system as a set of states and the transitions allowed between them, then test both valid transitions and, just as importantly, that invalid transitions are correctly blocked.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Some of the most damaging real-world bugs are exactly this shape: an action that should only be possible in one state accidentally becomes possible in another — cancelling an order that's already shipped, or reusing a one-time discount code twice.</p>
+
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Current State</th><th>Event</th><th>Valid Next State</th><th>Invalid Transition to Test</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Placed</td><td>Cancel</td><td>Cancelled</td><td>—</td></tr>
+            <tr><td class="k">Placed</td><td>Ship</td><td>Shipped</td><td>—</td></tr>
+            <tr><td class="k">Shipped</td><td>Cancel</td><td class="muted">Blocked (not allowed)</td><td>Attempting Shipped → Cancelled should fail</td></tr>
+            <tr><td class="k">Shipped</td><td>Deliver</td><td>Delivered</td><td>—</td></tr>
+            <tr><td class="k">Delivered</td><td>Cancel</td><td class="muted">Blocked (not allowed)</td><td>Attempting Delivered → Cancelled should fail</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>An ATM PIN entry: state moves from "Active" to "Locked" only after 3 consecutive wrong attempts. State transition testing checks the valid path (wrong, wrong, wrong → locked) and also that the counter correctly resets on a successful entry between failures — a subtle history-dependent rule that a simple field-level test would never catch.</p>
+      </div>
+    </section>
+
+    <section class="block" id="usecase">
+      <h2>3. Use Case Testing</h2>
+      <p><b>Concept.</b> Use case testing derives test cases directly from a documented use case — a description of how a real user interacts with the system to accomplish a specific goal, including the main ("happy path") flow, alternate flows, and exception flows.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Field-level and rule-level techniques test pieces in isolation. Use case testing validates the entire realistic journey end to end, the way an actual user experiences it — closely related to end-to-end testing from Level 2, but framed around the documented use case as the source of test cases.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Use case: "Withdraw Cash" at an ATM.</p>
+      </div>
+      <ul class="tight">
+        <li><b>Main flow:</b> insert card → enter correct PIN → select "Withdraw" → enter amount → cash dispensed → card returned.</li>
+        <li><b>Alternate flow:</b> requested amount exceeds account balance → system shows "insufficient funds," no cash dispensed.</li>
+        <li><b>Exception flow:</b> network connection drops mid-transaction → system must not dispense cash without confirming the debit succeeded, and must return the card.</li>
+      </ul>
+    </section>
+
+    <section class="block" id="error">
+      <h2>4. Error Guessing</h2>
+      <p><b>Concept.</b> Error guessing is an informal technique where a tester uses experience, intuition, and knowledge of common failure patterns to anticipate where bugs are likely to hide — with no formal model or documented structure behind it.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Formal techniques (EP, BVA, decision tables) are systematic but can only cover what they're explicitly modeling. Experienced testers develop a instinct for classic trouble spots — empty inputs, very large numbers, special characters, rapid double-clicks, race conditions — that often aren't captured by any formal model at all.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Without any documented reason to, an experienced tester tries pasting an emoji into a "Full Name" field, submitting a form twice in rapid succession by double-clicking, and entering a date far in the future in a "Date of Birth" field — all based on having seen similar inputs break other systems before.</p>
+      </div>
+
+      <h3 class="sub">Error guessing vs. exploratory testing</h3>
+      <p>They overlap and often happen together, but they're not identical: error guessing is specifically about anticipating <i>known categories of common mistakes</i> (a mental checklist built from experience), while exploratory testing (Level 2) is a broader, session-based practice of learning, designing, and executing tests simultaneously — error guessing is often one of the tools a tester reaches for <i>during</i> an exploratory session.</p>
+    </section>
+
+    <section class="block" id="pairwise">
+      <h2>5. Pairwise (Combinatorial) Testing</h2>
+      <p><b>Concept.</b> When a feature has several independent parameters, each with multiple possible values, testing every combination explodes quickly. Pairwise testing generates a much smaller test set that still covers every <i>pair</i> of parameter values at least once — based on the well-observed reality that most combinatorial defects are triggered by the interaction of just two parameters, not three or more at once.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Full combinatorial coverage is often practically impossible — another direct application of "exhaustive testing is impossible." Pairwise testing gives most of the bug-finding value of full combinatorial testing at a fraction of the cost.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Testing a web app across 3 browsers × 3 operating systems × 3 screen sizes is 27 full combinations. Pairwise testing (using a pairwise-generation tool or algorithm) can typically cover every pair of values — every browser paired with every OS, every OS paired with every screen size, and so on — in around 9 test cases instead of 27, while still catching the overwhelming majority of real interaction bugs.</p>
+      </div>
+    </section>
+
+    <section class="block" id="posneg">
+      <h2>6. Positive vs Negative Testing</h2>
+      <p><b>Concept.</b> Positive testing feeds the system valid input and confirms it behaves correctly — "does it do what it's supposed to do." Negative testing feeds it invalid or unexpected input and confirms it correctly rejects or gracefully handles it — "does it correctly refuse to do what it shouldn't."</p>
+      <p>This maps directly back to Equivalence Partitioning from Lesson 1: testing the <b>valid partition</b> is positive testing; testing the <b>invalid partitions</b> is negative testing. They're not a separate technique so much as a lens for describing what a given test case is checking.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Positive test: submitting a signup form with a correctly formatted email and a valid password — should succeed. Negative test: submitting the same form with "not-an-email" in the email field — should be rejected with a clear error, not crash or silently accept it.</p>
+      </div>
+    </section>
+
+    <section class="block" id="which">
+      <h2>7. Which Technique, When</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Situation</th><th>Reach for</th></tr></thead>
+          <tbody>
+            <tr><td>A single field has a valid range or category</td><td class="k">Equivalence Partitioning + BVA</td></tr>
+            <tr><td>An outcome depends on multiple conditions combined</td><td class="k">Decision Table</td></tr>
+            <tr><td>Behavior depends on current state / sequence of actions</td><td class="k">State Transition</td></tr>
+            <tr><td>Validating a full, realistic user journey</td><td class="k">Use Case Testing</td></tr>
+            <tr><td>Many independent parameters, too many to test fully</td><td class="k">Pairwise Testing</td></tr>
+            <tr><td>Layering experience-based intuition on top of any of the above</td><td class="k">Error Guessing</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">In practice, a single feature usually needs several of these together — this table is a starting point for deciding where to begin, not a rule that only one technique applies.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 3, Lesson 2</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 3 — the test design toolkit is complete.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 3 complete<b>Level 4 — Test Cases &amp; Test Scenarios</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What is decision table testing, and why can't Equivalence Partitioning handle the same situation?",
+    tests: "Checks whether you understand decision tables specifically fill the multi-condition gap that single-field techniques like EP leave open.",
+    simple: "A decision table lists every combination of two or more conditions and the correct action for each — EP can't handle this because EP only looks at one field's values in isolation, not how multiple conditions interact.",
+    strong: "A decision table maps every meaningful combination of input conditions to the action the system should take, which is exactly the situation EP and BVA aren't built for — those techniques evaluate a single field's partitions independently, with no model for how two or more conditions interacting might change the correct outcome. A loan approval rule based on both credit score and income can pass EP tests on each field individually and still have a bug that only shows up for one specific combination, like good credit paired with low income being handled incorrectly — a decision table forces every such combination to be explicitly defined and tested.",
+    example: "Good credit + high income should approve; good credit + low income should trigger manual review — a combination-specific rule no single-field test would ever exercise.",
+    followups: ["How many rules would a decision table with 3 conditions, each with 2 possible values, have?", "What would you do if the number of conditions makes the table too large to be practical?"],
+    good: ["Explicitly explain WHY EP can't cover this (single-field vs. multi-condition interaction), not just describe what a decision table looks like."],
+    bad: ["Describing the table format without explaining what gap it fills relative to EP/BVA."]
+  },
+  {
+    q: "Explain state transition testing with a real example. What's the difference between testing a valid transition and testing an invalid one, and why do you need both?",
+    tests: "Checks understanding of the state-transition model and specifically why testing blocked/invalid transitions matters as much as valid ones.",
+    simple: "State transition testing checks that the system moves correctly between defined states — e.g. an order going from Placed to Shipped to Delivered. You need to test valid transitions to confirm the happy path works, and invalid transitions (like trying to cancel an already-shipped order) to confirm the system correctly blocks actions that shouldn't be allowed in that state.",
+    strong: "State transition testing models a system as a set of states with defined, allowed transitions between them, and tests both directions: that allowed transitions work, and — just as importantly — that disallowed transitions are correctly blocked. For an order system with states Placed, Shipped, and Delivered, a valid transition test confirms Placed → Cancelled succeeds; an invalid transition test confirms Shipped → Cancelled is correctly rejected. You need both because a system that only ever gets tested on its happy path can silently allow an action it shouldn't — and those are often the most damaging bugs, since they let users or the system reach an inconsistent, unintended state.",
+    example: "If a shipped order can still be cancelled due to a missing state check, a customer could get a refund for an item that's already on its way to them — a costly bug that only state transition testing, not a simple functional test, would systematically catch.",
+    followups: ["How would you represent a system with many states and transitions for test planning purposes?", "What's an example of a state transition bug you'd specifically worry about in a login/session system?"],
+    good: ["Emphasize that invalid-transition testing is not optional — it's often where the most damaging bugs live."],
+    bad: ["Only describing the valid, happy-path transitions and not addressing why blocked transitions need testing too."]
+  },
+  {
+    q: "What's the difference between use case testing and end-to-end testing? They sound very similar.",
+    tests: "A comparison question checking whether you can distinguish a test design technique (use case testing, from this lesson) from a test level (E2E, from Level 2), even though they overlap in practice.",
+    simple: "Use case testing is a technique for deriving test cases directly from a documented use case, including its main flow and alternate/exception flows. End-to-end testing is a test level describing the scope of testing (a full real user journey through the deployed system, including external integrations). In practice, use case testing often produces the exact test cases that get executed as E2E tests.",
+    strong: "They're related but answer different questions. Use case testing is a test design technique — a method for generating test cases by systematically working through a documented use case's main flow, alternate flows, and exception flows. End-to-end testing is a test level — it describes the scope and environment of the test (a full real user journey, run against a near-production environment with real external dependencies). In practice, the two connect naturally: use case testing is often exactly how you'd derive the test cases you then execute as end-to-end tests, but you could also apply use case testing to generate cases you run against a more contained system-testing environment instead.",
+    example: "The 'Withdraw Cash' use case's alternate and exception flows could be turned into test cases run either as focused system tests, or as full E2E tests against a real banking network sandbox — same technique, different execution scope.",
+    followups: ["Could use case testing generate test cases for a test level other than E2E?", "What's an 'alternate flow' versus an 'exception flow' in a use case?"],
+    good: ["Frame it as technique vs. level — that distinction is the cleanest way to answer this without contradicting yourself."],
+    bad: ["Treating the two terms as fully interchangeable without acknowledging they're actually answering different questions (how you derive cases vs. what scope you run them at)."]
+  },
+  {
+    q: "What is error guessing, and how is it different from exploratory testing? Aren't they the same thing?",
+    tests: "A nuanced comparison — checks whether you can articulate that error guessing is a specific heuristic-driven technique, often used within exploratory sessions rather than as a separate, competing approach.",
+    simple: "Error guessing is specifically about drawing on experience with known categories of common mistakes — empty fields, huge numbers, special characters — to predict where bugs are likely. Exploratory testing is the broader, structured practice of learning, designing, and executing tests simultaneously during a session; error guessing is often one of the tools a tester uses while exploring, not a separate competing activity.",
+    strong: "They overlap heavily and often happen in the same moment, which is why they get conflated, but they're not quite the same thing. Error guessing is narrower and more specific: it's applying a tester's accumulated knowledge of common failure patterns — boundary-adjacent bugs, special characters, race conditions from rapid clicking — to predict where a defect is likely to be hiding, even without a formal charter. Exploratory testing, from Level 2, is the broader structured practice — a charter-driven, time-boxed session of simultaneous learning, test design, and execution. In practice, a tester doing exploratory testing is very often using error guessing as one of their tools in the moment, but you could also apply error guessing in a much more targeted, non-exploratory way, like quickly trying a handful of known-troublesome inputs on a single field.",
+    example: "During an exploratory session on a new upload feature, a tester might use error guessing specifically to decide to try a 0-byte file or a file with no extension — the guessing informs what to try next within the broader exploratory session.",
+    followups: ["Can error guessing be used without an exploratory testing session at all?", "What's a category of 'classic' error-guessing input you'd always try on a text field?"],
+    good: ["Clarify the relationship (error guessing as a tool used within exploratory testing) rather than treating them as either identical or fully separate."],
+    bad: ["Saying they're exactly the same technique with two different names."]
+  },
+  {
+    q: "You have 4 independent configuration parameters, each with 3 possible values — 81 total combinations. How would you approach testing this without running all 81?",
+    tests: "A practical application of pairwise testing under a concrete combinatorial-explosion scenario.",
+    simple: "I'd use pairwise testing to generate a much smaller set of test cases — typically around 9-12 for this size — that still covers every pair of parameter values at least once, since most real interaction bugs come from just two parameters interacting, not all four at once.",
+    strong: "Running all 81 combinations is a textbook case of combinatorial explosion, and it's rarely worth the cost. I'd apply pairwise testing, which generates a much smaller set — for 4 parameters with 3 values each, typically somewhere around 9 to 12 test cases — while still guaranteeing every possible pair of values across any two parameters appears together in at least one test case. This is based on the well-supported observation that the large majority of real-world combinatorial defects are triggered by an interaction between just two parameters, not three or four simultaneously, so pairwise coverage captures most of the practical value of full combinatorial testing for a small fraction of the effort.",
+    example: "Instead of testing all 81 combinations of Browser × OS × Screen Size × Language, a pairwise-generated set of about 9-12 cases still ensures every Browser-OS pair, every OS-Language pair, and so on, gets covered at least once.",
+    followups: ["What's the risk pairwise testing accepts by not testing 3-way or 4-way interactions?", "Would you use a tool to generate the pairwise set, or do it manually? Why?"],
+    good: ["Name the specific assumption pairwise testing relies on (most defects come from 2-parameter interactions) — that's the real justification, not just 'it's fewer tests.'"],
+    bad: ["Suggesting you'd just pick a handful of combinations arbitrarily without describing an actual systematic method."]
+  },
+  {
+    q: "How does positive and negative testing relate to Equivalence Partitioning from the last lesson?",
+    tests: "A synthesis question checking whether you connect this lesson's vocabulary back to Lesson 1, rather than treating them as unrelated topics.",
+    simple: "They're the same idea described from a different angle — testing the valid partition from EP is positive testing, and testing the invalid partitions is negative testing.",
+    strong: "Positive and negative testing aren't really a separate technique from Equivalence Partitioning — they're a way of labeling what a given EP-derived test case is actually checking. When EP identifies a valid partition and you test a representative value from it expecting success, that's a positive test. When EP identifies an invalid partition and you test a representative value from it expecting rejection, that's a negative test. The vocabulary is useful conversationally — 'make sure you have good negative test coverage' is a common, quick way to check someone hasn't only tested the happy path — but underneath it, it's describing the same partitions EP already identifies.",
+    example: "For the age 18–60 field, testing age=30 (expecting acceptance) is a positive test; testing age=10 or age=70 (expecting rejection) are negative tests — both derived from the same EP partitions.",
+    followups: ["Why might a team specifically ask 'do you have enough negative test cases' as a review question?", "Is a boundary test like age=17 a negative test?"],
+    good: ["Explicitly state that positive/negative testing is a lens on EP's partitions, not a competing separate technique — that's the connective insight this question wants."],
+    bad: ["Describing positive/negative testing correctly but treating it as unrelated to EP, missing the connection this question is fishing for."]
+  },
+  {
+    q: "A new feature has: (1) a numeric input field with a valid range, (2) three checkboxes whose combination affects behavior, and (3) a multi-step workflow where later steps depend on earlier choices. Which test design techniques would you use for each part, and why?",
+    tests: "A synthesis scenario requiring you to correctly map each part of a realistic feature to the right technique from this lesson and the last — checks real understanding versus memorized definitions.",
+    simple: "The numeric field gets Equivalence Partitioning and Boundary Value Analysis; the three interacting checkboxes get a Decision Table to cover their combinations; the multi-step, choice-dependent workflow gets State Transition testing (and possibly Use Case testing for the overall journey).",
+    strong: "Each part maps to a different technique because each has a different shape of risk. The numeric input field is a single-variable range, so EP and BVA are the right tool — partition the valid/invalid values and target the boundaries. The three checkboxes represent multiple conditions whose combination determines behavior, which is exactly what a Decision Table is for — with three binary conditions, that's 8 combinations to define and test explicitly. The multi-step workflow where later steps depend on earlier choices is fundamentally about state and history, which is State Transition testing's job — modeling the valid and invalid paths through the steps; I'd likely also apply Use Case testing to make sure the overall realistic end-to-end journey through all three parts together is validated, not just each piece in isolation.",
+    example: "A single test case might exercise all three: choosing a value in the numeric field, selecting a checkbox combination, and following one specific state path through the workflow — but the design of what to test came from three different techniques.",
+    followups: ["Would you use Pairwise testing anywhere in this feature? Where might it apply?", "How would you prioritize which of these three parts to test first if time were limited?"],
+    good: ["Map each of the three parts to a specific, correctly-reasoned technique rather than suggesting one technique should cover the whole feature."],
+    bad: ["Suggesting a single technique (e.g. 'just use exploratory testing for all of it') without engaging with why each part has a different underlying structure."]
+  },
+  {
+    q: "If you had to pick just one of the techniques from this lesson to defend as 'most valuable' for a typical web application, which would you choose and why?",
+    tests: "An opinion/judgment question with no single correct answer — checks reasoning quality and whether you can defend a position with real trade-off awareness, rather than the specific pick.",
+    simple: "There's no universally correct answer, but a defensible pick is Decision Table testing, since business logic driven by multiple combined conditions is extremely common in real applications and is exactly the kind of bug that's easy to miss without a systematic technique.",
+    strong: "I don't think there's a single objectively correct answer here, and I'd say that upfront rather than pretend otherwise — but if forced to pick, I'd lean toward Decision Table testing, because most real web applications have business logic driven by multiple combined conditions (pricing rules, permission checks, eligibility criteria), and that's precisely the kind of bug that's easy to accidentally skip without a systematic technique forcing every combination into view. State Transition testing would be my close second for anything involving accounts, orders, or workflows with a lifecycle. I'd be cautious of a candidate who picks one and claims it's universally the most important — the honest answer is that the 'best' technique is entirely dependent on what shape the feature's logic actually has.",
+    example: "A checkout flow with tiered discounts, membership status, and regional tax rules combining is a decision-table-shaped problem waiting to have an undiscovered edge case.",
+    followups: ["Would your answer change for a mobile app versus a web app?", "What would make you say State Transition testing is more valuable than Decision Tables for a given product?"],
+    good: ["Acknowledge there's no single right answer before defending a pick — that intellectual honesty reads as more senior than confidently declaring one technique universally best."],
+    bad: ["Picking a technique and defending it as universally superior without any caveat about context-dependence."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 3 · LESSON 2</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
