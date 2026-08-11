@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 5 · Lesson 2 — Writing Bug Reports + Real-World Scenarios</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:48px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .bp-item{ display:grid; grid-template-columns: 26px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .bp-item:last-child{ border-bottom:none; }
+  .bp-num{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color:var(--accent); font-weight:700; }
+  .bp-item h4{ font-size:15.5px; margin:0 0 4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .bp-item p{ font-size:14.5px; margin:0; color:var(--ink-muted); }
+  /* bug report card */
+  .tc-card{ border:1px solid var(--line); border-radius:var(--radius); background:var(--surface); box-shadow:var(--shadow); margin:18px 0 28px; overflow:hidden; }
+  .tc-head{ background:var(--surface-2); padding:10px 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+  .tc-body{ padding:14px 16px; }
+  .tc-row{ display:grid; grid-template-columns: 140px 1fr; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:14.5px; }
+  .tc-row:last-child{ border-bottom:none; }
+  .tc-row .tc-label{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); }
+  .sev-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:10.5px; text-transform:uppercase; padding:2px 8px; border-radius:100px; background:var(--warn); color:#fff; }
+  /* exercise */
+  .exercise{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px 22px; margin:18px 0 28px; }
+  .exercise h3{ font-size:17px; margin-bottom:8px; }
+  .exercise textarea{ width:100%; min-height:200px; resize:vertical; margin-top:14px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:14px; padding:14px; line-height:1.6; }
+  .exercise textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .exercise-actions{ display:flex; gap:10px; margin-top:14px; align-items:center; flex-wrap:wrap; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:9px 18px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .model-answer{ display:none; margin-top:18px; border-top:1px solid var(--line); padding-top:16px; }
+  .model-answer.open{ display:block; }
+  .review-note{ background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-top:18px; font-size:14.5px; }
+  .review-note b{ color:var(--accent); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 5 — Bug / Defect Management &nbsp;·&nbsp; Lesson 2 (final of Level 5)</div>
+        <h1 class="title">Writing Bug Reports + Real-World Scenarios</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The anatomy of a bug report a developer can act on without asking a single question — plus the two conversations every tester eventually has to have.</p>
+    <div class="lesson-nav"><a href="level5-lesson1.html" style="color:inherit;">← Level 5, Lesson 1: Error, Defect, Bug &amp; Failure, Bug Life Cycle, Severity vs Priority</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#anatomy" data-track="anatomy">1. Anatomy of a Bug Report</a>
+    <a href="#worked" data-track="worked">2. A Worked Bug Report</a>
+    <a href="#exercise" data-track="exercise">3. Your Turn: Report the Bug</a>
+    <a href="#scenarios" data-track="scenarios">4. Two Conversations Every Tester Has</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="anatomy">
+      <h2>1. Anatomy of a Bug Report</h2>
+
+      <div class="bp-item">
+        <div class="bp-num">1</div>
+        <div><h4>Title</h4><p>Short, specific, and informative on its own. "Login broken" tells a developer nothing; "Login fails with 'Invalid credentials' when password contains an ampersand" tells them almost everything before they even open the ticket.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">2</div>
+        <div><h4>Steps to Reproduce</h4><p>Numbered, precise, and reduced to the <i>minimum</i> steps that reliably trigger the bug — extra unnecessary steps just add noise and make it harder for a developer to isolate the cause.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">3</div>
+        <div><h4>Expected vs Actual Result</h4><p>The same pairing from Level 4 — precise, specific, side by side, so the mismatch is immediately obvious.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">4</div>
+        <div><h4>Environment</h4><p>OS, browser/version, device, app build number, and which environment (staging, production, etc.) — often the single most-skipped field, and often exactly what turns out to matter (Level 2's compatibility testing, in miniature).</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">5</div>
+        <div><h4>Severity &amp; Priority</h4><p>The tester's initial assessment from Lesson 1 — a starting point the team can discuss and adjust, not a final, unchallengeable verdict.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">6</div>
+        <div><h4>Evidence</h4><p>Screenshots, a screen recording, console logs, or a captured network request — proof, not just a description (Level 4's test evidence, applied to a failure specifically).</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">7</div>
+        <div><h4>Frequency</h4><p>Always / Intermittent / Happened once. An intermittent bug needs to be labeled as such honestly — reporting it as "always" when it's really 3-out-of-10 wastes a developer's time chasing a repro that won't reliably fire.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">8</div>
+        <div><h4>Root Cause (if known)</h4><p>Usually filled in by the developer after investigation, not the tester — but a tester with a strong hypothesis ("looks like it might be a timezone conversion issue") can note it as a lead, clearly marked as a guess, not a diagnosis.</p></div>
+      </div>
+    </section>
+
+    <section class="block" id="worked">
+      <h2>2. A Worked Bug Report</h2>
+      <div class="tc-card">
+        <div class="tc-head"><span>BUG-2291</span><span><span class="sev-pill">Critical</span></span></div>
+        <div class="tc-body">
+          <div class="tc-row"><div class="tc-label">Title</div><div>Applying two stacked discount codes produces a negative order total</div></div>
+          <div class="tc-row"><div class="tc-label">Steps to Reproduce</div><div>1. Add any item to the cart ($40.00).<br>2. Apply discount code <code class="inline">SAVE20</code> (20% off).<br>3. Apply discount code <code class="inline">FREESHIP10</code> ($10 off) without removing the first.<br>4. View the order total on the cart summary.</div></div>
+          <div class="tc-row"><div class="tc-label">Expected Result</div><div>Either the second code is rejected as non-stackable, or the total correctly reflects both discounts without going below $0.00.</div></div>
+          <div class="tc-row"><div class="tc-label">Actual Result</div><div>Order total displays as <code class="inline">-$2.00</code>.</div></div>
+          <div class="tc-row"><div class="tc-label">Environment</div><div>Chrome 128, Windows 11, Staging build 4.12.3</div></div>
+          <div class="tc-row"><div class="tc-label">Frequency</div><div>Always (reproduced 5/5 times)</div></div>
+          <div class="tc-row"><div class="tc-label">Evidence</div><div>[Screenshot of cart summary attached] · [Network capture of the pricing API response attached]</div></div>
+          <div class="tc-row"><div class="tc-label">Severity / Priority</div><div>Critical / High — directly affects order totals and could let customers checkout for a negative amount</div></div>
+        </div>
+      </div>
+      <p class="muted">Notice how little a developer has to guess: exact steps, exact numbers, exact environment, and evidence. That's the whole point.</p>
+    </section>
+
+    <section class="block" id="exercise">
+      <h2>3. Your Turn: Report the Bug</h2>
+      <div class="exercise">
+        <h3>Exercise: write a full bug report for this scenario</h3>
+        <p class="muted">You're testing a hotel booking site. You search for a room for check-in <b>August 20</b> and check-out <b>August 18</b> — check-out is before check-in. Instead of showing a validation error, the site accepts the search and displays a room priced at <b>"-2 nights."</b> Write a complete bug report using the 8-part structure above.</p>
+        <textarea placeholder="Title:
+Steps to Reproduce:
+Expected Result:
+Actual Result:
+Environment:
+Frequency:
+Evidence:
+Severity / Priority:" spellcheck="false"></textarea>
+        <div class="exercise-actions">
+          <button class="btn-reveal" type="button" id="reveal-model">Reveal a model answer</button>
+        </div>
+        <div class="model-answer" id="model-answer">
+          <div class="tc-card">
+            <div class="tc-head"><span>BUG-3104</span><span><span class="sev-pill">Major</span></span></div>
+            <div class="tc-body">
+              <div class="tc-row"><div class="tc-label">Title</div><div>Search accepts check-out date before check-in date and displays a negative night count</div></div>
+              <div class="tc-row"><div class="tc-label">Steps to Reproduce</div><div>1. Go to the room search page.<br>2. Set check-in date to August 20.<br>3. Set check-out date to August 18 (earlier than check-in).<br>4. Submit the search.</div></div>
+              <div class="tc-row"><div class="tc-label">Expected Result</div><div>A validation error should appear preventing the search, since check-out cannot be before check-in.</div></div>
+              <div class="tc-row"><div class="tc-label">Actual Result</div><div>Search completes and a room result displays "-2 nights" with a calculated price for a negative duration.</div></div>
+              <div class="tc-row"><div class="tc-label">Environment</div><div>Safari 17, macOS 14, Production</div></div>
+              <div class="tc-row"><div class="tc-label">Frequency</div><div>Always (reproduced 3/3 times, also reproduced with other date pairs where check-out precedes check-in)</div></div>
+              <div class="tc-row"><div class="tc-label">Evidence</div><div>[Screenshot of search results showing "-2 nights"] attached</div></div>
+              <div class="tc-row"><div class="tc-label">Severity / Priority</div><div>Major (no crash, but pricing/booking logic is meaningfully wrong and could lead to invalid bookings or incorrect charges) / High (affects the core booking flow directly)</div></div>
+            </div>
+          </div>
+          <div class="review-note">
+            <b>Now for the real review:</b> paste what you wrote into the chat and I'll go through it properly — what's strong, what's missing compared to this, and how to tighten the parts you have. A static page can't do that part for you.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="scenarios">
+      <h2>4. Two Conversations Every Tester Eventually Has</h2>
+
+      <h3 class="sub">"That's not a bug" — a developer pushes back</h3>
+      <p>Stay factual, not defensive. Re-anchor the conversation to the requirement or spec, not opinion: "here's the documented expected behavior, here's what actually happens — help me understand where the gap is." Three real outcomes are all fine: you were right and it gets fixed, you were missing context and it really is intended behavior (in which case, update the requirement doc or test case so this doesn't get re-litigated later), or it's a genuine gray area worth a quick three-way conversation with product. The goal isn't to "win" — it's to reach the correct, shared understanding.</p>
+
+      <h3 class="sub">"Works on my machine" — a bug won't reproduce for the developer</h3>
+      <p>This is very often an environment difference, not a phantom bug (Level 1's environment lesson, directly applied). Compare environments explicitly: browser/version, OS, screen resolution, network conditions, user account/permissions, test data used, even the exact build number. Share your evidence — screen recording, console logs, exact steps — rather than just re-asserting "it happens for me." If it turns out to be genuinely environment-specific, that's not a dead end — it's a real finding, and probably means real users on that same environment will hit it too.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 5, Lesson 2</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 5.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 5 complete<b>Level 6 — Agile / Scrum &amp; QA's Role in Real-World Delivery</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('reveal-model').addEventListener('click', function(){
+  const panel = document.getElementById('model-answer');
+  const open = panel.classList.toggle('open');
+  this.textContent = open ? 'Hide model answer' : 'Reveal a model answer';
+});
+
+const QUESTIONS = [
+  {
+    q: "What makes a good bug title, and why does it matter so much for something that seems like a minor detail?",
+    tests: "Checks whether you understand the title as a functional, high-leverage piece of the report, not just a label.",
+    simple: "A good title is specific enough to convey the actual problem on its own — it matters because it's the first (and sometimes only) thing a developer or triager reads when scanning a long bug list, and a vague title gets deprioritized or misunderstood before anyone even opens it.",
+    strong: "A good bug title states the specific problem and enough context to be understood without opening the ticket — 'Login fails with an error when the password contains an ampersand' versus the useless 'Login broken.' It matters more than it seems because titles are what people scan across a triage board with dozens or hundreds of open items; a vague title either gets ignored, misjudged in severity, or requires someone to open it just to understand what it even is, multiplying the time cost across everyone who touches that list.",
+    example: "'Checkout crashes when cart contains 0 items' immediately tells a developer where to look; 'checkout bug' does not.",
+    followups: ["How would you title a bug you haven't fully diagnosed yet?", "What's a common bad habit in bug titles you'd want a new tester to avoid?"],
+    good: ["Explain the leverage argument — titles get read far more often than the full report, so their cost of vagueness multiplies."],
+    bad: ["Saying the title 'doesn't matter much since the details are in the body.'"]
+  },
+  {
+    q: "Why should steps to reproduce be reduced to the minimum necessary, rather than just a literal transcript of everything you did?",
+    tests: "Checks understanding of reproducibility as a deliberately curated artifact, not a raw log of actions.",
+    simple: "Extra, unnecessary steps make it harder for a developer to isolate which action actually caused the bug — a minimal, precise repro path is faster to follow and faster to debug from.",
+    strong: "A literal transcript of everything you clicked while testing includes a lot of noise unrelated to the actual defect, and that noise makes it harder, not easier, for a developer to isolate the real cause — they have to guess which of the fifteen actions actually mattered. Minimal steps to reproduce are a deliberately reduced, verified path: the fewest actions that reliably still trigger the bug, ideally tested a couple of times to confirm none of them are unnecessary. That precision directly reduces the time a developer spends investigating, since they're not chasing red herrings.",
+    example: "If a bug reproduces whether or not you're logged in with 'remember me' checked, that detail should be dropped from the steps rather than included just because it happened to be part of your original session.",
+    followups: ["How would you go about actually minimizing repro steps in practice — trial and error?", "What's the risk of over-minimizing and accidentally leaving out a step that actually was necessary?"],
+    good: ["Frame minimal steps as an active, deliberate reduction process, not just 'write down what you did.'"],
+    bad: ["Suggesting more detail is always strictly better with no acknowledgment of the noise problem."]
+  },
+  {
+    q: "Why is the 'Environment' field one of the most important, and most frequently skipped, parts of a bug report?",
+    tests: "Connects directly back to compatibility testing and the 'works on my machine' problem — checks whether you see environment info as diagnostic gold, not boilerplate.",
+    simple: "Environment details are often exactly what explains why a bug happens for one person and not another — skipping this field can turn an easily-explained compatibility issue into a confusing, seemingly unreproducible mystery.",
+    strong: "A huge share of bugs that seem inconsistent or mysterious are actually environment-dependent in a way nobody noticed, because the field describing the environment was left blank or vague. Browser version, OS, device, screen size, network conditions, and build number can all independently change whether a bug reproduces — this is Level 2's compatibility testing showing up at the individual bug-report level. It's frequently skipped because testers assume 'obviously I'm on Chrome, everyone's on Chrome,' but that assumption is exactly what turns a 10-second diagnosis into a multi-day wild goose chase when it turns out to matter.",
+    example: "A bug that only happens on Safari's date picker implementation looks like a random, unreproducible glitch to a developer testing exclusively on Chrome — until the environment field reveals the actual pattern.",
+    followups: ["What environment details would you capture differently for a mobile app bug versus a web app bug?", "How would you handle a bug report where you genuinely don't know some environment details?"],
+    good: ["Connect this explicitly back to compatibility testing and 'works on my machine' — that's the real substance behind why this field matters."],
+    bad: ["Treating environment info as routine boilerplate rather than genuinely diagnostic information."]
+  },
+  {
+    q: "What would you do if a developer says your bug is not a bug?",
+    tests: "One of the most classic SQA interview scenario questions — checks professionalism, whether you can stay factual instead of defensive, and whether you know how disagreements should actually get resolved.",
+    simple: "I'd stay factual and non-defensive, re-anchor the discussion to the documented requirement rather than opinion, and treat it as a real possibility that either of us is missing context — if we can't agree, I'd bring in someone from product to make the final call rather than trying to 'win' the argument.",
+    strong: "I wouldn't treat it as a personal disagreement to win — I'd go back to the actual documented requirement or spec and lay out, factually, what it says should happen versus what I observed actually happening, and ask the developer to help me understand where they see the gap. There are a few genuinely legitimate outcomes here: I could be right and it gets fixed; I could be missing context and it's genuinely intended behavior, in which case I'd update the test case or flag the requirement doc as unclear so this doesn't get re-litigated by someone else later; or it's a real gray area, in which case I'd loop in product or whoever owns that requirement for a quick, neutral ruling rather than the two of us going back and forth indefinitely.",
+    example: "If a developer says 'that's intended,' I'd ask 'where's that documented?' — not aggressively, but because if it isn't documented anywhere, that's worth fixing regardless of who's right about this specific instance.",
+    followups: ["What would you do if this kept happening repeatedly with the same developer?", "How would you handle it if there genuinely is no written requirement to point to?"],
+    good: ["Emphasize staying factual and requirement-anchored rather than personal, and describe a real resolution path (escalating to product) rather than just 'agreeing to disagree.'"],
+    bad: ["Describing a defensive or combative approach, or simply deferring and dropping the bug the moment there's pushback."]
+  },
+  {
+    q: "A bug works on your machine but not the developer's — what do you do?",
+    tests: "The other classic scenario question for this lesson — checks whether you default to systematic environment comparison rather than just re-asserting the bug is real.",
+    simple: "I'd treat it as an environment difference until proven otherwise, systematically compare browser/OS/device/build/network/test data between the two setups, and share concrete evidence like a screen recording or logs rather than just insisting it happens for me.",
+    strong: "My default assumption is that this is an environment difference, not a phantom bug — this connects directly to compatibility testing and the environment field from a bug report. I'd systematically compare every relevant variable between my setup and the developer's: browser and version, OS, device, network conditions, exact build number, and the specific test data or account used, since any one of these can independently explain a discrepancy. I'd also share concrete evidence — a screen recording, console logs, the exact repro steps and data — rather than just repeating that it happens for me, since evidence resolves the disagreement faster than description does. If it does turn out to be genuinely environment-specific, that's a valid, important finding, not a dead end — real users on that same environment will hit it too.",
+    example: "If I'm on Firefox and the developer is testing exclusively on Chrome, that single difference might fully explain a rendering bug that looks 'impossible to reproduce' from their side.",
+    followups: ["What would you do if, after comparing everything, the environments genuinely appear identical and it still won't reproduce for them?", "How would you document an environment-specific bug so it doesn't get dismissed as 'can't reproduce, closing'?"],
+    good: ["Lead with systematic environment comparison and evidence-sharing, not just insisting the bug is real."],
+    bad: ["Suggesting you'd just keep asserting the bug exists without a concrete method for narrowing down the actual cause."]
+  },
+  {
+    q: "What is 'Root Cause' in a bug report, and whose responsibility is it usually to fill in?",
+    tests: "Checks whether you understand root cause as typically a developer's diagnostic conclusion, while still knowing a tester can contribute a useful hypothesis.",
+    simple: "Root cause is the underlying technical reason the bug happens, and it's usually filled in by the developer after they investigate — though a tester with a strong hypothesis can note it, clearly labeled as a guess rather than a diagnosis.",
+    strong: "Root cause describes the actual underlying technical reason a defect occurs — not just what happened, but why, at a code or design level. This is typically the developer's responsibility to determine, since it usually requires reading the actual implementation, which a tester generally isn't doing as part of black-box testing. That said, an experienced tester often develops informed hypotheses from patterns they've seen — 'this looks like it could be a timezone conversion issue' — and noting that as a clearly-labeled guess can genuinely speed up a developer's investigation, as long as it's presented as a lead, not a confident diagnosis a tester isn't necessarily positioned to make.",
+    example: "A tester might note 'this only fails for dates near a month boundary — possibly a date-parsing edge case' without claiming to know the exact line of code responsible.",
+    followups: ["Would you ever push back on a developer's stated root cause if you had reason to doubt it?", "Why might root cause be tracked at all, beyond just fixing the immediate bug?"],
+    good: ["Distinguish between offering a genuinely useful hypothesis and overstepping into a diagnosis the tester isn't positioned to make."],
+    bad: ["Claiming root cause determination is entirely the tester's job, or that testers should never comment on it at all."]
+  },
+  {
+    q: "Why does a bug report need a 'Frequency' field (Always / Intermittent / Once), and what's the risk of skipping it?",
+    tests: "Connects back to the flaky-test discussion from Level 4 — checks whether you understand honest frequency reporting as critical to a developer's investigation efficiency.",
+    simple: "Frequency tells a developer how reliably they should expect the bug to reproduce — skipping it, or reporting an intermittent bug as if it always happens, wastes their time when they can't reproduce it on the first or second try and don't know whether that's expected or a sign the bug is already gone.",
+    strong: "Frequency sets accurate expectations for how a developer should approach reproducing and investigating the bug. If it's genuinely intermittent and reported honestly as such, a developer knows not to give up after one failed reproduction attempt, and might look specifically for what varies between successful and failed reproductions — timing, load, specific data. If an intermittent bug gets reported as 'always happens' without that honesty, a developer who fails to reproduce it on the first try might wrongly conclude it's already fixed or unreproducible and deprioritize it, when the real issue is still very much present just harder to trigger.",
+    example: "A race-condition bug that only reproduces 3 times out of 10 needs to be labeled intermittent — reporting it as 'always' risks the developer giving up after one clean run and shelving a real, still-present bug.",
+    followups: ["How would you go about determining the actual frequency of an intermittent bug before reporting it?", "What's a common root cause category behind intermittent bugs specifically?"],
+    good: ["Explain the concrete consequence of mislabeling frequency — a developer misjudging whether the bug is actually still present."],
+    bad: ["Treating frequency as a minor, optional detail rather than something that actively shapes how a developer investigates."]
+  },
+  {
+    q: "You find a serious bug one hour before a planned release. What do you do, and how does severity/priority factor into that decision?",
+    tests: "A time-pressure scenario connecting bug reporting, severity/priority, and real release-decision judgment together.",
+    simple: "I'd report it immediately regardless of the timing, with an honest severity assessment, and clearly flag it as a release-blocking concern if it looks that serious — then let the team make the actual go/no-go call with accurate information rather than either hiding it or unilaterally delaying the release myself.",
+    strong: "I'd report it immediately and as clearly as possible — timing pressure is exactly the wrong reason to sit on a serious finding, since the team can't make a good decision without knowing about it. I'd give my honest severity assessment based purely on technical impact, and separately flag it as something I believe should factor into the release go/no-go decision, but I wouldn't unilaterally decide to block the release myself — that's a decision usually owned by a release manager or product lead who can weigh the bug against the cost of delaying, factoring in things I might not have visibility into. What I owe the team at that moment is speed and clarity: a precise description of the impact, so whoever makes the call can make it well, even under time pressure.",
+    example: "If it's a critical bug affecting payment accuracy, I'd say so plainly and immediately rather than softening it or waiting to build a 'complete' report first — a rough but immediate report beats a polished one that arrives after the release ships.",
+    followups: ["What would you do if you disagreed with the team's decision to release anyway?", "How would this change if the bug were low severity instead of serious?"],
+    good: ["Separate 'reporting accurately and fast' from 'making the release decision' — show you understand your role is to inform the decision, not unilaterally make it."],
+    bad: ["Suggesting you'd delay reporting it to avoid 'causing problems' right before a release, or that you'd single-handedly block the release yourself."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 5 · LESSON 2</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
