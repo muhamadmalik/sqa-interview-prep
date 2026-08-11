@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 4 · Lesson 1 — Test Scenario, Test Case, Test Condition &amp; the Vocabulary of Execution</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:48px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  /* hierarchy flow */
+  .flow{ display:flex; flex-direction:column; gap:0; margin:20px 0 8px; }
+  .flow-step{ display:grid; grid-template-columns: 140px 1fr; align-items:center; gap:14px; padding:12px 0; }
+  .flow-name{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; font-weight:700; color:var(--accent-ink); background:var(--accent); padding:8px 12px; border-radius:2px; text-align:center; }
+  .flow-desc{ font-size:14.5px; color:var(--ink-muted); }
+  .flow-arrow{ text-align:center; color:var(--ink-faint); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:14px; padding-left:0; margin-left:70px; }
+  .flow-cap{ text-align:center; font-size:12.5px; color:var(--ink-faint); margin:8px 0 26px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  /* test case card */
+  .tc-card{ border:1px solid var(--line); border-radius:var(--radius); background:var(--surface); box-shadow:var(--shadow); margin:18px 0 28px; overflow:hidden; }
+  .tc-head{ background:var(--surface-2); padding:10px 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; }
+  .tc-body{ padding:14px 16px; }
+  .tc-row{ display:grid; grid-template-columns: 140px 1fr; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:14.5px; }
+  .tc-row:last-child{ border-bottom:none; }
+  .tc-row .tc-label{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 4 — Test Cases &amp; Test Scenarios &nbsp;·&nbsp; Lesson 1</div>
+        <h1 class="title">Test Scenario, Test Case, Test Condition &amp; the Vocabulary of Execution</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The precise words a QA team uses every day, from the broadest "what to test" down to a single logged Pass or Fail — and how each one flows into the next.</p>
+    <div class="lesson-nav"><a href="level3-lesson2.html" style="color:inherit;">← Level 3, Lesson 2: Decision Tables, State Transition, Use Case, Error Guessing &amp; Pairwise</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#hierarchy" data-track="hierarchy">1. The Hierarchy</a>
+    <a href="#condition" data-track="condition">2. Test Condition</a>
+    <a href="#scenario" data-track="scenario">3. Test Scenario</a>
+    <a href="#case" data-track="case">4. Test Case</a>
+    <a href="#scenario-vs-case" data-track="scenario-vs-case">5. Scenario vs Case</a>
+    <a href="#execution" data-track="execution">6. Executing: Steps, Results, Pass/Fail</a>
+    <a href="#evidence" data-track="evidence">7. Test Evidence</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="hierarchy">
+      <h2>1. The Hierarchy, End to End</h2>
+      <p>Before defining each term individually, it helps to see how they connect — this whole lesson is really one pipeline, from a broad idea down to a single recorded outcome.</p>
+
+      <div class="flow">
+        <div class="flow-step"><div class="flow-name">Test Condition</div><div class="flow-desc">A single testable aspect of the software — "the password field must be masked."</div></div>
+        <div class="flow-arrow">↓ grouped into</div>
+        <div class="flow-step"><div class="flow-name">Test Scenario</div><div class="flow-desc">A broad, one-line statement of what to test — "Verify login with valid credentials."</div></div>
+        <div class="flow-arrow">↓ expanded into</div>
+        <div class="flow-step"><div class="flow-name">Test Case</div><div class="flow-desc">Detailed preconditions, steps, test data, and an expected result.</div></div>
+        <div class="flow-arrow">↓ executed to produce</div>
+        <div class="flow-step"><div class="flow-name">Actual Result</div><div class="flow-desc">What actually happened when the steps were run.</div></div>
+        <div class="flow-arrow">↓ compared, to reach</div>
+        <div class="flow-step"><div class="flow-name">Pass / Fail</div><div class="flow-desc">The verdict, backed by Test Evidence.</div></div>
+      </div>
+      <div class="flow-cap">One idea, six words — the rest of this lesson unpacks each step</div>
+    </section>
+
+    <section class="block" id="condition">
+      <h2>2. Test Condition</h2>
+      <p><b>Concept.</b> A test condition is the most granular unit in this hierarchy — a single, specific, testable aspect of the software's behavior or a requirement. It's a statement of something that <i>could</i> be verified, not yet a plan for how to verify it.</p>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>For a login form: "the password field must mask input," "the email field must reject an invalid format," "the submit button must be disabled until both fields are filled" — each is one atomic test condition.</p>
+      </div>
+      <p class="muted">In everyday QA conversation, "test condition" and "test scenario" get used loosely and interchangeably — don't panic if a job or interviewer blurs them. The distinction worth knowing is that conditions are the atomic building blocks; scenarios group related conditions into one testable statement.</p>
+    </section>
+
+    <section class="block" id="scenario">
+      <h2>3. Test Scenario</h2>
+      <p><b>Concept.</b> A test scenario is a high-level, one-line statement of <i>what</i> to test — broad enough to cover a whole piece of functionality, but without the step-by-step detail of how to actually test it.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Scenarios are how test planning starts: before writing a single detailed step, a team lists out every scenario a feature needs covered, to make sure nothing important is missing from the plan at a glance.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>"Verify user can log in with valid credentials." "Verify user cannot log in with an incorrect password." "Verify the 'forgot password' link sends a reset email." Each is a scenario — short, scannable, and immediately understandable without needing any further detail yet.</p>
+      </div>
+    </section>
+
+    <section class="block" id="case">
+      <h2>4. Test Case</h2>
+      <p><b>Concept.</b> A test case is the fully detailed specification derived from a scenario: exact preconditions, numbered steps, specific test data, and a precise expected result — detailed enough that anyone, not just the person who wrote it, could execute it and get a consistent, comparable result.</p>
+
+      <div class="tc-card">
+        <div class="tc-head"><span>TC-014</span><span>Login — Valid Credentials</span></div>
+        <div class="tc-body">
+          <div class="tc-row"><div class="tc-label">Preconditions</div><div>A registered, active account exists with email <code class="inline">user@test.com</code> and password <code class="inline">Passw0rd!</code>. User is on the login page.</div></div>
+          <div class="tc-row"><div class="tc-label">Test Steps</div><div>1. Enter <code class="inline">user@test.com</code> in the Email field.<br>2. Enter <code class="inline">Passw0rd!</code> in the Password field.<br>3. Click "Log In."</div></div>
+          <div class="tc-row"><div class="tc-label">Test Data</div><div>Email: <code class="inline">user@test.com</code> · Password: <code class="inline">Passw0rd!</code></div></div>
+          <div class="tc-row"><div class="tc-label">Expected Result</div><div>User is redirected to the account dashboard within 2 seconds; a welcome message displays the user's name.</div></div>
+        </div>
+      </div>
+      <p class="muted">This one test case is one concrete expansion of the scenario "verify user can log in with valid credentials" — the same scenario could expand into several test cases if there were multiple kinds of "valid" to check (e.g. logging in via email vs. via username, if both are supported).</p>
+    </section>
+
+    <section class="block" id="scenario-vs-case">
+      <h2>5. Test Scenario vs Test Case</h2>
+      <p>One of the most frequently asked comparisons in this whole course.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Test Scenario</th><th>Test Case</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Level of detail</td><td>High-level, one line</td><td>Detailed — steps, data, expected result</td></tr>
+            <tr><td class="k">Answers</td><td>"What should be tested?"</td><td>"Exactly how do I test it?"</td></tr>
+            <tr><td class="k">Written when</td><td>Early — during test planning</td><td>Later — during test design</td></tr>
+            <tr><td class="k">Relationship</td><td>One scenario often expands into several cases</td><td>Each case traces back to one scenario</td></tr>
+            <tr><td class="k">Who reads it easily</td><td>Anyone — product managers, stakeholders</td><td>Testers executing the test</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="execution">
+      <h2>6. Executing: Steps, Results, and Pass/Fail</h2>
+      <ul class="tight">
+        <li><b>Preconditions</b> — what must already be true before the test can start (an account exists, the app is on a specific screen, a feature flag is enabled).</li>
+        <li><b>Test Steps</b> — the exact, ordered actions the tester performs. Precise enough that a different tester running them would do the same thing.</li>
+        <li><b>Expected Result</b> — what the requirements say <i>should</i> happen, written before execution.</li>
+        <li><b>Actual Result</b> — what actually happened when the steps were run, recorded during execution.</li>
+        <li><b>Pass / Fail</b> — the verdict from comparing the two. There's also a third common status: <b>Blocked</b> — the test couldn't be executed at all, usually because of an environment issue or a dependency that isn't ready, which is not the same as a failure of the feature itself.</li>
+      </ul>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Expected result: "user is redirected to the dashboard." Actual result: "user sees a blank white screen." That mismatch is a Fail, and the actual result description is exactly what goes into the resulting bug report.</p>
+      </div>
+    </section>
+
+    <section class="block" id="evidence">
+      <h2>7. Test Evidence</h2>
+      <p><b>Concept.</b> Test evidence is the proof that a test was actually executed and what it actually showed — screenshots, screen recordings, log files, API response captures, or exported reports.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>"I tested it and it worked" is not verifiable on its own. Evidence makes results checkable, makes bug reports far more convincing and faster to act on, and is often a hard compliance requirement in regulated industries (finance, healthcare) where an auditor needs proof testing actually happened.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A failed payment test case is logged with a screenshot of the error message, the exact API request/response captured from dev tools, and a timestamp — turning "it's broken" into a bug report a developer can act on immediately without needing to ask a single clarifying question.</p>
+      </div>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 4, Lesson 1</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 4 · Lesson 2 — Test Case Writing Best Practices + the Login Page Exercise</b></div>
+    <div class="l"><span class="mono">Coming soon</span></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What's the difference between a test scenario and a test case?",
+    tests: "The single most common comparison question for this lesson — checks whether you know the level-of-detail distinction, not just that 'one is bigger.'",
+    simple: "A test scenario is a short, high-level statement of what to test. A test case is the detailed, step-by-step specification of exactly how to test it, including data and expected results.",
+    strong: "A test scenario is a concise, high-level statement of what should be tested — something like 'verify login with valid credentials' — useful early in planning because it's quickly scannable by anyone, technical or not. A test case is the detailed expansion of that scenario: specific preconditions, numbered steps, exact test data, and a precise expected result, detailed enough that any tester could execute it and get a comparable outcome. One scenario commonly expands into multiple test cases when there are several distinct ways to realize it.",
+    example: "The scenario 'verify login with valid credentials' might expand into two test cases: logging in with a valid email/password, and logging in with a valid username/password, if the system supports both.",
+    followups: ["Who typically writes scenarios versus who writes detailed test cases?", "Can a test case exist without a parent scenario?"],
+    good: ["State clearly which answers 'what' (scenario) versus 'how' (case) — that's the cleanest one-line distinction."],
+    bad: ["Saying they're just two words for the same thing."]
+  },
+  {
+    q: "What is a test condition, and how is it different from a test scenario?",
+    tests: "A finer-grained distinction that trips people up — checks whether you know test conditions are the atomic units scenarios get built from.",
+    simple: "A test condition is a single, specific, testable aspect of the software — even more granular than a scenario. A scenario groups related conditions into one broader testable statement.",
+    strong: "A test condition is the smallest unit — a single specific thing that could be verified, like 'the password field must mask input.' A test scenario is a step up in scope, grouping one or more related conditions into a broader, still high-level testable statement, like 'verify the login form's field validations behave correctly,' which might encompass several individual conditions. In casual usage on real teams these two terms often blur together, and that's fine — but knowing the atomic-unit-versus-grouped-statement distinction shows a more precise understanding than most candidates have.",
+    example: "'Password field must be masked' and 'password field must require 8+ characters' are two separate test conditions that could both live under one broader scenario about password field validation.",
+    followups: ["Would you ever write a test case directly from a test condition, skipping the scenario level?", "Why might teams not bother distinguishing conditions from scenarios in practice?"],
+    good: ["Acknowledge that in practice these terms often blur, while still being able to state the technical distinction when asked directly."],
+    bad: ["Confusing the direction — implying scenarios are made of test cases rather than conditions."]
+  },
+  {
+    q: "What should a well-written test case always include?",
+    tests: "A practical checklist question — checks whether you know the components that make a test case actually executable by someone other than its author.",
+    simple: "A clear title/ID, preconditions, numbered test steps, the specific test data used, and a precise expected result.",
+    strong: "A well-written test case needs: a clear identifier and title so it's easy to reference; preconditions stating exactly what must be true before starting; numbered, unambiguous steps that any tester could follow and get the same result; the specific test data used, not just a vague description of it; and a precise expected result written before execution, not adjusted afterward to match whatever happened. The test for whether a test case is 'well-written' is simple: could someone who didn't write it execute it correctly without needing to ask a clarifying question?",
+    example: "'Enter a valid password' is a weak step; 'Enter Passw0rd! in the Password field' is a well-written one — precise enough to be repeatable.",
+    followups: ["What happens if test steps are too vague? What real problem does that cause?", "Should expected result ever be written after running the test?"],
+    good: ["Use the 'could someone else execute this without asking a question' test — it's a strong, memorable way to justify the checklist."],
+    bad: ["Listing components without explaining why vagueness in any of them is actually a problem."]
+  },
+  {
+    q: "What's the difference between expected result and actual result, and how does that connect to a Pass/Fail verdict?",
+    tests: "Checks understanding of the core execution mechanic — that Pass/Fail is a comparison, not an independent judgment call.",
+    simple: "Expected result is what should happen according to requirements, written before the test runs. Actual result is what really happened when the test was executed. Comparing the two determines Pass (they match) or Fail (they don't).",
+    strong: "Expected result is defined in advance, directly from requirements — what the system is supposed to do if it's working correctly. Actual result is recorded during execution — what genuinely happened, described factually and specifically, not just 'it didn't work.' The Pass/Fail verdict is simply the outcome of comparing those two: if they match, the test passes; if they diverge in any meaningful way, it fails, and the actual result description becomes the raw material for the resulting defect report.",
+    example: "Expected: 'error message displays: Invalid password.' Actual: 'page reloads with no error message shown.' That specific mismatch, not just 'login broken,' is what makes the eventual bug report immediately actionable.",
+    followups: ["Why does the actual result need to be specific rather than just 'test failed'?", "What's a 'blocked' result, and how is it different from a fail?"],
+    good: ["Emphasize that Pass/Fail is a comparison, and that a specific actual result is what makes a resulting bug report useful."],
+    bad: ["Defining the two terms but not connecting them to how Pass/Fail is actually determined."]
+  },
+  {
+    q: "What does a 'Blocked' test result mean, and how is it different from a 'Fail'?",
+    tests: "A less obvious status that many candidates forget entirely — checks whether you know not every unexecutable test is a defect in the feature itself.",
+    simple: "Blocked means the test couldn't be executed at all, usually due to an environment issue or a missing dependency — it says nothing about whether the feature itself works, unlike a Fail, which means the feature was tested and didn't behave as expected.",
+    strong: "A Fail means the test was actually executed and the actual result didn't match the expected result — the feature itself has a problem. A Blocked result means the test couldn't be run to completion at all, typically because of something outside the feature's own logic: a test environment is down, a required precondition couldn't be set up, or a dependent feature needed for this test is itself broken or unavailable. The distinction matters for accurate reporting — marking every unexecutable test as a Fail would misrepresent the feature as broken when the real issue might just be infrastructure.",
+    example: "If the test environment's database is down, every test case depending on it should be marked Blocked, not Fail — the login feature itself might be working perfectly, but there's no way to verify it right now.",
+    followups: ["How would you track and follow up on blocked test cases so they don't get forgotten?", "Should a blocked test case count against release readiness the same way a failed one does?"],
+    good: ["Clearly separate 'the feature is broken' (Fail) from 'I couldn't even test it' (Blocked) — that's the exact distinction this question checks for."],
+    bad: ["Treating Blocked and Fail as interchangeable, or forgetting Blocked exists as a status at all."]
+  },
+  {
+    q: "Why does test evidence matter? Isn't a Pass/Fail result enough on its own?",
+    tests: "Checks whether you understand evidence as both a communication tool and, in many industries, a real compliance requirement — not just extra paperwork.",
+    simple: "A bare Pass/Fail isn't verifiable or actionable on its own — evidence like screenshots, logs, or recordings proves the test actually happened, makes a failure immediately understandable to a developer, and is often a compliance requirement in regulated industries.",
+    strong: "A Pass/Fail label alone isn't independently verifiable — anyone could claim a test passed with nothing to back it up, which is a real problem when release decisions or audits depend on that claim being trustworthy. Evidence — a screenshot, a log excerpt, a captured API response — makes the result checkable by someone else, and for a Fail specifically, it usually eliminates back-and-forth with a developer who would otherwise need to ask 'what exactly did you see?' In regulated industries like finance or healthcare, evidence isn't optional politeness — it's often a hard audit requirement proving testing genuinely occurred before release.",
+    example: "A screenshot showing the exact error message and a captured network request turns a vague 'checkout is broken' into a bug report a developer can act on in minutes instead of first having to reproduce it themselves.",
+    followups: ["What kind of evidence would you capture differently for a UI bug versus an API bug?", "How would you handle evidence for a test that passed — is it still worth capturing?"],
+    good: ["Mention both the practical communication benefit and the compliance/audit angle — most candidates only think of one."],
+    bad: ["Saying evidence is 'just nice to have' without acknowledging its role in trust, speed, and compliance."]
+  },
+  {
+    q: "Take the scenario 'verify user can log in.' Walk me through how you'd expand that into several concrete test cases.",
+    tests: "A practical application question checking whether you can actually perform the scenario-to-case expansion, not just describe it abstractly.",
+    simple: "I'd think through the different realistic ways someone might attempt to log in — valid credentials, wrong password, non-existent account, empty fields, locked account — and write one detailed test case for each, since a single broad scenario like this hides several genuinely distinct situations.",
+    strong: "I'd start from the different realistic conditions that fall under this one broad scenario: a valid email and password (should succeed), a valid email with an incorrect password (should fail with a clear error, not a crash), an email that doesn't exist in the system (should fail without revealing whether the email exists, for security), empty fields submitted (should show validation errors, not silently fail), and an account that's been locked after too many failed attempts (should show a specific lockout message rather than the generic wrong-password error). Each of these gets its own test case with specific preconditions, steps, test data, and expected result — a single scenario like 'verify user can log in' is really shorthand for all of these underlying situations.",
+    example: "The 'incorrect password' case and the 'account doesn't exist' case might look similar on the surface but often need different expected results — many systems deliberately show an identical generic error for both, specifically to avoid leaking which emails are registered.",
+    followups: ["Which of these test cases would you consider highest priority if you could only run three?", "How does this connect to Equivalence Partitioning from Level 3?"],
+    good: ["Cover both positive and multiple distinct negative cases, and note the security nuance around not revealing whether an email exists — that's a detail that shows real depth."],
+    bad: ["Only producing one or two obvious test cases (valid login, wrong password) and missing the less obvious ones like empty fields or account lockout."]
+  },
+  {
+    q: "A test case fails intermittently — sometimes it passes, sometimes it fails, with no code changes in between. How do you document the actual result and evidence for this?",
+    tests: "A realistic, tricky scenario about handling flaky results honestly rather than picking one outcome and reporting it as definitive.",
+    simple: "I wouldn't report it as a clean Pass or Fail — I'd document it as intermittent, capture evidence from multiple runs (both passing and failing), note the exact conditions of each run, and flag the pattern itself as worth investigating rather than treating any single run as the 'true' result.",
+    strong: "I wouldn't force this into a simple Pass or Fail label, because either one would misrepresent what's actually happening. I'd run it several more times deliberately, documenting the actual result and capturing evidence for each individual run — including anything that varies between runs, like timing, network conditions, or test data — since intermittent failures are very often caused by exactly that kind of environmental variability rather than the feature itself. I'd report the pattern honestly: 'passed 6 of 10 runs, failure appears correlated with X' is far more useful to a developer than silently picking whichever result happened most recently and reporting only that.",
+    example: "If the failures cluster around slow network conditions specifically, that's a critical detail for a developer investigating a possible race condition — a single Pass/Fail label would have hidden that signal entirely.",
+    followups: ["What are some common root causes of flaky tests in automated suites specifically?", "How would you prioritize investigating a flaky test versus a consistently failing one?"],
+    good: ["Reject the false choice of picking one clean verdict — document the pattern itself as the real finding, with evidence from multiple runs."],
+    bad: ["Just reporting whichever result happened on the most recent run without acknowledging the inconsistency."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 4 · LESSON 1</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
