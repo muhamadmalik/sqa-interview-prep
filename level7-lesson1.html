@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 7 · Lesson 1 — API Fundamentals: REST, HTTP Methods, Status Codes &amp; JSON</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:46px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  table.spec td.mono, table.spec th.mono{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  /* request/response diagram */
+  .rr{ display:grid; grid-template-columns: 1fr auto 1fr; gap:14px; align-items:center; margin:20px 0 8px; }
+  .rr-box{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); text-align:center; }
+  .rr-box h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; color:var(--accent); margin:0 0 6px; text-transform:uppercase; letter-spacing:.05em; }
+  .rr-box p{ font-size:13.5px; margin:0; color:var(--ink-muted); }
+  .rr-arrows{ display:flex; flex-direction:column; gap:14px; align-items:center; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; color:var(--ink-faint); }
+  @media (max-width:600px){ .rr{ grid-template-columns: 1fr; } .rr-arrows{ flex-direction:row; justify-content:center; } }
+  /* status code groups */
+  .status-group{ margin-bottom:16px; }
+  .status-group h5{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+  .status-group.g2xx h5{ color:var(--accent); }
+  .status-group.g4xx h5{ color:var(--warn); }
+  .status-group.g5xx h5{ color:var(--warn); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+  pre.json{ background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13.5px; overflow-x:auto; margin:14px 0; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 7 — API Testing &nbsp;·&nbsp; Lesson 1</div>
+        <h1 class="title">API Fundamentals: REST, HTTP Methods, Status Codes &amp; JSON</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">What's actually happening below the UI, in the layer most bugs never even make it out of — before we test any of it in Lesson 2.</p>
+    <div class="lesson-nav"><a href="level6-lesson1.html" style="color:inherit;">← Level 6, Lesson 1: Agile, Scrum &amp; QA's Role in Real-World Delivery</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#api" data-track="api">1. What is an API?</a>
+    <a href="#reqres" data-track="reqres">2. Client, Server, Request &amp; Response</a>
+    <a href="#rest" data-track="rest">3. HTTP &amp; REST</a>
+    <a href="#methods" data-track="methods">4. HTTP Methods &amp; Idempotency</a>
+    <a href="#status" data-track="status">5. HTTP Status Codes</a>
+    <a href="#params" data-track="params">6. Headers, Params &amp; Bodies</a>
+    <a href="#json" data-track="json">7. JSON</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="api">
+      <h2>1. What is an API?</h2>
+      <p><b>Concept.</b> An API (Application Programming Interface) is a defined contract that lets two pieces of software talk to each other — one side asks for something or sends data, the other side responds — without either side needing to know how the other is built internally.</p>
+
+      <h3 class="sub">Why it matters for QA specifically</h3>
+      <p>A huge share of real testing happens below the UI, directly against APIs. It's faster to run (no waiting for pages to render), more stable (no flaky UI selectors), and it catches problems the UI might silently paper over or that never even reach a screen — like a backend returning slightly wrong data that the frontend happens to mask.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A weather app's screen showing "72°F" isn't generating that number itself — it's calling a weather API, which returns the temperature as data, and the app just displays it. Testing that API directly (does it return the right temperature for a given city?) is often faster and more revealing than only ever checking the number rendered on screen.</p>
+      </div>
+    </section>
+
+    <section class="block" id="reqres">
+      <h2>2. Client, Server, Request &amp; Response</h2>
+      <div class="rr">
+        <div class="rr-box"><h4>Client</h4><p>The thing making the ask — a browser, mobile app, or a tool like Postman.</p></div>
+        <div class="rr-arrows"><span>→ Request</span><span>← Response</span></div>
+        <div class="rr-box"><h4>Server</h4><p>The thing receiving the ask, processing it, and answering back.</p></div>
+      </div>
+      <ul class="tight">
+        <li><b>Request</b> — what the client sends: a method, a URL, headers, and sometimes a body.</li>
+        <li><b>Response</b> — what the server sends back: a status code, headers, and sometimes a body.</li>
+      </ul>
+    </section>
+
+    <section class="block" id="rest">
+      <h2>3. HTTP &amp; REST</h2>
+      <p><b>HTTP</b> (HyperText Transfer Protocol) is the standard set of rules a client and server follow to communicate over the web — what a request and response are allowed to look like.</p>
+      <p><b>REST</b> (Representational State Transfer) is an architectural style for designing APIs around <b>resources</b> — nouns, like <code class="inline">/users</code> or <code class="inline">/orders</code> — manipulated using standard HTTP methods, with predictable URLs and no memory of previous requests kept on the server (statelessness — each request must carry everything needed to understand it on its own).</p>
+      <p>A <b>REST API</b> is simply an API built following these principles.</p>
+    </section>
+
+    <section class="block" id="methods">
+      <h2>4. HTTP Methods &amp; Idempotency</h2>
+      <p>Idempotency is worth understanding precisely: an operation is <b>idempotent</b> if calling it once has the same end result as calling it many times in a row.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Method</th><th>Purpose</th><th>Has a body?</th><th>Idempotent?</th></tr></thead>
+          <tbody>
+            <tr><td class="k mono">GET</td><td>Retrieve data</td><td>No</td><td>Yes</td></tr>
+            <tr><td class="k mono">POST</td><td>Create a new resource</td><td>Yes</td><td>No — calling it twice creates two resources</td></tr>
+            <tr><td class="k mono">PUT</td><td>Replace an entire resource</td><td>Yes</td><td>Yes — replacing with the same data repeatedly gives the same end state</td></tr>
+            <tr><td class="k mono">PATCH</td><td>Partially update a resource</td><td>Yes</td><td>Not guaranteed — depends on the specific update</td></tr>
+            <tr><td class="k mono">DELETE</td><td>Remove a resource</td><td>No (usually)</td><td>Yes — deleting an already-deleted resource still ends with it gone</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Calling <code class="inline">POST /orders</code> twice by accident (a classic double-click bug) creates two separate orders — not idempotent. Calling <code class="inline">DELETE /orders/42</code> twice deletes it once, and the second call just finds it already gone — the end state is identical either way, so it's idempotent.</p>
+      </div>
+    </section>
+
+    <section class="block" id="status">
+      <h2>5. HTTP Status Codes</h2>
+      <p>Status codes are grouped by their leading digit: 2xx means success, 4xx means the client did something wrong, 5xx means the server failed.</p>
+
+      <div class="status-group g2xx">
+        <h5>2xx — Success</h5>
+        <div class="table-wrap">
+          <table class="spec">
+            <tbody>
+              <tr><td class="k mono">200 OK</td><td>The request succeeded — the standard success response.</td></tr>
+              <tr><td class="k mono">201 Created</td><td>A new resource was successfully created (typical response to a POST).</td></tr>
+              <tr><td class="k mono">204 No Content</td><td>Success, but there's nothing to send back (typical response to a DELETE).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="status-group g4xx">
+        <h5>4xx — Client Error</h5>
+        <div class="table-wrap">
+          <table class="spec">
+            <tbody>
+              <tr><td class="k mono">400 Bad Request</td><td>The request itself is malformed — invalid syntax, missing required field.</td></tr>
+              <tr><td class="k mono">401 Unauthorized</td><td>Not authenticated — no valid credentials were provided at all.</td></tr>
+              <tr><td class="k mono">403 Forbidden</td><td>Authenticated, but not permitted — the server knows who you are and says no.</td></tr>
+              <tr><td class="k mono">404 Not Found</td><td>The requested resource doesn't exist.</td></tr>
+              <tr><td class="k mono">409 Conflict</td><td>The request conflicts with the current state (e.g. creating a duplicate unique record).</td></tr>
+              <tr><td class="k mono">422 Unprocessable Entity</td><td>The request is well-formed, but semantically invalid (e.g. an email field containing a syntactically valid but non-existent domain, or a value that fails business validation).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="status-group g5xx">
+        <h5>5xx — Server Error</h5>
+        <div class="table-wrap">
+          <table class="spec">
+            <tbody>
+              <tr><td class="k mono">500 Internal Server Error</td><td>Something broke on the server's side — not the client's fault.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="callout example">
+        <span class="tag">401 vs 403 — the classic mix-up</span>
+        <p>401 means "I don't know who you are" (missing or invalid credentials — log in first). 403 means "I know exactly who you are, and you're still not allowed" (correctly authenticated, but insufficient permission — e.g. a regular user hitting an admin-only endpoint).</p>
+      </div>
+    </section>
+
+    <section class="block" id="params">
+      <h2>6. Headers, Query Params, Path Params &amp; Bodies</h2>
+      <ul class="tight">
+        <li><b>Headers</b> — metadata about the request or response, separate from the actual data (e.g. <code class="inline">Content-Type: application/json</code>, or an auth token).</li>
+        <li><b>Path parameters</b> — part of the URL path itself, identifying a specific resource: in <code class="inline">/users/123</code>, <code class="inline">123</code> is a path parameter.</li>
+        <li><b>Query parameters</b> — key-value pairs appended after a <code class="inline">?</code>, typically for filtering, sorting, or pagination: <code class="inline">/users?age=25&amp;sort=name</code>.</li>
+        <li><b>Request body</b> — the actual data payload sent with methods like POST, PUT, PATCH.</li>
+        <li><b>Response body</b> — the actual data payload the server sends back.</li>
+      </ul>
+    </section>
+
+    <section class="block" id="json">
+      <h2>7. JSON</h2>
+      <p><b>Concept.</b> JSON (JavaScript Object Notation) is a lightweight, human-readable format for structuring data as key-value pairs, arrays, and nested objects — the dominant format for API request and response bodies today, because it's compact, easy for both humans and machines to read, and natively understood by virtually every modern programming language.</p>
+      <pre class="json">{
+  "userId": 4821,
+  "name": "Jordan Lee",
+  "isActive": true,
+  "roles": ["customer", "beta-tester"],
+  "address": {
+    "city": "Austin",
+    "zip": "78701"
+  }
+}</pre>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 7, Lesson 1</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 7 · Lesson 2 — Auth, Positive/Negative API Testing &amp; Testing with Postman</b></div>
+    <div class="l"><span class="mono">Coming soon</span></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "Why do QA engineers test at the API level instead of only testing through the UI?",
+    tests: "Checks whether you understand the practical value of API testing — speed, stability, and coverage the UI can hide.",
+    simple: "API tests run faster (no page rendering), are more stable (no flaky UI selectors), and can catch backend bugs the UI might mask or never even surface, so they're often a more efficient and reliable layer to test at.",
+    strong: "Testing directly against the API skips rendering and UI interaction entirely, which makes tests faster to run and far less flaky than UI automation, which is notoriously sensitive to layout changes and timing issues. It also often catches bugs earlier and more precisely — a backend returning slightly wrong data might get silently reformatted or defaulted by the frontend in a way that hides the underlying problem from a UI-only test. This connects to the Testing Pyramid from Level 2: API tests sit in that faster, cheaper middle layer, giving strong coverage without the cost and fragility of full UI end-to-end tests for every scenario.",
+    example: "A UI test might only check that a product page 'loads correctly,' while an API test can directly verify the exact price, stock count, and discount fields returned — precise, fast, and independent of how the frontend happens to display them.",
+    followups: ["Does API testing ever miss bugs that only a UI test would catch? What kind?", "How does this connect to the Testing Pyramid from Level 2?"],
+    good: ["Connect explicitly back to the Testing Pyramid — API testing is a concrete example of that middle layer in practice."],
+    bad: ["Saying API testing 'replaces' UI testing entirely rather than complementing it."]
+  },
+  {
+    q: "Walk me through the 5 main HTTP methods, and explain what idempotency means using at least one of them.",
+    tests: "A very commonly asked API fundamentals question — checks both the method definitions and the idempotency concept, which often gets asked as a specific follow-up.",
+    simple: "GET retrieves data, POST creates a new resource, PUT replaces an entire resource, PATCH partially updates one, and DELETE removes one. Idempotency means calling an operation once has the same end effect as calling it many times — GET, PUT, and DELETE are idempotent; POST is not, since repeating it creates multiple resources.",
+    strong: "GET retrieves data without changing anything on the server. POST creates a new resource. PUT replaces an entire existing resource with new data. PATCH partially updates specific fields of a resource. DELETE removes a resource. Idempotency describes whether calling an operation multiple times produces the same end state as calling it once. GET, PUT, and DELETE are idempotent: retrieving data repeatedly doesn't change anything, replacing a resource with the same data repeatedly leaves it in the same state, and deleting an already-deleted resource still ends with it gone. POST is the clear exception — calling it twice, like from an accidental double-click, creates two separate resources instead of one.",
+    example: "A network retry that resends a PUT request is safe because the end result is identical either way; the same retry on a POST request risks creating a duplicate order.",
+    followups: ["Is PATCH idempotent? Why is the answer 'it depends'?", "Why does idempotency matter specifically for network retries and error handling?"],
+    good: ["Explicitly connect idempotency to a practical consequence, like why retrying a POST is riskier than retrying a PUT."],
+    bad: ["Defining the 5 methods correctly but being unable to explain idempotency when asked, or getting POST's idempotency backwards."]
+  },
+  {
+    q: "What's the difference between a 401 and a 403 status code?",
+    tests: "One of the most classic API interview questions — checks whether you know the precise distinction between 'unauthenticated' and 'unauthorized.'",
+    simple: "401 means the request has no valid credentials at all — the server doesn't know who you are. 403 means the server does know who you are, but you don't have permission to do what you're asking.",
+    strong: "401 Unauthorized actually means 'unauthenticated' despite the name — it's returned when the request is missing valid credentials entirely, so the server has no idea who's asking. 403 Forbidden means the opposite in terms of identity: the server has successfully authenticated the request, it knows exactly who's asking, but that identity doesn't have permission to perform the requested action. The practical test: if logging in would fix the problem, it's 401; if the user is already correctly logged in and it's still refused, it's 403.",
+    example: "Hitting an API endpoint with no auth token at all returns 401; hitting the same endpoint with a valid token for a regular user account, on an admin-only endpoint, returns 403.",
+    followups: ["Which one should a well-designed API return if it doesn't want to reveal whether a resource exists to unauthorized users?", "How would you test both of these for a given endpoint?"],
+    good: ["Give the precise, memorable heuristic — 'would logging in fix it?' — rather than just restating both definitions separately."],
+    bad: ["Mixing up which code means 'not logged in' versus 'logged in but not allowed.'"]
+  },
+  {
+    q: "What's the difference between a 400 and a 422 status code? Isn't a validation failure just a bad request?",
+    tests: "A more nuanced status code question checking whether you understand the difference between syntactic and semantic validity.",
+    simple: "400 means the request itself is malformed — broken syntax, missing required fields, invalid JSON. 422 means the request is syntactically well-formed and understood, but the data fails business/semantic validation rules once processed.",
+    strong: "400 Bad Request is about the shape of the request itself being wrong — invalid JSON syntax, a required field missing entirely, a fundamentally malformed request the server can't even properly parse or understand. 422 Unprocessable Entity is different: the request is syntactically fine and the server understands exactly what's being asked, but the actual content fails some business or semantic validation rule once it's processed. In practice, plenty of real-world APIs use 400 for both cases rather than being this precise, so I'd know the distinction but also expect it to be applied inconsistently across different systems.",
+    example: "Submitting <code class=\"inline\">{\"age\": \"abc\"}</code> where a number is expected might be a 400 (wrong data type entirely); submitting <code class=\"inline\">{\"age\": -5}</code> — syntactically a valid number, but semantically invalid for an age field — is a better fit for 422.",
+    followups: ["Would you flag it as a bug if an API returned 400 where you'd expect 422? Why or why not?", "How would you test for the difference between these two in practice?"],
+    good: ["Acknowledge that real-world APIs are often inconsistent about this distinction, rather than presenting it as a rule every API strictly follows."],
+    bad: ["Claiming there's no meaningful difference between the two, or that 422 doesn't really get used in practice."]
+  },
+  {
+    q: "What's the difference between a query parameter and a path parameter? Give an example of each.",
+    tests: "Checks whether you can identify these two URL components correctly, since they're easy to visually confuse.",
+    simple: "A path parameter is part of the URL path itself and identifies a specific resource, like the 123 in /users/123. A query parameter comes after a ? and is typically used for filtering, sorting, or optional modifiers, like ?sort=name in /users?sort=name.",
+    strong: "A path parameter is embedded directly in the URL's path structure and typically identifies a specific resource — in <code class=\"inline\">/users/123</code>, 123 is a path parameter identifying exactly which user. A query parameter appears after a <code class=\"inline\">?</code> as a key-value pair, and is typically used for optional modifiers like filtering, sorting, or pagination rather than identifying a specific resource — in <code class=\"inline\">/users?age=25&amp;sort=name</code>, both age and sort are query parameters narrowing or ordering a broader result set.",
+    example: "<code class=\"inline\">GET /orders/789</code> uses a path parameter to fetch one specific order; <code class=\"inline\">GET /orders?status=shipped</code> uses a query parameter to filter a list of many orders.",
+    followups: ["Would you ever combine both in a single request? Give an example.", "How would boundary value analysis from Level 3 apply to testing a numeric query parameter like a page size?"],
+    good: ["Use two genuinely distinct examples showing identification (path) versus filtering/modifying (query)."],
+    bad: ["Confusing the two, or being unable to construct a correct example URL for each."]
+  },
+  {
+    q: "What does 'stateless' mean in the context of a REST API, and why does it matter?",
+    tests: "Checks understanding of a core REST principle beyond just naming it, and why it has practical consequences for testing and scalability.",
+    simple: "Stateless means the server doesn't remember anything about previous requests — every request must contain all the information needed to understand and process it on its own, which matters because it makes the system simpler to scale and easier to test predictably.",
+    strong: "Statelessness means the server treats every request independently, without relying on memory of any previous request from that client — each request has to carry everything necessary to be understood on its own, like an auth token proving identity, rather than the server remembering 'oh, this client already logged in earlier.' This matters practically for a couple of reasons: it makes the system easier to scale, since any server instance can handle any request without needing shared session memory, and it makes testing more predictable, since a test doesn't have to worry about hidden server-side state carried over from an earlier, unrelated request.",
+    example: "A stateless API requires an auth token on every single request; if the server instead 'remembered' you were logged in from a previous request with no token needed on this one, that would violate statelessness.",
+    followups: ["How do cookies or sessions relate to statelessness — do they violate it?", "Why might statelessness make certain kinds of API testing easier to automate reliably?"],
+    good: ["Explain a concrete practical consequence (scaling, testing predictability), not just the definition."],
+    bad: ["Defining statelessness correctly but not explaining why it actually matters."]
+  },
+  {
+    q: "What goes into an HTTP request, and what goes into an HTTP response?",
+    tests: "A basic structural question, but checks whether you can list the actual components accurately, not just vaguely gesture at 'data.'",
+    simple: "A request has a method, a URL, headers, and often a body. A response has a status code, headers, and often a body.",
+    strong: "A request consists of an HTTP method (like GET or POST) indicating the intended action, a URL identifying the target resource (including any path and query parameters), headers carrying metadata like content type or an auth token, and — for methods like POST, PUT, or PATCH — a body carrying the actual data payload. A response consists of a status code indicating the outcome, headers with response metadata, and often a body containing the requested or resulting data.",
+    example: "A login request might be <code class=\"inline\">POST /login</code> with a JSON body containing a username and password; the response might be <code class=\"inline\">200 OK</code> with a body containing an auth token.",
+    followups: ["What's a header you'd expect to see on almost every JSON-based API request?", "Would a GET request typically have a body? Why or why not?"],
+    good: ["List all the correct components for both request and response accurately and completely."],
+    bad: ["Vaguely describing requests and responses as just 'data going back and forth' without naming the actual components."]
+  },
+  {
+    q: "Why has JSON become the dominant format for API request and response bodies?",
+    tests: "Checks whether you can articulate why JSON specifically won out, not just that it's popular.",
+    simple: "It's lightweight, human-readable, maps naturally to common data structures (objects, arrays, key-value pairs), and is natively supported by virtually every modern programming language, which makes it easy for both developers and testers to read and work with directly.",
+    strong: "JSON succeeded largely because it hits a practical sweet spot: it's lightweight compared to older, more verbose formats, genuinely human-readable so a developer or tester can look at a payload and understand it directly without special tooling, and it maps naturally onto the data structures most programming languages already use — objects, arrays, strings, numbers, booleans — so parsing and generating it is simple and fast in virtually any language. For QA specifically, that readability matters a lot: being able to eyeball a JSON response and immediately spot a wrong value is a real, everyday advantage.",
+    example: "Comparing a JSON response to an equivalent older XML format for the same data — JSON is typically shorter, has less repetitive markup, and is easier to scan quickly.",
+    followups: ["Have you worked with other data formats, like XML? How does testing differ?", "What's a downside or limitation of JSON compared to more strictly typed data formats?"],
+    good: ["Mention the practical QA-specific benefit of readability, not just abstract technical advantages."],
+    bad: ["Saying JSON is dominant 'just because it's popular' without explaining any actual reason."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 7 · LESSON 1</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
