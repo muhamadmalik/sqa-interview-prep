@@ -1,0 +1,502 @@
+<title>Level 1 · Lesson 2 — SDLC, STLC &amp; Testing Principles</title>
+<style>
+  :root{
+    --bg:#eef1ee;
+    --surface:#ffffff;
+    --surface-2:#e6e9e5;
+    --ink:#182420;
+    --ink-muted:#53625b;
+    --ink-faint:#7c8a83;
+    --accent:#0e6b57;
+    --accent-ink:#f4faf7;
+    --warn:#a8501f;
+    --warn-bg:#f6e6dc;
+    --line:#d3dad2;
+    --line-strong:#b7c2b8;
+    --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+    --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  .mono{ font-family: ui-monospace, SFMono-Regular, Consolas, "Cascadia Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .lesson-nav a{ color:var(--ink-muted); text-decoration:none; }
+  .lesson-nav a:hover{ color:var(--accent); }
+
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:52px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:22px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 14px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:16px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+
+  ul.tight, ol.tight{ margin:0 0 14px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+
+  .table-wrap{ overflow-x:auto; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:15px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+
+  /* STLC phase timeline */
+  .phase-list{ display:flex; flex-direction:column; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--surface); }
+  .phase{ display:grid; grid-template-columns: 46px 1fr; border-bottom:1px solid var(--line); }
+  .phase:last-child{ border-bottom:none; }
+  .phase-num{ background:var(--surface-2); display:flex; align-items:flex-start; justify-content:center; padding-top:16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; color:var(--accent); font-weight:700; border-right:1px solid var(--line); }
+  .phase-body{ padding:14px 18px; }
+  .phase-body h4{ font-size:16px; margin:0 0 4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .phase-meta{ display:flex; gap:18px; flex-wrap:wrap; margin-top:8px; }
+  .phase-meta div{ font-size:13px; }
+  .phase-meta .m-label{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); display:block; margin-bottom:2px; }
+
+  /* V-model diagram */
+  .vmodel{ margin:20px 0 30px; overflow-x:auto; }
+  .vmodel svg{ display:block; min-width:600px; width:100%; height:auto; }
+
+  /* Principles grid */
+  .principle{ display:grid; grid-template-columns: 34px 1fr; gap:14px; padding:16px 0; border-bottom:1px solid var(--line); }
+  .principle:last-child{ border-bottom:none; }
+  .principle-num{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:20px; font-weight:700; color:var(--accent); line-height:1.3; }
+  .principle h4{ font-size:16px; margin:0 0 6px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .principle p{ font-size:15px; margin-bottom:6px; }
+  .principle .ex{ font-size:13.5px; color:var(--ink-muted); font-style:italic; }
+
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 1 — Fundamentals &nbsp;·&nbsp; Lesson 2</div>
+        <h1 class="title">SDLC, STLC &amp; the 7 Principles of Testing</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Where testing actually sits inside the development timeline, the formal phases of the testing life cycle, and the seven rules that shape how every experienced tester thinks.</p>
+    <div class="lesson-nav"><a href="level1-lesson1.html" style="color:inherit;">← Lesson 1: Testing, QA, QC &amp; the SQA role</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#sdlc" data-track="sdlc">1. SDLC</a>
+    <a href="#stlc" data-track="stlc">2. STLC</a>
+    <a href="#compare" data-track="compare">3. SDLC vs STLC</a>
+    <a href="#principles" data-track="principles">4. 7 Testing Principles</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="sdlc">
+      <h2>1. Software Development Life Cycle (SDLC)</h2>
+      <p><b>Concept.</b> SDLC is the full sequence of phases a piece of software passes through, from someone first writing down what it should do to the day it's retired: <b>Requirement Analysis → Design → Implementation (Coding) → Testing → Deployment → Maintenance.</b> It's the shared map the whole team — product, dev, and QA — works from.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Where testing sits inside this timeline changes everything about how effective it is. Test late, and you inherit every bad assumption baked into the design. Test early — alongside requirements and design — and you catch problems while they're still cheap to fix. Interviewers ask about SDLC to see whether you think of testing as a phase tacked onto the end, or as something that should run throughout.</p>
+
+      <h3 class="sub">How it works — the common models</h3>
+      <ul class="tight">
+        <li><b>Waterfall.</b> Strictly sequential — each phase finishes fully before the next starts. Testing only begins once coding is "done." Simple to plan, but defects from bad requirements aren't found until very late, when they're expensive to fix.</li>
+        <li><b>V-Model.</b> Same phases as waterfall, but each development phase is paired with a matching test phase planned <i>at the same time</i> — e.g. test cases for requirements are written while requirements are being defined, not after coding. Testing effort starts on day one, even though execution still happens later.</li>
+        <li><b>Agile / Iterative.</b> The whole cycle repeats in short bursts (sprints), with a slice of design, coding, and testing happening together every iteration. Testing is continuous, not a separate final phase — this is the model behind "shift-left" testing.</li>
+      </ul>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A legacy core-banking system upgraded once a year might still use Waterfall or V-Model — the cost of a late-stage mistake is enormous, so heavy upfront planning is worth it. A SaaS startup shipping features weekly uses Agile — speed and continuous feedback matter more than exhaustive upfront design.</p>
+      </div>
+    </section>
+
+    <section class="block" id="stlc">
+      <h2>2. Software Testing Life Cycle (STLC)</h2>
+      <p><b>Concept.</b> STLC is SDLC's testing-specific twin — the formal sequence of phases <i>testing itself</i> goes through, each with its own entry criteria (what must be true to start), activities, and exit criteria (what must be true to move on). Interviewers ask about this constantly, and expect the six standard phases by name.</p>
+
+      <div class="phase-list">
+        <div class="phase">
+          <div class="phase-num">1</div>
+          <div class="phase-body">
+            <h4>Requirement Analysis</h4>
+            <p>Testers study requirements from a <i>testability</i> angle — what's measurable, what's ambiguous, what's missing.</p>
+            <div class="phase-meta">
+              <div><span class="m-label">Entry</span>Requirements document available</div>
+              <div><span class="m-label">Exit</span>Requirement Traceability Matrix (RTM) drafted</div>
+            </div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-num">2</div>
+          <div class="phase-body">
+            <h4>Test Planning</h4>
+            <p>Deciding scope, approach, timelines, tools, and who tests what — usually owned by a QA lead.</p>
+            <div class="phase-meta">
+              <div><span class="m-label">Entry</span>Requirements signed off</div>
+              <div><span class="m-label">Exit</span>Approved Test Plan / effort estimate</div>
+            </div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-num">3</div>
+          <div class="phase-body">
+            <h4>Test Case Design &amp; Development</h4>
+            <p>Writing detailed test cases and scripts, and preparing the test data they'll run against.</p>
+            <div class="phase-meta">
+              <div><span class="m-label">Entry</span>Test plan approved</div>
+              <div><span class="m-label">Exit</span>Reviewed test cases + test data ready</div>
+            </div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-num">4</div>
+          <div class="phase-body">
+            <h4>Test Environment Setup</h4>
+            <p>Getting a stable environment — servers, configs, test accounts — that mirrors production closely enough to trust the results.</p>
+            <div class="phase-meta">
+              <div><span class="m-label">Entry</span>Environment requirements defined</div>
+              <div><span class="m-label">Exit</span>Environment ready + smoke-tested</div>
+            </div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-num">5</div>
+          <div class="phase-body">
+            <h4>Test Execution</h4>
+            <p>Running the test cases, logging defects for anything that fails, and retesting once fixes land.</p>
+            <div class="phase-meta">
+              <div><span class="m-label">Entry</span>Build deployed to test env, test cases ready</div>
+              <div><span class="m-label">Exit</span>All planned cases executed, defects logged</div>
+            </div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-num">6</div>
+          <div class="phase-body">
+            <h4>Test Cycle Closure</h4>
+            <p>Evaluating results against exit criteria, documenting lessons learned, and formally reporting whether the cycle is complete.</p>
+            <div class="phase-meta">
+              <div><span class="m-label">Entry</span>Execution complete</div>
+              <div><span class="m-label">Exit</span>Test summary report signed off</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Inside a two-week sprint: Monday the tester reads the new user story and flags an ambiguous rule (Requirement Analysis); by Wednesday they've written test cases for it (Design); by Friday the environment has the new build deployed (Environment Setup); the following week they execute the cases, log two bugs, retest the fixes (Execution), and write a short summary before the sprint review (Closure).</p>
+      </div>
+    </section>
+
+    <section class="block" id="compare">
+      <h2>3. SDLC vs STLC</h2>
+      <p>Another pairing interviewers like to check you can separate cleanly.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>SDLC</th><th>STLC</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Scope</td><td>The entire software build process</td><td>Only the testing portion of that process</td></tr>
+            <tr><td class="k">Owner</td><td>Whole team — product, dev, QA</td><td>Primarily QA/testing team</td></tr>
+            <tr><td class="k">Starts when</td><td>An idea/requirement is captured</td><td>Requirements are available for test analysis (can run in parallel with dev, per V-Model)</td></tr>
+            <tr><td class="k">Typical phases</td><td>Requirement → Design → Build → Test → Deploy → Maintain</td><td>Requirement Analysis → Planning → Case Design → Env Setup → Execution → Closure</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="principles">
+      <h2>4. The 7 Principles of Software Testing</h2>
+      <p>These are the ISTQB-standard principles, and they come up in almost every SQA interview in some form — either directly ("name the principles") or disguised as a scenario question. Understanding the <i>why</i> behind each one is what separates a memorized answer from a confident one.</p>
+
+      <div class="principle">
+        <div class="principle-num">1</div>
+        <div>
+          <h4>Testing shows the presence of defects, not their absence</h4>
+          <p>Passing every test case proves those specific cases work — it never proves the software is defect-free, only that you haven't found a defect <i>yet</i>.</p>
+          <p class="ex">A payment form can pass 200 test cases and still fail on a currency your team never tested.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">2</div>
+        <div>
+          <h4>Exhaustive testing is impossible</h4>
+          <p>Testing every possible input, combination, and environment isn't just impractical — for most real systems it's mathematically infinite. So testing has to be risk-based: focus effort where failure would hurt most.</p>
+          <p class="ex">A form with 5 fields, each with 10 possible values, already has 100,000 input combinations.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">3</div>
+        <div>
+          <h4>Early testing (shift-left)</h4>
+          <p>Testing activities should start as early as possible in the SDLC — even reviewing a requirements doc counts as testing. Defects caught here are the cheapest of all to fix.</p>
+          <p class="ex">Catching an ambiguous requirement in review, before a single line of code is written for it.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">4</div>
+        <div>
+          <h4>Defect clustering</h4>
+          <p>A small number of modules usually account for most of the defects — roughly the 80/20 rule. Once you notice a hotspot, test it harder.</p>
+          <p class="ex">The checkout and payment modules of an e-commerce app are almost always where the bulk of critical bugs cluster, because they're the most complex and highest-risk code.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">5</div>
+        <div>
+          <h4>Pesticide paradox</h4>
+          <p>Running the exact same test cases over and over eventually stops finding new bugs — the software becomes "immune" to that specific set of tests. Test cases need to be regularly reviewed and revised, with new ones added.</p>
+          <p class="ex">A regression suite untouched for two years will keep passing even as new, unrelated bugs pile up elsewhere in the app.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">6</div>
+        <div>
+          <h4>Testing is context-dependent</h4>
+          <p>How you test depends on what you're testing. A hospital's patient-record system and a casual mobile game are tested with very different rigor and priorities.</p>
+          <p class="ex">A one-day-late food delivery app bug is an inconvenience; a one-cent-off banking transaction bug is a compliance incident.</p>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">7</div>
+        <div>
+          <h4>Absence-of-errors fallacy</h4>
+          <p>A system with zero known bugs can still fail — because it was built to the wrong requirements, or doesn't actually solve the user's problem. Bug-free isn't the same as useful or correct.</p>
+          <p class="ex">A perfectly bug-free flight booking app that no one can figure out how to book a flight on is still a failed product.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Lesson 2</h2>
+      <p class="muted">Same routine: draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 1 · Lesson 3 — Manual vs Automation, Test Environment, Test Data &amp; Requirements</b></div>
+    <div class="l"><a href="level1-lesson3.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Continue →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "Walk me through the phases of the STLC.",
+    tests: "Whether you know the formal structure of the testing process, not just 'write tests, run tests, find bugs.'",
+    simple: "Requirement Analysis → Test Planning → Test Case Design → Test Environment Setup → Test Execution → Test Cycle Closure.",
+    strong: "STLC has six phases. It starts with Requirement Analysis, where testers study requirements specifically for testability and ambiguity. Then Test Planning defines scope, approach, and timelines. Test Case Design is where detailed cases and test data get written. Test Environment Setup gets a stable, production-like environment ready. Test Execution is where cases actually run, defects get logged, and fixes get retested. Finally, Test Cycle Closure evaluates results against exit criteria and documents a summary report. Each phase has its own entry and exit criteria, which is what makes it a defined life cycle rather than just a loose set of tasks.",
+    example: "In a sprint, requirement analysis might happen Monday, case design by Wednesday, and execution the following week once a build is deployed.",
+    followups: ["What's the entry criteria for Test Execution?", "What happens if the environment isn't ready on time — how does that affect the schedule?"],
+    good: ["Name all six phases in order — interviewers notice if one is missing or out of sequence.", "Mention entry/exit criteria if you can — it signals you understand this as a governed process, not just a checklist."],
+    bad: ["Collapsing STLC into just 'write test cases, then execute them' — that's only 2 of the 6 phases."]
+  },
+  {
+    q: "What's the difference between the Waterfall and V-Model, from a testing perspective?",
+    tests: "Whether you understand how test involvement timing changes between SDLC models — a very practical, real question.",
+    simple: "In Waterfall, testing only starts after coding is fully done. In V-Model, test planning and case design happen in parallel with each development phase, even though execution still happens later.",
+    strong: "Both are sequential, phase-gated models with the same underlying stages, but V-Model pairs each development phase with a corresponding testing phase planned at the same time — for example, acceptance test cases get drafted alongside requirements, and system test cases alongside high-level design. That means by the time coding finishes, the test cases already exist and testing can start immediately, and more importantly, ambiguities in requirements or design get caught while writing those test cases, long before code exists. Pure Waterfall doesn't build in that parallel test-design step, so testing effort — and the defects it would surface — is pushed entirely to the end.",
+    example: "In V-Model, while the design team is finalizing the checkout screen's design, QA is already writing the test cases they'll eventually run against it — and might catch that the design doesn't specify what happens on a declined card.",
+    followups: ["Which model would you recommend for a small startup shipping weekly, and why?", "Where does Agile fit relative to these two?"],
+    good: ["Emphasize that V-Model's advantage is test design happening early, not that execution happens early — that nuance matters."],
+    bad: ["Saying V-Model means 'testing happens earlier' without clarifying it's the planning/design of tests that's early, while execution is still late in this model."]
+  },
+  {
+    q: "Explain the 'exhaustive testing is impossible' principle, and how it changes what you actually do as a tester.",
+    tests: "Whether you can connect an abstract principle to a concrete, practical decision — this is a favorite because weak candidates just define the term.",
+    simple: "You can't test every possible input and combination, so you have to prioritize testing the highest-risk areas instead of trying to cover everything.",
+    strong: "For any non-trivial system, the number of possible input combinations, environments, and paths is effectively infinite, so full coverage isn't a schedule problem — it's mathematically impossible. In practice that means testing has to be risk-based: I prioritize by what's most likely to break, most severe if it does, and most used by real users, rather than trying to spread effort evenly. Techniques like equivalence partitioning and boundary value analysis exist specifically to get strong coverage from a small, representative set of test cases instead of testing every value.",
+    example: "For an age field accepting 0-120, instead of testing all 121 values, boundary value analysis tests just the edges — -1, 0, 120, 121 — plus a couple of typical values in between.",
+    followups: ["How do you decide what NOT to test, if you have limited time?", "What's the risk of only testing the 'happy path'?"],
+    good: ["Name a concrete technique (equivalence partitioning, BVA, risk-based prioritization) as the practical response to this principle."],
+    bad: ["Treating this as a purely philosophical statement with no connection to how you'd actually plan testing."]
+  },
+  {
+    q: "What is the pesticide paradox, and how do you deal with it in practice?",
+    tests: "A principle that's often memorized but rarely explained well — tests whether you understand the practical implication for regression suites.",
+    simple: "Running the same tests repeatedly stops finding new bugs, because the software effectively becomes 'immune' to that exact set of checks — so test cases need to be regularly reviewed and refreshed.",
+    strong: "If you run the same fixed regression suite release after release without changes, it will keep passing even as new defects appear elsewhere in the application — the tests only ever check what they were originally written to check. It's named after real pesticides losing effectiveness as pests develop resistance. In practice I deal with this by periodically reviewing and updating the regression suite, adding new cases based on recent production defects or new features, and mixing in exploratory testing that isn't scripted at all, precisely because it can find things a fixed suite structurally can't.",
+    example: "A regression suite that's been unchanged for a year will happily keep passing while a brand-new bug in a newly added filter feature goes completely unnoticed, because no test in the suite was written to touch that feature.",
+    followups: ["How often should a regression suite be reviewed?", "How does exploratory testing help address this?"],
+    good: ["Explicitly connect this to why exploratory testing still matters even with a mature automated suite."],
+    bad: ["Defining the term correctly but not saying what you'd actually do about it."]
+  },
+  {
+    q: "What does 'testing is context-dependent' mean, and can you give an example from two very different kinds of software?",
+    tests: "Whether you can reason about risk and rigor relative to the actual system, rather than applying one fixed testing approach everywhere.",
+    simple: "How much and how rigorously you test should match what the software is for and what a failure would cost — a banking app and a casual game don't deserve the same level of scrutiny.",
+    strong: "The right testing approach — how much rigor, what types of testing, how much automation, how much regulatory documentation — depends entirely on the domain, the users, and the cost of failure, not on a single universal checklist. A healthcare or banking system needs rigorous, well-documented, often compliance-driven testing because failures have real financial or safety consequences. A casual mobile game can tolerate a much higher bug threshold because the cost of a defect is low and speed of iteration matters more.",
+    example: "A dosage-calculation bug in a hospital app could genuinely harm a patient; a scoring display glitch in a mobile game is an annoyance at worst.",
+    followups: ["How would your test approach differ for a fintech app versus a marketing landing page?", "Does context-dependence ever justify skipping testing altogether?"],
+    good: ["Use two genuinely contrasting examples with different risk profiles, not two similar apps."],
+    bad: ["Saying 'it depends' without actually explaining what it depends on."]
+  },
+  {
+    q: "A build has zero open bugs and every test case passed. Is it ready to ship? Why or why not?",
+    tests: "This directly probes the 'absence-of-errors fallacy' principle, often disguised as a scenario question rather than asked by name.",
+    simple: "Not necessarily — passing every test only proves the software matches what the test cases checked. If the requirements themselves were wrong, or the product doesn't actually solve the user's need, it can be bug-free and still be a failure.",
+    strong: "Zero open bugs tells you the known test cases pass — it doesn't tell you the product is right. This is the absence-of-errors fallacy: a system can be technically defect-free against its written requirements and still fail if those requirements didn't capture what users actually need, or if usability, performance, or real-world edge cases were never covered by the test cases in the first place. Before calling it ready, I'd want to know test coverage against actual user scenarios, not just requirement checkboxes, and ideally get it in front of real or representative users.",
+    example: "A form that saves every field correctly and passes all its test cases, but takes twelve confusing steps to submit — technically bug-free, practically unusable.",
+    followups: ["What would you check beyond 'test cases passed' before signing off on a release?", "How does this relate to UAT?"],
+    good: ["Name the principle (absence-of-errors fallacy) if you can, but even without the name, the reasoning is what matters most."],
+    bad: ["A flat 'yes, ship it' with no reasoning — this is designed to catch exactly that answer."]
+  },
+  {
+    q: "What is defect clustering, and how would you use it to plan a test cycle with limited time?",
+    tests: "Whether you can turn a testing principle into an actual prioritization decision under time pressure — a very realistic constraint.",
+    simple: "Most defects tend to cluster in a small number of modules — usually the most complex or most-used ones — so with limited time, test those modules hardest first.",
+    strong: "Defect clustering says that, in practice, a small proportion of modules account for the majority of defects — often the most complex, most recently changed, or most heavily used parts of the system, roughly following an 80/20 pattern. With limited time, I'd use that to prioritize: look at defect history and recent code churn to identify likely hotspots, and allocate the bulk of testing time there first, rather than spreading effort evenly across every module regardless of risk.",
+    example: "In an e-commerce app, checkout and payment usually cluster the most critical defects, so with only a day to test, that's where I'd concentrate — not, say, the static 'About Us' page.",
+    followups: ["How would you find out which modules are historically defect-prone if you're new to a project?", "Does defect clustering ever mislead you?"],
+    good: ["Connect this directly to a real prioritization method — defect history, code churn, complexity — not just restate the definition."],
+    bad: ["Testing everything 'equally' when time is limited, ignoring the principle entirely."]
+  },
+  {
+    q: "How does 'shift-left testing' relate to the early-testing principle and to SDLC models like V-Model or Agile?",
+    tests: "Whether you can connect multiple concepts from this lesson into one coherent picture — a strong signal of real understanding versus rote recall.",
+    simple: "Shift-left means moving testing activities earlier in the SDLC timeline — closer to requirements and design — instead of leaving them until after coding is done, which is exactly what the 'early testing' principle argues for.",
+    strong: "Shift-left testing is the practical name for applying the early-testing principle: instead of treating testing as a phase that starts after coding finishes, you move testing activities — requirement reviews, test case design, even automated checks — as far left (early) on the timeline as possible. V-Model formalizes this by pairing test design with each development phase up front, even though test execution stays later. Agile goes further and makes it continuous — a slice of testing happens inside every short iteration, alongside design and coding, rather than being a separate phase at all. All three ideas are really the same principle expressed at different levels: catch problems while they're cheap to fix, not after they're built.",
+    example: "A team practicing shift-left has QA review a user story for ambiguity in the same meeting it's written, instead of waiting until a build is ready to test.",
+    followups: ["What's a concrete shift-left practice you could introduce to a team that only tests at the end of a sprint?", "Does shift-left replace the need for testing later in the cycle too?"],
+    good: ["Explicitly tie together shift-left, the early-testing principle, and at least one SDLC model — that synthesis is what this question is really checking for."],
+    bad: ["Defining shift-left in isolation without connecting it back to the principle or the SDLC models already discussed."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LESSON 2</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQA Interview Prep — Course Home</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:920px; margin:0 auto; padding:52px 32px 36px; }
+  h1.title{ font-size:38px; line-height:1.15; margin-bottom:14px; }
+  .subtitle{ color:var(--ink-muted); font-size:17px; max-width:600px; }
+
+  .overview{ display:flex; gap:28px; margin-top:28px; flex-wrap:wrap; }
+  .stat{ }
+  .stat .n{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:26px; font-weight:700; color:var(--accent); font-variant-numeric: tabular-nums; }
+  .stat .l{ font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+
+  main{ max-width:920px; margin:0 auto; padding:40px 32px 100px; }
+
+  .level{
+    border:1px solid var(--line); border-radius:var(--radius); background:var(--surface);
+    margin-bottom:16px; box-shadow:var(--shadow); overflow:hidden;
+  }
+  .level.locked{ opacity:0.55; }
+  .level-head{ display:flex; justify-content:space-between; align-items:center; gap:16px; padding:16px 20px; background:var(--surface-2); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .level-head h2{ font-size:18px; }
+  .level-num{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color:var(--accent); margin-right:8px; }
+  .badge{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; padding:4px 10px; border-radius:100px; white-space:nowrap; }
+  .badge.complete{ background:var(--accent); color:var(--accent-ink); }
+  .badge.progress{ border:1px solid var(--accent); color:var(--accent); }
+  .badge.upcoming{ border:1px solid var(--line-strong); color:var(--ink-faint); }
+
+  .lesson-list{ list-style:none; margin:0; padding:10px 20px 16px; }
+  .lesson-list li{ padding:9px 0; border-bottom:1px solid var(--line); font-size:15px; display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+  .lesson-list li:last-child{ border-bottom:none; }
+  .lesson-list a{ text-decoration:none; color:var(--ink); font-weight:600; }
+  .lesson-list a:hover{ color:var(--accent); }
+  .lesson-list .soon{ color:var(--ink-faint); font-style:italic; }
+  .lesson-list .qcount{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); white-space:nowrap; }
+
+  footer.page-foot{ max-width:920px; margin:0 auto; padding:0 32px 60px; color:var(--ink-faint); font-size:13px; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="eyebrow">SQA Interview Prep</div>
+    <h1 class="title">A ground-up SQA interview course</h1>
+    <p class="subtitle">13 levels, from fundamentals to mock interviews — each lesson teaches the concept first, then tests it with real interview questions.</p>
+    <div class="overview">
+      <div class="stat"><div class="n">3</div><div class="l">Lessons published</div></div>
+      <div class="stat"><div class="n">23</div><div class="l">Interview questions</div></div>
+      <div class="stat"><div class="n">1 / 13</div><div class="l">Levels complete</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="level">
+    <div class="level-head">
+      <h2><span class="level-num">01</span>SQA Fundamentals</h2>
+      <span class="badge complete">Complete</span>
+    </div>
+    <ul class="lesson-list">
+      <li><a href="level1-lesson1.html">Lesson 1 — Software Testing, QA, QC &amp; the SQA role</a><span class="qcount">7 questions</span></li>
+      <li><a href="level1-lesson2.html">Lesson 2 — SDLC, STLC &amp; the 7 Testing Principles</a><span class="qcount">8 questions</span></li>
+      <li><a href="level1-lesson3.html">Lesson 3 — Manual/Automation, Requirements, Test Env &amp; Data</a><span class="qcount">8 questions</span></li>
+    </ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head">
+      <h2><span class="level-num">02</span>Testing Types</h2>
+      <span class="badge upcoming">Up next</span>
+    </div>
+    <ul class="lesson-list">
+      <li><span class="soon">Smoke, Sanity, Regression, Retesting</span></li>
+      <li><span class="soon">Unit, Integration, System, End-to-End, Acceptance/UAT</span></li>
+      <li><span class="soon">Exploratory, Ad-hoc, Usability, Compatibility, Cross-browser</span></li>
+      <li><span class="soon">Performance, Load, Stress, Security, Accessibility, Recovery, Installation, Localization</span></li>
+    </ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">03</span>Test Design Techniques</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Equivalence Partitioning, BVA, Decision Tables, State Transition, Use Case, Error Guessing, Pairwise</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">04</span>Test Cases &amp; Test Scenarios</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Writing test cases, best practices, practical exercises (e.g. "test the login page")</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">05</span>Bug / Defect Management</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Bug life cycle, severity vs priority, bug reports</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">06</span>Agile / Scrum &amp; Real-World QA</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Sprints, user stories, QA's role in Agile, shift-left</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">07</span>API Testing</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">REST, HTTP methods/status codes, auth, Postman</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">08</span>SQL / Database for QA</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Joins, queries, using SQL to validate defects</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">09</span>Automation Testing</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Selenium/Playwright/Cypress concepts, locators, POM, flaky tests</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">10</span>Performance Testing</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Load, stress, spike, soak testing, JMeter concepts</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">11</span>Security Basics for QA</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Auth, SQL injection, XSS, CSRF, access control</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">12</span>CI/CD &amp; DevOps Basics</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Git, builds, pipelines, QA's role in CI/CD</span></li></ul>
+  </div>
+
+  <div class="level locked">
+    <div class="level-head"><h2><span class="level-num">13</span>Real Interview Prep</h2><span class="badge upcoming">Not started</span></div>
+    <ul class="lesson-list"><li><span class="soon">Question banks, mock interviews, scorecards</span></li></ul>
+  </div>
+
+</main>
+
+<footer class="page-foot">Built lesson by lesson with Claude. New lessons get added and linked here as they're published.</footer>
+</body>
+</html>

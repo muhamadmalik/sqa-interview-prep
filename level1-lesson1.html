@@ -1,0 +1,539 @@
+<title>Level 1 · Lesson 1 — Testing, QA, QC &amp; the SQA Role</title>
+<style>
+  :root{
+    --bg:#eef1ee;
+    --surface:#ffffff;
+    --surface-2:#e6e9e5;
+    --ink:#182420;
+    --ink-muted:#53625b;
+    --ink-faint:#7c8a83;
+    --accent:#0e6b57;
+    --accent-ink:#f4faf7;
+    --warn:#a8501f;
+    --warn-bg:#f6e6dc;
+    --line:#d3dad2;
+    --line-strong:#b7c2b8;
+    --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+    --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512;
+      --surface:#171e1a;
+      --surface-2:#1e2620;
+      --ink:#e6ece7;
+      --ink-muted:#a4b3aa;
+      --ink-faint:#728077;
+      --accent:#42c19c;
+      --accent-ink:#0b1512;
+      --warn:#e2905f;
+      --warn-bg:#2b1f16;
+      --line:#2a332c;
+      --line-strong:#3b463d;
+      --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    font-size:17px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+
+  a{ color:var(--accent); }
+
+  .mono{
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Cascadia Mono", Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1,h2,h3{
+    font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif;
+    font-weight:700;
+    text-wrap:balance;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    margin:0;
+  }
+
+  .eyebrow{
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    font-weight:600;
+  }
+
+  /* ---------- Header / report band ---------- */
+  header.band{
+    border-bottom:1px solid var(--line);
+    background:var(--surface);
+  }
+  .band-inner{
+    max-width:1160px;
+    margin:0 auto;
+    padding:34px 32px 26px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .band-top{
+    display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap;
+  }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--accent); border:1px solid var(--accent); border-radius:100px;
+    padding:4px 11px; white-space:nowrap;
+  }
+
+  /* ---------- Layout: rail + content ---------- */
+  .layout{
+    max-width:1160px; margin:0 auto;
+    display:grid; grid-template-columns: 220px minmax(0,1fr);
+    gap:48px;
+    padding:36px 32px 100px;
+    align-items:start;
+  }
+  @media (max-width:860px){
+    .layout{ grid-template-columns: 1fr; }
+    nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;}
+  }
+
+  nav.rail{
+    position:sticky; top:24px;
+    display:flex; flex-direction:column; gap:2px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size:12.5px;
+  }
+  nav.rail a{
+    color:var(--ink-muted); text-decoration:none; padding:6px 0;
+    border-left:2px solid transparent; padding-left:10px;
+    transition: color .12s, border-color .12s;
+  }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{
+    font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint);
+    margin:14px 0 4px; padding-left:10px;
+  }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+
+  main{ min-width:0; max-width:700px; }
+
+  section.block{ margin-bottom:52px; scroll-margin-top:24px; }
+  section.block h2{
+    font-size:22px; padding-bottom:10px; margin-bottom:18px;
+    border-bottom:1px solid var(--line);
+  }
+  section.block h3.sub{
+    font-size:14px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--accent); margin:22px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-weight:600;
+  }
+  p{ margin:0 0 14px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+
+  .callout{
+    background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
+    border-radius:var(--radius); padding:14px 16px; margin:16px 0; box-shadow:var(--shadow);
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px;
+  }
+  .callout.example .tag{ color:var(--warn); }
+
+  ul.tight, ol.tight{ margin:0 0 14px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+
+  /* ---------- Comparison table ---------- */
+  .table-wrap{ overflow-x:auto; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{
+    text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:15.5px; vertical-align:top;
+  }
+  table.spec thead th{
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted);
+    background:var(--surface-2); border-bottom:1px solid var(--line-strong);
+  }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13.5px; white-space:nowrap; }
+
+  /* ---------- Interview question cards ---------- */
+  .qcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden;
+  }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px;
+    color:var(--ink-faint); letter-spacing:.05em;
+  }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+
+  .qcard textarea{
+    width:100%; min-height:74px; resize:vertical; margin-top:12px;
+    background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius);
+    color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px;
+  }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent);
+    border:none; border-radius:100px; padding:8px 16px; cursor:pointer;
+  }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+
+  .qcard-answer{
+    display:none; border-top:1px solid var(--line); background:var(--surface-2);
+    padding:16px 18px 18px;
+  }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px;
+  }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+
+  footer.nextline{
+    max-width:700px; margin:0 auto; padding:0 32px 80px 32px;
+  }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{
+    border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px;
+    display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+
+  code.inline{
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg);
+    padding:1px 5px; border-radius:3px; font-size:0.9em;
+  }
+</style>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 1 — Fundamentals &nbsp;·&nbsp; Lesson 1</div>
+        <h1 class="title">What is Software Testing, QA, QC — and what does an SQA actually do?</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 7 reviewed</span>
+    </div>
+    <p class="subtitle">The three terms everyone mixes up in interviews, explained from first principles — then tested with real interview questions.</p>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#testing" data-track="testing">1. Software Testing</a>
+    <a href="#qa" data-track="qa">2. Quality Assurance</a>
+    <a href="#qc" data-track="qc">3. Quality Control</a>
+    <a href="#compare" data-track="compare">4. QA vs QC vs Testing</a>
+    <a href="#why" data-track="why">5. Why Testing Is Required</a>
+    <a href="#role" data-track="role">6. Role of an SQA</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="testing">
+      <h2>1. What is Software Testing?</h2>
+      <p><b>Concept.</b> Software testing is the act of running a system, or a piece of it, and checking whether what actually happens (<b>actual result</b>) matches what should happen according to the requirements (<b>expected result</b>). Where the two disagree, you've likely found a defect.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Software is written by people, and people misread requirements, mistype conditions, and forget edge cases. Every one of those slips is invisible until someone deliberately tries to break it. Testing is that deliberate attempt — and the earlier it happens, the cheaper the fix. A typo caught while coding costs a minute. The same typo caught by a paying customer costs support tickets, refunds, and trust.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>A tester starts from a requirement, imagines the situations that requirement implies (normal use, edge cases, misuse), turns each into a test case with clear steps and an expected result, executes it against the real build, and records what actually happened. Any gap between expected and actual gets logged as a defect for a developer to investigate.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>An e-commerce site's requirement says: <i>"Orders over $50 get free shipping."</i> A tester doesn't just check one $75 order and call it done. They check $49.99 (should still charge shipping), exactly $50.00 (the boundary — this is where off-by-one bugs live, e.g. a developer wrote <code class="inline">&gt; 50</code> instead of <code class="inline">&gt;= 50</code>), and $50.01 (should be free). One sentence of requirements just produced three meaningfully different test cases.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Saying "testing is about finding bugs" as the full definition. That's necessary but incomplete — the actual goal is <b>reducing risk and building confidence</b> that the product is fit to ship. Finding bugs is the mechanism; informing a release decision is the point.</p>
+    </section>
+
+    <section class="block" id="qa">
+      <h2>2. What is Quality Assurance (QA)?</h2>
+      <p><b>Concept.</b> QA is bigger than testing, and it works in the opposite direction. Testing is <b>reactive</b> — it finds defects already sitting in the product. QA is <b>proactive</b> — it improves the process that builds the product, so fewer defects get created in the first place. QA is about the <i>process</i>; testing is one of QA's tools for checking whether that process is working.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>If a team keeps shipping the same category of bug release after release, catching each instance in testing is treating a symptom. QA asks the upstream question: what about how we work keeps producing this? Maybe requirements aren't reviewed before coding starts, or there's no coding standard for a risky area. Fixing the process prevents a whole class of future bugs, not just today's instance.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>QA activities include defining how requirements should be written so they're actually testable, setting coding and review standards, choosing what the STLC/SDLC looks like for the team, running retrospectives, and auditing whether the agreed process is actually being followed.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A banking app keeps shipping date-format bugs — DD/MM read as MM/DD for international users. Instead of just logging the bug every release, QA introduces a standing rule: every requirement touching a date field must state its locale format explicitly, and that gets checked in requirement review before a developer ever writes code. That's prevention, not detection.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Using "QA" and "testing" interchangeably in an interview. It's extremely common in casual speech (even job titles say "QA Engineer" for what is mostly a testing role), but an interviewer asking this question wants to hear that you know the distinction: <b>process vs. product</b>, <b>prevention vs. detection</b>.</p>
+    </section>
+
+    <section class="block" id="qc">
+      <h2>3. What is Quality Control (QC)?</h2>
+      <p><b>Concept.</b> QC is the set of activities that check the <b>product itself</b> against requirements — inspecting actual, finished (or in-progress) work to see if it meets the standard. This is where most day-to-day hands-on testing activity technically lives: executing test cases, comparing actual vs. expected results, and reporting defects.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>QA can define the best process in the world, but someone still has to check whether the thing that got built actually works. QC is that check. It's the "control" step — verifying the output stayed within acceptable bounds — much like a factory inspecting a batch of physical parts before shipment.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>QC is product-focused and detection-oriented: executing test cases, exploratory testing, code reviews of specific artifacts, and reporting what's wrong so it can be fixed before release.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Before a mobile app update ships, a tester runs the full regression suite against the release build, finds that the "forgot password" email isn't sending, and files a defect. That's QC: inspecting this specific build for this specific defect.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Treating QC as the "junior" or "lesser" version of QA. In interviews, frame it as a different <i>focus</i>, not a different <i>tier</i> — QA without QC has no evidence the process is working; QC without QA just keeps catching the same bugs forever.</p>
+    </section>
+
+    <section class="block" id="compare">
+      <h2>4. QA vs QC vs Testing — side by side</h2>
+      <p>This exact comparison is one of the most commonly asked "fundamentals" interview questions. Know it cold.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead>
+            <tr><th>Aspect</th><th>Quality Assurance (QA)</th><th>Quality Control (QC)</th><th>Testing</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="k">Focus</td><td>The process used to build software</td><td>The actual product/output</td><td>A specific execution activity — one part of QC</td></tr>
+            <tr><td class="k">Approach</td><td>Proactive — prevent defects</td><td>Reactive — detect defects</td><td>Reactive — detect defects</td></tr>
+            <tr><td class="k">Goal</td><td>Improve how the team works</td><td>Confirm the product meets requirements</td><td>Find gaps between expected and actual behavior</td></tr>
+            <tr><td class="k">Example activity</td><td>Defining a requirement-review checklist</td><td>Inspecting a finished build against the checklist</td><td>Running a login test case and logging a bug</td></tr>
+            <tr><td class="k">Analogy</td><td>Writing the recipe and kitchen hygiene rules</td><td>Tasting the dish before it leaves the kitchen</td><td>The specific act of tasting</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">In most real companies, one person's day-to-day job blends all three — but interviewers still expect you to separate them cleanly when asked.</p>
+    </section>
+
+    <section class="block" id="why">
+      <h2>5. Why is software testing required?</h2>
+      <p>An interviewer may ask this to see whether you understand testing as a <i>business</i> activity, not just a technical chore. Key reasons, in the order they usually matter to a business:</p>
+      <ul class="tight">
+        <li><b>Cost of defects grows over time.</b> A bug caught in requirements review might cost minutes to fix. The same bug caught in production can cost real money, emergency hotfixes, and customer trust.</li>
+        <li><b>Safety and correctness where it's non-negotiable.</b> A payment system that occasionally overcharges, or a medical device app that miscalculates a dosage, isn't just "buggy" — it's a liability.</li>
+        <li><b>Reputation.</b> Users rarely tell you a bug happened; they just leave. Public failures (a crashing checkout flow during a sale) are expensive in a way that's hard to reverse.</li>
+        <li><b>Confidence to release.</b> Testing gives the business evidence — not a guess — about whether it's safe to ship this build to real users.</li>
+        <li><b>Requirements are never perfect.</b> Testing also surfaces ambiguity and gaps in requirements themselves, before those gaps become production incidents.</li>
+      </ul>
+    </section>
+
+    <section class="block" id="role">
+      <h2>6. Role and responsibilities of an SQA</h2>
+      <p>In practice, a Software Quality Assurance engineer's day usually spans QA and QC work together, across the whole development cycle — not just "testing at the end."</p>
+      <ul class="tight">
+        <li><b>Before development:</b> reviewing requirements/user stories for clarity and testability, raising questions about ambiguous or missing details, estimating testing effort.</li>
+        <li><b>During development:</b> designing test scenarios and test cases, preparing test data, setting up or maintaining test environments, sometimes reviewing code or pairing with developers on edge cases.</li>
+        <li><b>At build/release time:</b> executing functional and non-functional tests (manual and/or automated), running regression suites, logging and tracking defects through their lifecycle, retesting fixes.</li>
+        <li><b>Around the process:</b> contributing to test strategy, flagging recurring bug patterns, participating in Agile ceremonies (standups, sprint planning, retrospectives), and giving the team an honest go/no-go read on release readiness.</li>
+      </ul>
+      <div class="callout">
+        <span class="tag">Interview framing</span>
+        <p>When asked "what does an SQA do," resist reciting a job description. Anchor it in outcome: <i>"My job is to give the team accurate, evidence-based confidence about whether the software meets its requirements and is safe to release — through both testing the product and improving the process that builds it."</i> That single sentence shows you understand QA, QC, and testing aren't three separate jobs — they're three angles on the same responsibility.</p>
+      </div>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Lesson 1</h2>
+      <p class="muted">Try answering in the box before revealing the model answer — that's the only way this actually sticks. Aim to speak your answer out loud in under 60 seconds; that's roughly an interview-length response.</p>
+
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 1 · Lesson 2 — SDLC, STLC &amp; Testing Principles</b></div>
+    <div class="l"><a href="level1-lesson2.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Continue →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What is software testing, in your own words?",
+    tests: "Whether you can explain a core concept simply, without reciting a textbook definition.",
+    simple: "Checking that the software behaves the way it's supposed to, and finding the cases where it doesn't.",
+    strong: "Software testing is the process of executing a system and comparing its actual behavior against expected behavior defined by the requirements, in order to find defects and give the team confidence about release readiness. It's not just bug-hunting — it's a risk-reduction activity that informs a business decision: is this safe to ship?",
+    example: "Testing a coupon field: does 'SAVE10' actually apply a 10% discount, does an expired code get rejected, does an empty field submit gracefully?",
+    followups: ["How is that different from debugging?", "Can you ever test 100% of a piece of software?"],
+    good: ["Mention both 'finding defects' and 'building confidence for release decisions' — most candidates only say the first.", "Use one concrete example unprompted."],
+    bad: ["Reciting a dictionary definition with no example.", "Saying testing 'proves the software has no bugs' — testing can only show defects are present, never that none exist."]
+  },
+  {
+    q: "What's the difference between QA and QC?",
+    tests: "Whether you understand process vs. product — one of the most common fundamentals questions asked in nearly every SQA interview.",
+    simple: "QA improves how you build software so fewer bugs happen. QC checks the actual software you built for bugs that already happened.",
+    strong: "QA is process-oriented and proactive — it's about defining and improving the practices the team follows so defects are prevented before they're introduced. QC is product-oriented and reactive — it's about inspecting the actual built software against requirements to catch defects that already exist. Testing is a core activity within QC.",
+    example: "QA: introducing a mandatory requirement-review step. QC: running the regression suite against the release candidate build.",
+    followups: ["Where does 'testing' fit into this picture?", "Give me an example of a QA activity you'd introduce after a recurring bug pattern."],
+    good: ["Use the prevention vs. detection framing — it's the cleanest way to say it in one breath.", "Have one crisp example ready for each side."],
+    bad: ["Saying QA and QC are 'basically the same thing' — technically true in many job titles, but not what the interviewer is testing for here.", "Getting the direction backwards (mixing up which one is proactive)."]
+  },
+  {
+    q: "Is testing the same as QA?",
+    tests: "Whether you understand that testing is a subset of QC, which is itself only one part of the broader QA umbrella.",
+    simple: "No — testing is one specific activity (executing test cases). QA is the whole umbrella of process-improvement work that testing feeds into.",
+    strong: "No. Testing is a hands-on execution activity — running test cases and comparing actual versus expected results — and it sits inside Quality Control. QA is broader: it's the process-level discipline that QC and testing results feed back into, so the team improves how it builds software over time, not just what it ships this release.",
+    example: "Testing tells you 'the checkout button fails on Safari.' QA asks 'why didn't our test matrix include Safari, and how do we make sure it's covered going forward?'",
+    followups: ["Can you have QA without testing?", "Can you have testing without QA?"],
+    good: ["Frame it as nested, not equal: Testing ⊂ QC ⊂ overall quality effort, with QA operating alongside/above as the process layer."],
+    bad: ["Treating this as a trick question with no real answer — there is a real, standard distinction expected here."]
+  },
+  {
+    q: "Why is software testing necessary? Why can't developers just be more careful?",
+    tests: "Whether you understand testing as a business-risk activity, and won't be defensive or vague about developers' competence.",
+    simple: "Everyone makes mistakes, and a second, independent set of eyes — especially one deliberately trying to break things — catches what the original author is too close to see.",
+    strong: "It's not about developer competence — it's about perspective and cost. A developer's job while coding is to make the feature work for the case they're picturing; a tester's job is to deliberately imagine the cases the author didn't. That independent, adversarial mindset catches defects a self-review structurally can't. And the earlier that happens, the cheaper it is — a bug caught in a code review costs minutes; the same bug in production can cost money, incident response, and customer trust.",
+    example: "A developer builds a discount field and tests it with '10' — it works. A tester tries '-10', '999999', empty, and a decimal, and finds three of those crash the checkout.",
+    followups: ["What's the cost-of-defect curve, and why does it matter?", "Should developers write their own tests at all, then?"],
+    good: ["Avoid implying developers are careless — it's about role and mindset, not skill.", "Mention the increasing-cost-of-defects idea."],
+    bad: ["Answering as if the question is insulting to developers, or getting defensive.", "A vague 'to make sure it works' with no reasoning."]
+  },
+  {
+    q: "What are the day-to-day responsibilities of an SQA engineer?",
+    tests: "Whether you understand QA as a role spanning the whole development cycle, not just 'testing at the end.'",
+    simple: "Reviewing requirements early, designing and running test cases, logging and tracking bugs, and giving the team an honest read on whether a release is ready.",
+    strong: "It spans the whole cycle: reviewing requirements for clarity and testability before development starts, designing test scenarios and cases once development is underway, executing functional and non-functional tests against builds, logging and following defects through their lifecycle, running regression after fixes, and participating in Agile ceremonies to keep the team's understanding of quality current. The common thread is giving the team evidence-based confidence about release readiness at every stage, not just the end.",
+    example: "In a two-week sprint: reviewing a new user story on day 1, writing test cases by day 3, executing them against the dev build by day 8, retesting fixes and running regression by day 12.",
+    followups: ["What would you do in the first 30 minutes of a new user story landing on your desk?", "How much of your time should be manual vs. automated testing?"],
+    good: ["Show the full-cycle view — 'before, during, and after development' — not just execution.", "Mention defect lifecycle tracking, not just 'finding bugs.'"],
+    bad: ["Describing the role as only 'clicking through the app and reporting bugs' — that undersells the requirement-review and process side."]
+  },
+  {
+    q: "If QA's job is to assure quality, why do bugs still reach production?",
+    tests: "This is a tricky/gotcha question — it's checking whether you understand that QA reduces risk, it doesn't eliminate it, and whether you can say that honestly instead of getting defensive.",
+    simple: "Because testing can never cover every possible input, environment, and combination — QA reduces risk, it can't guarantee zero bugs.",
+    strong: "Because 'assuring quality' doesn't mean guaranteeing zero defects — it means giving the team the best achievable evidence, within time and resource constraints, about whether a release meets its requirements. Full exhaustive testing of every input, environment, and code path combination is practically impossible for any real system. So QA and testing focus effort on the highest-risk areas, and some low-probability or unanticipated combinations will still slip through. When one does, the healthy response is a root-cause conversation — was this a coverage gap, a process gap, or genuinely unforeseeable — not treating it as a testing failure by default.",
+    example: "A rare bug only reproduces when a user has an expired session token AND a stale cached cart AND is on a slow network — a combination unlikely to be in any test matrix, but real enough to happen to one user in production.",
+    followups: ["How would you decide whether a production bug should have been caught?", "What's a 'testing gap' vs. an 'unreasonable to expect' bug?"],
+    good: ["State plainly that 100% coverage is impossible — interviewers want to see you're not overpromising.", "Pivot to how the team should respond (root-cause it) rather than just excusing it."],
+    bad: ["Getting defensive ('that's not QA's fault, it's the developer's').", "Claiming a good enough process would catch everything."]
+  },
+  {
+    q: "\"Quality is everyone's responsibility, not just QA's.\" Do you agree?",
+    tests: "A values/culture question — checking how you see your role fitting into a team, and whether you understand QA can't be a bottleneck that owns quality alone.",
+    simple: "Yes — QA can catch and highlight problems, but quality is actually built by developers, product, and everyone who touches the software, not inspected in at the end by one team.",
+    strong: "Yes, and I'd go further — if QA is the only function 'responsible' for quality, that usually means quality is being checked for at the end instead of built in from the start, which is both slower and less effective. QA's specific job is to bring visibility, structure, and an independent check to that shared effort: writing testable requirements together with product, catching issues early with developers, and giving everyone accurate data about where quality risks actually are. That's really the idea behind 'shift-left' testing — bringing quality-focused thinking earlier into the cycle instead of treating it as a final gate.",
+    example: "A developer who writes a unit test for an edge case they thought of while coding is doing quality work, even though they're not 'QA.'",
+    followups: ["What does 'shift-left testing' mean, concretely?", "How do you get developers who don't want to write tests to care about quality?"],
+    good: ["Connect the answer to shift-left testing if you know the term — it shows you can link a values question to a real practice.", "Avoid sounding like you're diminishing QA's role while agreeing with the premise."],
+    bad: ["A flat 'yes' with no reasoning.", "Disagreeing in a way that sounds territorial ('no, quality is QA's job') — that's a red flag to most interviewers."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+
+function updatePill(){
+  document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed';
+}
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LESSON 1</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4>
+      <p>${item.simple}</p>
+      <h4>Interview-ready answer</h4>
+      <p>${item.strong}</p>
+      <h4>Example</h4>
+      <p>${item.example}</p>
+      <h4>Likely follow-ups</h4>
+      <ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4>
+      <ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4>
+      <ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+
+  qlist.appendChild(card);
+});
+
+/* section-read tracking via scroll */
+const sections = document.querySelectorAll('section.block[id]');
+const links = document.querySelectorAll('nav.rail a[data-track]');
+const seen = new Set();
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      seen.add(e.target.id);
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>

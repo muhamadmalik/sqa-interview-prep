@@ -1,0 +1,398 @@
+<title>Level 1 · Lesson 3 — Manual/Automation, Requirements, Test Env &amp; Data</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:52px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:22px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 14px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:16px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 14px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:15px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  .chiprow{ display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px; }
+  .chip{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; background:var(--surface-2); border:1px solid var(--line); border-radius:100px; padding:5px 12px; color:var(--ink-muted); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 1 — Fundamentals &nbsp;·&nbsp; Lesson 3 (final of Level 1)</div>
+        <h1 class="title">Manual vs Automation, Requirements, Test Environment &amp; Test Data</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The last set of Level 1 building blocks — how testing is actually carried out, what it's tested against, and where it happens.</p>
+    <div class="lesson-nav"><a href="level1-lesson2.html" style="color:inherit;">← Lesson 2: SDLC, STLC &amp; the 7 Testing Principles</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#manual-auto" data-track="manual-auto">1. Manual vs Automation</a>
+    <a href="#requirements" data-track="requirements">2. Requirements: Functional vs NFR</a>
+    <a href="#testenv" data-track="testenv">3. Test Environment</a>
+    <a href="#testdata" data-track="testdata">4. Test Data</a>
+    <a href="#bdr" data-track="bdr">5. Build vs Release vs Deployment</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="manual-auto">
+      <h2>1. Manual Testing vs Automation Testing</h2>
+      <p><b>Concept.</b> Manual testing is a human executing test cases by hand — clicking, typing, observing. Automation testing is a script doing the same execution, faster and repeatably, but only for checks that were predictable enough to script in advance.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>These aren't competing choices — they're suited to different kinds of work, and a common interview trap is implying one is simply "better." Automation is fast and consistent but blind to anything outside what it was told to check. A human is slower but notices the weird visual glitch, the confusing flow, the thing nobody thought to script.</p>
+
+      <h3 class="sub">How it works</h3>
+      <ul class="tight">
+        <li><b>Good fit for automation:</b> stable, repetitive checks that run often — regression suites, smoke tests, data-heavy checks across many input combinations.</li>
+        <li><b>Good fit for manual:</b> new features that change frequently, exploratory testing, usability judgment, anything requiring human perception (does this look right? does this flow feel confusing?), and one-off checks not worth scripting.</li>
+      </ul>
+
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Manual Testing</th><th>Automation Testing</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Speed</td><td>Slower, especially repeated runs</td><td>Fast, especially repeated runs</td></tr>
+            <tr><td class="k">Upfront cost</td><td>Low — start testing immediately</td><td>Higher — writing/maintaining scripts takes time</td></tr>
+            <tr><td class="k">Best for</td><td>Exploratory, usability, new/unstable features</td><td>Regression, repetitive checks, high-volume data checks</td></tr>
+            <tr><td class="k">Human judgment</td><td>Yes — can notice the unexpected</td><td>No — only checks what it was scripted to check</td></tr>
+            <tr><td class="k">Reliability over time</td><td>Consistent tester fatigue risk</td><td>Consistent execution, but can go stale (pesticide paradox)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A team automates its login regression suite so it runs on every code push in minutes. But when they redesign the login screen's layout, a human still needs to manually check whether the new design actually feels intuitive — no script can judge that.</p>
+      </div>
+    </section>
+
+    <section class="block" id="requirements">
+      <h2>2. Requirements: Functional vs Non-Functional</h2>
+      <p><b>Concept.</b> A requirement is a documented statement of what the software must do or be. <b>Functional requirements</b> describe specific behavior — what the system does given an input. <b>Non-functional requirements (NFRs)</b> describe the qualities of how the system does it — how fast, how secure, how available.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Functional bugs are usually obvious ("the button doesn't work"). NFR failures are sneakier — everything "works," but the app is unbearably slow under load, or a competitor's app just feels more trustworthy because of it. Interviewers ask this to check you don't think testing is only about clicking buttons.</p>
+
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Functional Requirement</th><th>Non-Functional Requirement</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Answers</td><td>"What should the system do?"</td><td>"How well should the system do it?"</td></tr>
+            <tr><td class="k">Example</td><td>"Users can reset their password via email"</td><td>"The password reset email must arrive within 30 seconds"</td></tr>
+            <tr><td class="k">Tested via</td><td>Functional testing (does the feature work)</td><td>Performance, security, usability, compatibility testing</td></tr>
+            <tr><td class="k">Failure looks like</td><td>Feature broken or missing</td><td>Feature works but is slow, insecure, or unusable at scale</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Common categories of NFRs you should be able to name on the spot:</p>
+      <div class="chiprow">
+        <span class="chip">Performance</span><span class="chip">Security</span><span class="chip">Usability</span>
+        <span class="chip">Reliability</span><span class="chip">Scalability</span><span class="chip">Availability</span>
+        <span class="chip">Compatibility</span><span class="chip">Maintainability</span>
+      </div>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A ride-hailing app's functional requirement: "user can request a ride and see driver location." Its non-functional requirement: "driver location must update on the rider's map at least once every 3 seconds, even with 10,000 concurrent riders in the same city." The app can nail the first and completely fail the second, and users will still call it "broken."</p>
+      </div>
+    </section>
+
+    <section class="block" id="testenv">
+      <h2>3. Test Environment</h2>
+      <p><b>Concept.</b> A test environment is a setup of hardware, software, network configuration, and data — separate from production — where testing actually happens. It typically includes the application build under test, a database, any third-party integrations (often faked or "stubbed"), and test accounts.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Tests are only trustworthy if the environment they ran in resembles where the software will actually run. A bug that "only happens in prod" is very often an environment mismatch — a config difference, a different database version, real vs. fake payment gateway — not a mysterious ghost bug.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A checkout flow tests perfectly in QA because the test environment uses a sandbox payment gateway that always approves. In production, the real payment gateway occasionally times out — a scenario the test environment never simulated, so the retry logic was never actually tested.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Assuming "it passed in test" and "it will work in prod" are the same claim. They're only as similar as the two environments are — which is exactly why environment parity is something QA should actively push for, not just accept as given.</p>
+    </section>
+
+    <section class="block" id="testdata">
+      <h2>4. Test Data</h2>
+      <p><b>Concept.</b> Test data is the specific input values used to execute a test case. Good test data is chosen deliberately, not randomly — it should represent the different categories a test technique calls for.</p>
+
+      <h3 class="sub">How it works — common categories</h3>
+      <ul class="tight">
+        <li><b>Valid data</b> — expected to be accepted (a real, correctly formatted email).</li>
+        <li><b>Invalid data</b> — expected to be rejected (a malformed email, a negative age).</li>
+        <li><b>Boundary data</b> — values right at the edge of an accepted range (age 17 and 18 for an 18+ rule).</li>
+        <li><b>Production-like data</b> — realistic volume and variety, sometimes anonymized copies of real data, used to catch issues that only show up at real-world scale or messiness.</li>
+      </ul>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Testing a CSV bulk-upload feature with a tidy 5-row file will pass every time. Testing it with a production-like 50,000-row file containing a stray blank line, an emoji in a name field, and a duplicate ID is what actually finds the bug that will hit a real customer.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Using only clean, "happy path" test data. It's the single most common gap junior testers leave — real users are messy, and test data should be too.</p>
+    </section>
+
+    <section class="block" id="bdr">
+      <h2>5. Build, Release &amp; Deployment</h2>
+      <p><b>Concept.</b> Three words that get used loosely in casual conversation, but mean distinct things — a fast, common interview check.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Build</td><td>A specific compiled/packaged version of the code, usually tagged with a version number (e.g. <code class="inline">v2.4.1-build.117</code>) — the artifact that testing actually runs against.</td></tr>
+            <tr><td class="k">Release</td><td>A build that's been through testing and formally approved to go out to users — the decision, not the file.</td></tr>
+            <tr><td class="k">Deployment</td><td>The act of physically installing/publishing that release onto a target environment — staging, production, an app store.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Build 117 is compiled overnight. QA tests it and signs off — it becomes Release 2.4.1. That release then gets deployed to production servers at 9am. Same underlying code, three different words for three different milestones.</p>
+      </div>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Lesson 3</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 1 complete<b>Level 2 — Testing Types (Smoke, Sanity, Regression, Performance, Security &amp; more)</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "When would you choose manual testing over automation, and vice versa?",
+    tests: "Whether you understand these as complementary tools with different strengths, not a 'better vs worse' choice.",
+    simple: "Automate stable, repetitive checks you'll run often, like regression. Test manually anything new, unstable, or requiring human judgment, like usability or exploratory testing.",
+    strong: "I'd automate tests that are stable, repetitive, and high-value to run often — regression suites, smoke tests, data-driven checks across many input combinations — because the upfront scripting cost pays off over many runs. I'd keep testing manual for anything still changing frequently, where automation would need constant rewriting, for exploratory testing where a human's curiosity finds things a script never would, and for usability judgment calls that require perception, not just verification. In practice, most mature teams run both side by side: automation covering the stable regression baseline, manual and exploratory testing covering what's new or subjective.",
+    example: "A newly redesigned onboarding flow gets manual and exploratory testing this sprint; once it stabilizes over a few releases, its core checks get automated into the regression suite.",
+    followups: ["What's the risk of automating too early, before a feature has stabilized?", "Can automation replace exploratory testing entirely?"],
+    good: ["Frame it as complementary, not competitive.", "Mention that automation has an upfront cost that only pays off with repeated runs."],
+    bad: ["Saying automation is 'just better' or 'the future' with no nuance — that's a common but weak answer."]
+  },
+  {
+    q: "What's the difference between functional and non-functional requirements? Give an example of each for the same feature.",
+    tests: "Whether you can apply the distinction concretely, not just recite the definitions.",
+    simple: "Functional requirements describe what the system does; non-functional requirements describe how well it does it — speed, security, usability, and so on.",
+    strong: "A functional requirement specifies a behavior — a feature the system must have, testable with a clear pass/fail based on input and output. A non-functional requirement specifies a quality attribute of that behavior — how fast, how secure, how usable, how available — and is often tested with different techniques entirely, like performance or security testing rather than straightforward functional test cases.",
+    example: "For a search feature: functional requirement is 'typing a keyword returns matching products'; non-functional requirement is 'results must return within 2 seconds for a catalog of 1 million products.'",
+    followups: ["Name four categories of non-functional requirements.", "Which is usually specified more clearly by stakeholders — functional or non-functional? Why?"],
+    good: ["Use one feature and show both requirement types on it — this is exactly what the question is asking for."],
+    bad: ["Giving two unrelated examples instead of contrasting functional vs non-functional on the same feature."]
+  },
+  {
+    q: "A bug 'only happens in production, not in QA.' What's your first hypothesis, and how would you investigate?",
+    tests: "A very common real scenario question — checks whether you think about test environment parity before jumping to 'it's a mystery bug.'",
+    simple: "My first hypothesis is an environment difference, not a mysterious bug — different config, data volume, integrations, or versions between QA and production.",
+    strong: "Before assuming anything exotic, I'd first compare the two environments directly: are they running the same build version, same database version and data volume, same third-party integrations — or does QA use a sandbox/mock version of something production calls for real, like a payment gateway or an external API? I'd also check whether production has scale, network conditions, or data variety that QA's environment doesn't replicate. Most 'only in prod' bugs trace back to one of those gaps rather than a fundamentally different code path.",
+    example: "QA's payment gateway is a sandbox that always approves; production's real gateway occasionally times out, and the retry logic for that case was never exercised in QA.",
+    followups: ["How would you push for better environment parity if you found a gap?", "What's a case where the bug really is environment-independent and something else is going on?"],
+    good: ["Lead with environment/config comparison as the default first hypothesis before jumping to code-level theories."],
+    bad: ["Immediately assuming it's a browser caching issue or 'just refresh it' without a structured investigation."]
+  },
+  {
+    q: "Why is test data quality as important as the test cases themselves?",
+    tests: "Whether you understand that a well-designed test case executed with lazy, unrealistic data still fails to find real bugs.",
+    simple: "A perfectly designed test case run against clean, unrealistic data won't find the bugs that messy real-world data would — the data has to match the categories the test is actually meant to check.",
+    strong: "A test case defines the scenario, but the data is what actually exercises the system — and if the data is always tidy and minimal, entire categories of real-world defects never get triggered. Good test data needs to deliberately cover valid, invalid, boundary, and production-like conditions: realistic volume, messy formatting, duplicate or missing fields, the kind of thing real users actually produce. Skipping that and always testing with three clean rows of data is one of the most common gaps in weaker test suites.",
+    example: "A bulk CSV upload feature tested only with a clean 5-row file will always pass; tested with a 50,000-row file containing a blank line and a duplicate ID, it reveals a crash.",
+    followups: ["How would you get realistic test data without exposing real customer PII?", "What's the risk of testing only with 'happy path' data?"],
+    good: ["Name the data categories (valid/invalid/boundary/production-like) and connect them to real bug-finding, not just definitions."],
+    bad: ["Treating test data as an afterthought — 'just use whatever data is in the test environment.'"]
+  },
+  {
+    q: "Explain the difference between a build, a release, and a deployment.",
+    tests: "A quick vocabulary-precision check, common as a warm-up or filler question.",
+    simple: "A build is a specific compiled version of the code. A release is a build that's been tested and approved to go out. A deployment is the act of actually installing that release somewhere.",
+    strong: "A build is a specific, versioned compiled artifact of the codebase — the thing testing actually runs against. A release is a decision, not an artifact: it's a build that has passed testing and been formally approved to go out to users. Deployment is the operational act of installing or publishing that approved release onto a target environment, whether that's a staging server, production, or an app store.",
+    example: "Build 117 gets compiled overnight; after QA signs off, it becomes Release 2.4.1; that release gets deployed to production at 9am.",
+    followups: ["Can a build be deployed without being a formal release? When might that happen?", "What's a rollback, in these terms?"],
+    good: ["Give the sequence in the right order and note that 'release' is a decision/approval, not just a file."],
+    bad: ["Using all three terms interchangeably, which is exactly what this question is checking you won't do."]
+  },
+  {
+    q: "How would you decide which non-functional requirements matter most for a given product?",
+    tests: "Whether you can reason about NFR priority contextually rather than treating all NFRs as equally important everywhere — ties back to the 'testing is context-dependent' principle from Lesson 2.",
+    simple: "It depends on the product's domain and users — a banking app prioritizes security and reliability, a live sports score app prioritizes performance and availability, a niche internal tool might barely need to worry about scalability.",
+    strong: "I'd start from what would actually hurt the business or the user most if it failed — that's domain-specific, not universal. A financial app prioritizes security and data integrity because a breach or a wrong balance is catastrophic. A live-streaming or ticket-sale platform prioritizes performance and availability because a slow page during a traffic spike directly costs sales. An internal admin tool used by five people might reasonably deprioritize scalability entirely. I'd look at who the users are, what a failure actually costs, and any regulatory requirements, and prioritize NFR testing effort from there — this is really the same 'testing is context-dependent' idea applied specifically to non-functional requirements.",
+    example: "A hospital patient-record system and a recipe-sharing app both have 'non-functional requirements,' but security dominates one and barely matters for the other.",
+    followups: ["How would you convince a team to invest testing time in an NFR that's hard to see, like scalability, when there's schedule pressure?", "What NFR would you prioritize for a real-time multiplayer game?"],
+    good: ["Explicitly connect this back to the context-dependence testing principle if you can — it shows retention across lessons."],
+    bad: ["Listing NFR categories without ever prioritizing between them for a specific product."]
+  },
+  {
+    q: "What would you check before trusting results from a test environment?",
+    tests: "A practical scenario question about environment parity and test result validity.",
+    simple: "Whether the environment's build version, configuration, data, and integrations closely match production — otherwise a 'pass' there doesn't reliably predict a 'pass' in production.",
+    simple2: "",
+    strong: "I'd check that the test environment is running the intended build version, that its configuration (feature flags, environment variables) matches what production would use, that any third-party integrations are either the real thing or a realistic simulation rather than an always-succeeding stub, and that the data volume and variety are close enough to production to surface scale-related issues. If any of those diverge significantly, I'd treat a 'pass' there as provisional, not conclusive, and flag the gap.",
+    example: "An environment using a mocked payment gateway that always approves will never catch a timeout-handling bug that only the real gateway can trigger.",
+    followups: ["How would you advocate for closing an environment gap you found, given limited infrastructure budget?", "What's the difference between a staging environment and a UAT environment?"],
+    good: ["List concrete things to check (build version, config, integrations, data) rather than a vague 'make sure it's similar to prod.'"],
+    bad: ["Assuming any test environment automatically represents production behavior."]
+  },
+  {
+    q: "A stakeholder says 'the app works, all the features are there' — but complains it 'feels slow and clunky.' How do you explain what's going on, using terms from this lesson?",
+    tests: "Whether you can translate a vague stakeholder complaint into the functional vs. non-functional requirement distinction — a very realistic communication scenario.",
+    simple: "The functional requirements are met — the features exist and work — but non-functional requirements like performance and usability are the actual problem, and those need their own dedicated testing, not just feature checklists.",
+    strong: "That's a textbook functional-vs-non-functional gap: the features (functional requirements) are all present and technically working, but the qualities of how they work — response time, responsiveness, perceived usability — are the non-functional requirements, and those are failing even though nothing is technically 'broken.' I'd explain that a checklist of 'does the feature exist and work' isn't the same as 'is the feature fast and pleasant enough to use,' and that closing this gap needs targeted performance and usability testing, not just more functional test cases.",
+    example: "A form that saves data correctly on every submit, but takes four seconds and two confusing steps to do it, is functionally complete and non-functionally broken.",
+    followups: ["How would you measure 'feels slow' objectively?", "How would you prioritize fixing this against a backlog of new feature requests?"],
+    good: ["Name the functional/non-functional distinction explicitly as the explanation — this question is designed to test if that connection is automatic for you."],
+    bad: ["Dismissing the stakeholder's complaint as 'just an opinion' instead of translating it into a testable category."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LESSON 3</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
