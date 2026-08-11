@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 2 · Lesson 3 — Exploratory, Ad-hoc, Usability, Compatibility &amp; Cross-browser</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:52px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:22px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 14px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:16px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 14px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:15px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  .chiprow{ display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px; }
+  .chip{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; background:var(--surface-2); border:1px solid var(--line); border-radius:100px; padding:5px 12px; color:var(--ink-muted); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 2 — Testing Types &nbsp;·&nbsp; Lesson 3</div>
+        <h1 class="title">Exploratory, Ad-hoc, Usability, Compatibility &amp; Cross-browser Testing</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The testing types that lean on human judgment instead of a script — where creativity, empathy for the user, and real-world variety of devices do the finding.</p>
+    <div class="lesson-nav"><a href="level2-lesson2.html" style="color:inherit;">← Level 2, Lesson 2: Unit, Integration, System, E2E &amp; Acceptance Testing</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#exploratory" data-track="exploratory">1. Exploratory Testing</a>
+    <a href="#adhoc" data-track="adhoc">2. Ad-hoc Testing</a>
+    <a href="#explore-vs-adhoc" data-track="explore-vs-adhoc">3. Exploratory vs Ad-hoc</a>
+    <a href="#usability" data-track="usability">4. Usability Testing</a>
+    <a href="#compatibility" data-track="compatibility">5. Compatibility Testing</a>
+    <a href="#crossbrowser" data-track="crossbrowser">6. Cross-browser Testing</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="exploratory">
+      <h2>1. Exploratory Testing</h2>
+      <p><b>Concept.</b> Exploratory testing is simultaneous learning, test design, and test execution — a tester actively explores the application with a goal in mind, using what they discover in the moment to decide what to try next, instead of following a script written in advance.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Scripted test cases can only check what someone already thought to write down. Exploratory testing uses a skilled tester's curiosity and domain knowledge to find the things nobody thought to script — it's one of the strongest tools against the pesticide paradox from Level 1.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Despite being unscripted, good exploratory testing isn't random — it's usually structured around a <b>charter</b>: a short, focused mission statement for a time-boxed session (e.g. "explore the file-upload feature for 45 minutes, focusing on unusual file types and interrupted uploads"). The tester takes notes as they go, and those notes often turn into new formal test cases afterward. This structured version is often called <b>session-based test management</b>.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Given a charter to explore a newly built file-upload feature, a tester might try uploading a 0-byte file, a file with no extension, hitting the browser's back button mid-upload, or uploading the same file twice in quick succession — none of which may be in any written test case, but all realistic things a real user might accidentally do.</p>
+      </div>
+    </section>
+
+    <section class="block" id="adhoc">
+      <h2>2. Ad-hoc Testing</h2>
+      <p><b>Concept.</b> Ad-hoc testing is informal, unstructured testing done without any plan, charter, or documentation — the tester just uses the application freely, relying purely on intuition and experience to try to break it.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>It's fast and requires no preparation, which makes it useful for a quick gut-check on a build, or for an experienced tester to poke at an area they have a hunch about — but because there's no plan and often no record of what was tried, it's hard to reproduce or repeat systematically.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>No charter, no test cases, no formal notes — just spontaneous, free-form interaction with the software, usually done in short unplanned bursts.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Between meetings, a tester spends ten minutes just clicking randomly around a new settings page with no particular goal, and happens to notice that rapidly toggling a switch causes a visual glitch — found by accident, not by plan.</p>
+      </div>
+    </section>
+
+    <section class="block" id="explore-vs-adhoc">
+      <h2>3. Exploratory vs Ad-hoc — the pairing interviewers love here</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Exploratory Testing</th><th>Ad-hoc Testing</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Structure</td><td>Has a charter/goal; often time-boxed</td><td>No plan, no goal, no structure</td></tr>
+            <tr><td class="k">Documentation</td><td>Notes taken during the session, often become new test cases</td><td>Usually none</td></tr>
+            <tr><td class="k">Repeatability</td><td>Reasonably repeatable — the charter can be re-run</td><td>Hard to repeat — it wasn't planned in the first place</td></tr>
+            <tr><td class="k">Best for</td><td>Deliberately probing a specific risky or new area</td><td>A quick, informal gut-check with no setup cost</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">Memory hook: exploratory testing is "structured freedom" — a real goal, no fixed script. Ad-hoc testing is freedom with no goal at all.</p>
+    </section>
+
+    <section class="block" id="usability">
+      <h2>4. Usability Testing</h2>
+      <p><b>Concept.</b> Usability testing evaluates how easy, intuitive, and pleasant a system is for real users to actually use — not whether features work, but whether people can figure out how to use them without frustration.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>This is the non-functional requirement category from Level 1 that's hardest to catch with normal functional test cases, because "it works" and "it's usable" are genuinely different questions. A feature can be bug-free and still be a usability failure.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Usually involves observing real or representative users attempting realistic tasks, without guiding them — watching where they hesitate, misclick, or give up, and often measuring things like task completion rate, time on task, and number of errors.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Watching five people try to check out on an e-commerce site without any instructions. Three of them can't find the "Apply Coupon" field because it's hidden behind a collapsed section — nothing is technically broken, but the design is failing real users.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Treating usability as "just an opinion" and therefore untestable. It can be measured — task success rate, time to complete, error count — even though it also involves subjective judgment.</p>
+    </section>
+
+    <section class="block" id="compatibility">
+      <h2>5. Compatibility Testing</h2>
+      <p><b>Concept.</b> Compatibility testing checks that the software works correctly across the different environments real users actually have — operating systems, devices, hardware, screen sizes, network conditions, and software versions.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>"It works on my machine" is a famous trap for exactly this reason — your dev or test machine is one environment out of thousands real users might have. A bug that only appears on one specific OS version is still a real bug for the users who have it.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Build a compatibility matrix of the environments that matter most — usually prioritized using real analytics on what your actual users run, not guesswork — and test critical flows across that matrix rather than trying to cover every possible combination (which, per the "exhaustive testing is impossible" principle, you can't).</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A mobile app works flawlessly on the latest iPhone but crashes on a three-year-old budget Android device with less memory — a real compatibility gap that only shows up by testing the actual device, not just the newest one.</p>
+      </div>
+    </section>
+
+    <section class="block" id="crossbrowser">
+      <h2>6. Cross-browser Testing</h2>
+      <p><b>Concept.</b> Cross-browser testing is compatibility testing narrowed specifically to web browsers — checking that a web application renders and behaves correctly across different browsers (Chrome, Safari, Firefox, Edge) and their versions.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Browsers don't all implement CSS and JavaScript identically. A layout, animation, or even a form validation behavior can differ subtly — or dramatically — from one browser to another, purely because of how each browser's engine interprets the same code.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A checkout form's date picker looks and works perfectly in Chrome, but in Safari the native date input renders differently and a JavaScript validation script that assumed Chrome's date format silently fails — same code, different real-world result.</p>
+      </div>
+
+      <h3 class="sub">Relationship to compatibility testing</h3>
+      <p>Cross-browser testing is a subset of compatibility testing — compatibility is the broad umbrella (OS, devices, hardware, network, browsers); cross-browser zooms in on just the browser dimension of that matrix.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 2, Lesson 3</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 2 · Lesson 4 — Performance, Security, Accessibility &amp; the rest of Non-Functional Testing</b></div>
+    <div class="l"><span class="mono">Coming soon</span></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What's the difference between exploratory testing and ad-hoc testing? A lot of people think they're the same thing.",
+    tests: "The signature comparison for this lesson — checks whether you know exploratory testing is structured (charter, notes, repeatable) while ad-hoc is genuinely unstructured.",
+    simple: "Exploratory testing has a goal or charter guiding a time-boxed session, and notes get taken that can become real test cases. Ad-hoc testing has no plan at all — it's just spontaneous poking around with no goal and usually no record of what was tried.",
+    strong: "Both are unscripted in the sense that there's no predefined step-by-step test case, but exploratory testing is still structured — it's guided by a charter or mission for a time-boxed session, and the tester takes notes as they go, which often turn into new formal test cases afterward. That structure makes exploratory testing reasonably repeatable and easy to report on. Ad-hoc testing has none of that: no charter, no notes, no plan — just free-form interaction relying purely on the tester's intuition in the moment. It's faster to start but much harder to repeat or communicate what was actually covered.",
+    example: "Exploratory: 'spend 45 minutes on the new file upload feature, focusing on unusual file types' with notes taken throughout. Ad-hoc: ten unplanned minutes clicking around a settings page between meetings.",
+    followups: ["What's session-based test management, and how does it formalize exploratory testing?", "When would ad-hoc testing actually be the right choice over exploratory?"],
+    good: ["Emphasize the charter and note-taking as the concrete difference — 'structured freedom vs. no structure' is the cleanest framing."],
+    bad: ["Saying they're interchangeable terms for the same thing — that's exactly the misconception this question checks for."]
+  },
+  {
+    q: "When would you choose exploratory testing over just running your existing scripted test cases?",
+    tests: "Checks whether you understand exploratory testing's actual value proposition, connecting back to the pesticide paradox from Level 1.",
+    simple: "When I need to find things the existing test cases were never written to check — a brand-new feature, an area with thin documentation, or when I suspect the existing suite has gone stale and stopped finding new bugs.",
+    strong: "Scripted test cases are excellent at consistently re-checking known, well-understood behavior, but by definition they can only catch what someone already thought to write down. I'd lean on exploratory testing for a newly built feature that doesn't have mature test cases yet, for areas where requirements were ambiguous or documentation is thin, or periodically even on mature features — this connects directly to the pesticide paradox, where a fixed regression suite stops finding new bugs over time precisely because it never explores outside its own script.",
+    example: "A brand-new checkout redesign gets exploratory sessions in its first sprint, before there's even a mature scripted regression suite for it yet.",
+    followups: ["How would you balance time between scripted regression and exploratory testing in a typical sprint?", "How do you make exploratory testing results useful to a team that expects formal test cases?"],
+    good: ["Explicitly connect this back to the pesticide paradox — it shows the concepts are linked in your head, not memorized in isolation."],
+    bad: ["Suggesting exploratory testing should replace scripted testing entirely — the strong answer treats them as complementary."]
+  },
+  {
+    q: "How would you structure an exploratory testing session so it's not just aimless clicking?",
+    tests: "A practical process question checking familiarity with charters and session-based test management, not just the definition.",
+    simple: "Give the session a specific charter — a focused goal, a time box, and a defined area to explore — and take notes throughout so findings and coverage are traceable afterward.",
+    strong: "I'd write a short charter before starting — something like 'explore the coupon-code flow for 30 minutes, focusing on unusual or expired codes and interactions with the cart total' — so the session has a clear focus even without a fixed script. I'd time-box it, since open-ended sessions tend to drift, and take running notes on what I tried, what I found, and what I didn't get to, so the session is reportable and at least partially repeatable afterward. Any interesting findings, whether bugs or just risky-looking areas, become candidates for new formal test cases so the coverage isn't lost once the session ends.",
+    example: "A 45-minute charter on the new file upload feature might yield three logged bugs and two new permanent regression test cases by the end of the session.",
+    followups: ["What's a 'charter' in session-based test management, specifically?", "How would you report exploratory testing results to a manager who wants to know 'what got tested'?"],
+    good: ["Name the concrete mechanics: charter, time-box, notes — this is what separates a real answer from a vague 'just explore it.'"],
+    bad: ["Describing exploratory testing as inherently unplannable or unmanageable — that undersells how it's actually run on real teams."]
+  },
+  {
+    q: "How do you test something as subjective as 'usability'? Isn't that just an opinion?",
+    tests: "A common pushback-style question checking whether you can defend usability testing as measurable, not purely subjective.",
+    simple: "There's a subjective element, but usability can also be measured concretely — task completion rate, time on task, number of errors or hesitations — by watching real or representative users attempt real tasks without guidance.",
+    strong: "It's partly subjective, but usability testing isn't just 'do you like this design' — it's grounded in observing real behavior. I'd have representative users attempt realistic tasks with no guidance, and track concrete signals: did they complete the task at all, how long did it take, how many wrong turns or errors did they make, where did they hesitate or ask for help. Those are measurable, comparable numbers, even though the underlying experience is subjective. The subjective part comes in when interpreting why something is confusing, but the fact that something is confusing is usually observable, not just a matter of opinion.",
+    example: "If 4 out of 5 test users can't find the 'Apply Coupon' field within 20 seconds, that's a measurable usability finding, not just someone's aesthetic preference.",
+    followups: ["What's the difference between usability testing and a UX review by a designer?", "How would you usability-test something without access to real users?"],
+    good: ["Give concrete measurable signals (completion rate, time, errors) rather than conceding it's 'just opinion.'"],
+    bad: ["Agreeing that it's purely subjective and can't really be tested — that's the trap this question sets."]
+  },
+  {
+    q: "Stakeholders say the app 'feels confusing' but no functional bugs have been found. How do you investigate?",
+    tests: "A realistic scenario testing whether you'd reach for usability testing methodology rather than just shrugging at a vague complaint.",
+    simple: "I'd treat 'confusing' as a usability signal, not a bug report, and investigate with usability testing — watching real or representative users attempt key tasks unguided, and see where they actually get stuck.",
+    strong: "A vague 'it feels confusing' complaint with no functional bugs found is a strong signal to switch tools from functional testing to usability testing. I'd identify the core tasks users are expected to complete, then observe several real or representative users attempting those tasks without guidance, watching specifically for hesitation, wrong clicks, or giving up — rather than asking them what they think, since people are often more accurate showing confusion than describing it. I'd turn what I observe into specific, concrete findings — '3 of 5 users missed the primary CTA because it's below the fold' — which is far more actionable for the team than the original vague complaint.",
+    example: "Watching real usage might reveal that users repeatedly try to click a non-interactive heading expecting it to be a button — a concrete, fixable usability finding hiding behind a vague complaint.",
+    followups: ["Would you run this with real customers or internal staff? What's the trade-off?", "How many users do you typically need to observe before finding meaningful usability patterns?"],
+    good: ["Translate the vague complaint into a concrete investigation method (usability testing with observed tasks) rather than treating it as unfalsifiable."],
+    bad: ["Dismissing the feedback as 'just an opinion' since no functional bug was found."]
+  },
+  {
+    q: "You can't test every possible device and browser combination — how do you decide what compatibility matrix to actually test?",
+    tests: "A prioritization scenario connecting compatibility testing back to the 'exhaustive testing is impossible' principle from Level 1.",
+    simple: "Prioritize by real usage data — which browsers, OS versions, and devices your actual users have, from analytics — rather than guessing or testing everything evenly.",
+    strong: "This is the 'exhaustive testing is impossible' principle applied directly to compatibility — the combination space is effectively infinite, so I wouldn't try to cover it evenly. I'd pull real analytics on what browsers, OS versions, and devices actual users are running, and build the compatibility matrix around the combinations covering the large majority of real traffic, plus any combination the business specifically cares about even if it's a smaller slice — an older device common among a key customer segment, for instance. Anything far outside that realistic usage picture gets deprioritized, not because it's unimportant in theory, but because effort has to go where the actual risk and actual users are.",
+    example: "If analytics show 70% of users are on Chrome and Safari on recent OS versions, that's where the bulk of the compatibility matrix goes, with a smaller slice reserved for older browsers still used by a meaningful minority.",
+    followups: ["What would you do if the business insists on supporting a very old browser with almost no real usage?", "How would you keep a compatibility matrix up to date as user device trends shift over time?"],
+    good: ["Explicitly name real usage analytics as the prioritization input, and connect this back to exhaustive-testing-is-impossible."],
+    bad: ["Suggesting you'd 'test as many combinations as time allows' without a concrete method for choosing which ones."]
+  },
+  {
+    q: "A layout looks perfect in Chrome but is visibly broken in Safari. How would you investigate and report this?",
+    tests: "A practical cross-browser scenario checking your process for isolating and communicating a browser-specific bug.",
+    simple: "I'd reproduce it consistently in Safari, note the exact browser/OS version, try to narrow down which specific CSS or JS is behaving differently, and report it with clear repro steps and a side-by-side screenshot comparison against Chrome.",
+    strong: "First I'd confirm it's consistently reproducible in Safari and capture the exact browser version and OS, since browser bugs are often version-specific. I'd try to narrow the cause — using the browser's dev tools to see which specific style rule or script is behaving differently — rather than just reporting 'it's broken in Safari.' When reporting it, I'd include a side-by-side screenshot or recording comparing the correct Chrome rendering against the broken Safari rendering, the exact versions involved, and clear repro steps, so the developer doesn't have to rediscover the browser-specific cause themselves.",
+    example: "A flexbox gap property that Chrome renders correctly but an older Safari version doesn't fully support — narrowing it to that one CSS property, rather than just 'the page looks wrong,' saves the developer significant investigation time.",
+    followups: ["How would you decide if this bug is worth fixing, given it only affects one browser?", "What tools would you use to test across browsers without owning every physical device?"],
+    good: ["Emphasize narrowing down the specific cause and providing a clear side-by-side comparison — that's what separates a useful bug report from a vague one."],
+    bad: ["Reporting just 'broken in Safari' without version details, repro steps, or any attempt to narrow the cause."]
+  },
+  {
+    q: "With only two days left before release, how would you split your time between exploratory testing and scripted regression testing?",
+    tests: "A prioritization scenario forcing you to weigh two testing types against each other under real time pressure.",
+    simple: "I'd run scripted regression first to protect against known, previously-working functionality breaking, and use any remaining time for targeted exploratory testing on the highest-risk or most recently changed areas — not a 50/50 split by default.",
+    strong: "I wouldn't split this evenly by default — I'd think about risk first. Scripted regression protects against reintroducing known issues in stable, already-verified functionality, so with a hard release deadline, I'd prioritize running it, especially on areas touched by recent changes, since regressions there are the most likely and most embarrassing kind of bug to ship. Any time left over, I'd spend on tightly scoped exploratory sessions — not broad, unfocused exploration, but charters targeted at the newest or riskiest features, since that's where scripted coverage is thinnest and exploratory testing adds the most unique value in limited time.",
+    example: "With two days, I might spend day one on full regression of core flows, and day two on two or three focused 45-minute exploratory charters on whatever shipped most recently.",
+    followups: ["What would you do if regression testing itself surfaces a blocking bug on day two?", "How would you communicate testing risk to stakeholders if you can't cover everything in two days?"],
+    good: ["Give a reasoned prioritization (regression first for known-risk protection, targeted exploratory for new-risk discovery) rather than an arbitrary split."],
+    bad: ["Picking one type exclusively without acknowledging what's given up by skipping the other."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 2 · LESSON 3</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
