@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 9 · Lesson 2 — Page Object Model, Data-Driven Testing, Assertions &amp; Flaky Tests</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:46px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  pre.code{ background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13.5px; overflow-x:auto; margin:14px 0; line-height:1.6; }
+  pre.code .c{ color:var(--accent); }
+  .bp-item{ display:grid; grid-template-columns: 26px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .bp-item:last-child{ border-bottom:none; }
+  .bp-num{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color:var(--accent); font-weight:700; }
+  .bp-item h4{ font-size:15.5px; margin:0 0 4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .bp-item p{ font-size:14.5px; margin:0; color:var(--ink-muted); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 9 — Automation Testing &nbsp;·&nbsp; Lesson 2 (final of Level 9)</div>
+        <h1 class="title">Page Object Model, Data-Driven Testing, Assertions &amp; Flaky Tests</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">How real automation suites stay maintainable at scale — and the single problem that quietly kills more automation efforts than anything else.</p>
+    <div class="lesson-nav"><a href="level9-lesson1.html" style="color:inherit;">← Level 9, Lesson 1: Automation Fundamentals — Why, What, Tools &amp; Locators</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#pom" data-track="pom">1. Page Object Model</a>
+    <a href="#data-keyword" data-track="data-keyword">2. Data-Driven vs Keyword-Driven Testing</a>
+    <a href="#assertions" data-track="assertions">3. Assertions</a>
+    <a href="#suites-runners" data-track="suites-runners">4. Test Suites &amp; Test Runners</a>
+    <a href="#flaky" data-track="flaky">5. Flaky Tests</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="pom">
+      <h2>1. Page Object Model (POM)</h2>
+      <p><b>Concept.</b> A design pattern where each page or component of the app gets its own object encapsulating that page's locators and the actions that can be performed on it — separating "how to find and interact with this page" from "what the test actually verifies."</p>
+      <pre class="code"><span class="c">// LoginPage.js — locators and actions live here, once</span>
+class LoginPage {
+  emailField = '#email';
+  passwordField = '#password';
+  submitButton = '[data-testid="submit"]';
+
+  login(email, password) {
+    type(this.emailField, email);
+    type(this.passwordField, password);
+    click(this.submitButton);
+  }
+}
+
+<span class="c">// login.test.js — the test itself stays clean and readable</span>
+loginPage.login('user@test.com', 'Passw0rd!');
+assertRedirectedTo('/dashboard');</pre>
+      <p>This is the direct payoff of the "framework" discussion from Lesson 1: if the login page's HTML changes, exactly one file — <code class="inline">LoginPage.js</code> — needs updating, instead of every individual test script that happens to interact with login.</p>
+    </section>
+
+    <section class="block" id="data-keyword">
+      <h2>2. Data-Driven vs Keyword-Driven Testing</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Data-Driven Testing</th><th>Keyword-Driven Testing</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Concept</td><td>Same test logic runs repeatedly against different input data, pulled from an external source</td><td>Test steps are expressed as reusable keywords ("Click," "EnterText") interpreted by a framework</td></tr>
+            <tr><td class="k">Adding a new test case</td><td>Add a new row of data — no new code</td><td>Combine existing keywords in a new sequence — little or no code</td></tr>
+            <tr><td class="k">Best for</td><td>The same flow tested with many input variations (a great fit for EP/BVA-style coverage from Level 3)</td><td>Letting less technical team members design test cases without writing scripts</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A login test written once, data-driven from a spreadsheet of 20 rows — valid credentials, wrong password, empty fields, SQL-injection-like text — runs the exact same script logic 20 times, once per row, without writing 20 separate test scripts.</p>
+      </div>
+    </section>
+
+    <section class="block" id="assertions">
+      <h2>3. Assertions</h2>
+      <p><b>Concept.</b> An assertion is the actual check inside a test script — a statement comparing an actual value or state against an expected one, which is what determines pass or fail. Without an assertion, a script can click around a page and prove absolutely nothing; the assertion is the entire point.</p>
+      <pre class="code">assertEquals(actualTotal, expectedTotal);
+assertTrue(isElementVisible(confirmationBanner));
+assertEquals(response.status, 200);</pre>
+      <p class="muted">This is Level 4's Expected Result vs Actual Result, made literal and executable in code.</p>
+    </section>
+
+    <section class="block" id="suites-runners">
+      <h2>4. Test Suites &amp; Test Runners</h2>
+      <p>A <b>test suite</b> is a collection of test cases grouped for a purpose — a "smoke suite," a "full regression suite." A <b>test runner</b> is the tool that actually executes a suite and produces a report — the engine, not the tests themselves.</p>
+    </section>
+
+    <section class="block" id="flaky">
+      <h2>5. Flaky Tests</h2>
+      <p><b>Concept.</b> A flaky test passes and fails inconsistently with no underlying code change — the automation-specific version of the intermittent bug from Level 5, and arguably the single biggest threat to a suite's long-term usefulness.</p>
+
+      <h3 class="sub">Why it matters so much</h3>
+      <p>The damage isn't just the individual failed run — it's what flakiness does to trust. The moment a team learns that a red "failed" result might just be noise, people start re-running failures "to see if it clears up" instead of investigating, and eventually start ignoring failures altogether. At that point, the suite has stopped doing its job even though it's still technically running.</p>
+
+      <div class="bp-item">
+        <div class="bp-num">1</div>
+        <div><h4>Improper waits</h4><p>The Lesson 1 problem — interacting with an element before it's actually ready.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">2</div>
+        <div><h4>Test interdependence</h4><p>One test secretly relies on state left behind by another — the exact independence best practice from Level 4, now causing failures based on execution order.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">3</div>
+        <div><h4>Unstable test environment or data</h4><p>Shared test data another process modifies mid-run, or an environment that isn't consistently available (Level 1's test environment concept).</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">4</div>
+        <div><h4>Unreliable external dependencies</h4><p>A third-party API or service the test depends on that isn't always fast or available.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">5</div>
+        <div><h4>Animations and timing-sensitive UI</h4><p>A script that interacts mid-transition, before an element settles into its final, stable state.</p></div>
+      </div>
+
+      <h3 class="sub">Fixing it</h3>
+      <p>Use precise explicit waits instead of arbitrary sleeps, enforce real test independence, stabilize the test environment and data, and use stable locators. Retrying a flaky test automatically can be a reasonable short-term stopgap, but it's not a fix — it hides the underlying instability rather than resolving it, and a genuinely healthy suite treats a flaky test as a bug in the automation to actively investigate, not a nuisance to quietly work around.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 9, Lesson 2</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 9.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 9 complete<b>Level 10 — Performance Testing</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What is the Page Object Model, and why does it matter for maintainability?",
+    tests: "Checks whether you understand POM as the concrete solution to the framework maintenance problem raised in Lesson 1, not just an abstract pattern name.",
+    simple: "POM gives each page its own object holding that page's locators and actions, separate from the tests themselves — so when the page's UI changes, only one file needs updating, instead of every test script that happens to touch that page.",
+    strong: "Page Object Model is a design pattern where each page or component in the application under test gets its own dedicated object, encapsulating both its locators and the actions that can be performed on it. Test scripts then call high-level methods on that object — like login(email, password) — instead of containing raw locator logic directly. The maintainability payoff is direct: if the login page's HTML structure changes, exactly one file, the LoginPage object, needs updating, rather than every individual test script that happens to interact with login. This is the concrete answer to why a real automation framework matters, from Lesson 1 — POM is one of the most common ways that structure actually gets implemented.",
+    example: "A developer renaming a CSS class on the submit button only requires updating one locator inside LoginPage.js, not hunting down and fixing every test file that clicks that button directly.",
+    followups: ["What would a test file look like without POM, and why is that worse?", "Would you apply POM to a mobile app or an API test suite too, or is it web-UI specific?"],
+    good: ["Give the concrete maintenance payoff (one file to update) rather than describing POM only as an abstract organizational idea."],
+    bad: ["Describing POM vaguely as 'organizing your code better' without the specific locator-centralization insight."]
+  },
+  {
+    q: "What's the difference between data-driven and keyword-driven testing?",
+    tests: "Checks whether you can distinguish 'same logic, different data' from 'reusable action vocabulary' as two different automation approaches.",
+    simple: "Data-driven testing runs the same test logic repeatedly against different sets of input data pulled from an external source. Keyword-driven testing represents test steps as reusable keywords, like 'Click' or 'EnterText,' that a framework interprets, letting people build new test cases by combining keywords without writing new code.",
+    strong: "Data-driven testing separates test data from test logic — the same underlying script runs multiple times, once per row of external data, so adding a new test case is as simple as adding a new row to a spreadsheet or CSV, with zero new code. Keyword-driven testing separates the test's actions from their implementation — steps are expressed as human-readable keywords like 'Click,' 'EnterText,' or 'VerifyText,' which a framework translates into actual automation code behind the scenes, letting someone build a new test case by combining existing keywords, often without needing to write code at all.",
+    example: "Data-driven: the same login test script runs 20 times against 20 rows of credential data. Keyword-driven: a non-technical team member designs a new test case by sequencing 'Open, EnterText, Click, VerifyText' keywords in a spreadsheet.",
+    followups: ["Could a test suite reasonably combine both approaches? What would that look like?", "Which approach would be more appropriate for a team without any programmers on it?"],
+    good: ["Distinguish clearly: data-driven varies input data against fixed logic; keyword-driven varies the sequence of reusable, human-readable actions."],
+    bad: ["Treating the two as synonyms for 'automation with reusable parts,' without the specific distinction."]
+  },
+  {
+    q: "What is an assertion, and why is it considered the actual point of an automated test?",
+    tests: "Checks whether you understand that automation without assertions accomplishes nothing verifiable — a foundational but sometimes overlooked point.",
+    simple: "An assertion is the specific check in a test script comparing an actual result against an expected one, and it's what determines pass or fail — without it, a script can perform every step correctly and still prove absolutely nothing, since nothing was ever actually verified.",
+    strong: "An assertion is the explicit comparison in a test script between what actually happened and what was expected to happen — this is Level 4's Expected Result vs. Actual Result made literal and executable. It matters enormously because a script that clicks through an entire flow with no assertions has performed actions but verified nothing at all; it will report success regardless of whether the underlying behavior was actually correct. The assertion is what transforms 'a script that does stuff' into 'a test that proves something,' which is the entire reason automated testing exists in the first place.",
+    example: "A script that logs in and navigates to a dashboard but never asserts that the dashboard actually loaded correctly will report 'passed' even if the dashboard is completely broken, as long as no error was thrown along the way.",
+    followups: ["What's the risk of a test with too many assertions crammed into one test case?", "How would you decide what's actually worth asserting on for a given test?"],
+    good: ["Make the point explicit: without assertions, nothing is actually being verified, regardless of how many steps the script performs."],
+    bad: ["Describing assertions only as 'a line of code that checks something' without explaining why they're the entire point of the test."]
+  },
+  {
+    q: "What's the difference between a test suite and a test runner?",
+    tests: "A quick vocabulary-precision check on two terms that are easy to conflate.",
+    simple: "A test suite is a collection of test cases grouped for a purpose, like a smoke suite or full regression suite. A test runner is the tool that actually executes that suite and produces a report — the engine, not the tests themselves.",
+    strong: "A test suite is a curated collection of individual test cases grouped together for a specific purpose — a smoke suite covering critical paths, or a full regression suite covering everything. A test runner is the actual tool or program responsible for executing those tests and reporting the results — it's the engine that runs the suite, not the content of the suite itself. The distinction is content versus execution: the suite defines what gets tested, the runner is what actually runs it and tells you what happened.",
+    example: "A 'smoke suite' might contain 15 specific test cases; a test runner is what actually executes all 15 and generates the pass/fail report at the end.",
+    followups: ["Can the same test suite be executed by different test runners?", "What would you look for in a test runner's report beyond just pass/fail counts?"],
+    good: ["State the content-vs-execution distinction clearly and concisely."],
+    bad: ["Using the two terms interchangeably as if they mean the same thing."]
+  },
+  {
+    q: "Why is your Selenium test flaky? Walk me through how you'd investigate.",
+    tests: "The exact classic automation interview question — checks a structured investigative approach across the known causes of flakiness, not just a guess.",
+    simple: "I'd systematically check the most common causes: improper waits (interacting before an element is ready), hidden dependencies on another test's leftover state, unstable test data or environment, unreliable external dependencies, or animation/transition timing — rather than assuming it's a real bug in the application right away.",
+    strong: "I wouldn't jump to assuming the application itself has an intermittent bug — flakiness is very often in the automation, not the product. I'd first check the wait strategy: is the script using precise explicit waits for specific conditions, or relying on fragile fixed sleeps or an overly broad implicit wait that might not actually cover the right moment. Next, I'd check for test interdependence — does this test only fail when run after certain other tests, suggesting it's relying on state left behind by something else, violating the independence principle from Level 4. I'd also check whether the test depends on an unstable environment, shared test data another process might be modifying, or an unreliable external dependency like a third-party API. And I'd check for UI timing issues, like the script interacting with an element mid-animation before it settles into its final state.",
+    example: "If the test only fails when run in a specific order alongside other tests, but always passes in isolation, that's a strong signal of hidden test interdependence rather than a real waiting or timing problem.",
+    followups: ["How would you determine whether a flaky failure is a real intermittent product bug versus an automation problem?", "What would you do in the short term while investigating, to avoid the flaky test blocking releases?"],
+    good: ["Walk through multiple concrete causes in a structured order, rather than guessing at just one possibility."],
+    bad: ["Immediately assuming the flaky test reveals a real product bug without considering the far more common automation-side causes first."]
+  },
+  {
+    q: "Once you've identified a flaky test, how do you actually fix it — and why is 'just add a retry' not a real fix?",
+    tests: "Checks whether you understand retries as a stopgap rather than a resolution, connecting back to root-cause thinking.",
+    simple: "Fix the actual root cause — proper explicit waits, real test independence, stable test data/environment, and stable locators — rather than just retrying automatically, since a retry hides the instability without resolving it and can mask a real intermittent product bug hiding underneath.",
+    strong: "The real fix depends on the root cause identified through investigation: replacing fragile waits with precise explicit ones, enforcing genuine test independence so tests don't rely on each other's leftover state, stabilizing test data and environment, or switching to more resilient locators. Automatically retrying a failed test can be a reasonable short-term stopgap to unblock a release, but it's not a real fix — it just hides the instability rather than resolving it, and worse, it risks silently retrying past an actual intermittent product bug rather than surfacing it. A healthy team treats a flaky test as its own bug to investigate and fix, not a permanent nuisance to auto-retry around indefinitely.",
+    example: "A team that quietly adds a 3x auto-retry to every flaky test, without ever investigating the root cause, will eventually have a suite that's technically 'green' while masking real, intermittent product issues underneath.",
+    followups: ["How would you prioritize fixing flaky tests against other work, given limited time?", "What's a reasonable policy for how long a known-flaky test should be tolerated before being quarantined or removed?"],
+    good: ["Explicitly call out that retries mask rather than fix the problem, and connect this to the risk of hiding a real intermittent bug."],
+    bad: ["Presenting automatic retries as a legitimate, sufficient fix on their own."]
+  },
+  {
+    q: "Why do flaky tests damage a team's trust in an automated suite specifically, beyond just being individually annoying?",
+    tests: "Checks whether you understand the compounding, systemic damage flakiness causes — not just that it's a minor inconvenience.",
+    simple: "Once people learn a red failure might just be noise rather than a real problem, they stop investigating failures and start re-running or ignoring them by default — at which point the suite has stopped actually functioning as a reliable safety net, even though it's still technically running.",
+    strong: "The damage compounds because trust, once lost, changes behavior broadly, not just around the specific flaky test. Once a team learns that a failed result might just be noise, the natural response is to stop treating every failure as meaningful — people start reflexively re-running failures 'to see if it clears up' instead of investigating, and eventually start ignoring red results altogether, including ones that represent a genuinely real, serious bug. At that point, the automated suite has silently stopped doing its actual job — catching real regressions before they ship — even though it's still technically executing and producing reports. This is exactly why flaky tests deserve urgent attention rather than being tolerated as a minor annoyance.",
+    example: "A team that's learned to ignore a chronically flaky checkout test might miss the one time that same test fails because of a genuine, serious regression, precisely because they've stopped paying attention to its results.",
+    followups: ["How would you measure or track flakiness across a large suite to catch this problem early?", "What would you do if leadership wanted to just delete flaky tests rather than fix them?"],
+    good: ["Articulate the behavioral chain — noise leads to ignored failures leads to real bugs slipping through — rather than just saying flakiness is 'bad.'"],
+    bad: ["Describing flaky tests as merely a minor annoyance without explaining the deeper trust and safety-net erosion they cause."]
+  },
+  {
+    q: "Your team's regression suite takes 3 hours to run, and developers have started ignoring its failures. What do you do?",
+    tests: "A realistic, high-stakes scenario combining flaky-test trust erosion with suite health and team culture — checks whether you can propose a real, structured intervention.",
+    simple: "I'd first investigate whether failures are genuinely flaky or represent real bugs being ignored, fix or quarantine the flaky ones, and separately work on speeding up the suite — likely by parallelizing it or restructuring it along the Testing Pyramid so fewer slow, flaky UI-level checks are relied on — while rebuilding trust by making sure every failure that does get reported is actually investigated and acted on.",
+    strong: "This is really two intertwined problems: trust has eroded, and the suite is too slow to get fast feedback, and I'd address both. First, I'd audit recent failures to understand how many are genuinely flaky versus real bugs that are currently being ignored — that data alone is important to surface to the team, since 'developers are ignoring failures' might mean real bugs are shipping right now. I'd fix or explicitly quarantine identified flaky tests so the signal becomes trustworthy again, and I'd push hard for every remaining failure to be actively investigated rather than dismissed, even temporarily, to rebuild the habit of treating red as meaningful. For the 3-hour runtime itself, I'd look at whether the suite could be parallelized, and whether its shape reflects the Testing Pyramid from Level 2 — an unusually slow suite is often a sign of relying too heavily on slow, flaky UI-level end-to-end tests where faster, more reliable unit or API-level tests could cover the same ground. This isn't a quick fix, but treating it as one problem instead of two would miss half of what's actually broken.",
+    example: "If the audit reveals 30% of 'failures' over the last month were flaky noise and 70% were real, unaddressed bugs, that's a much more urgent finding than the runtime problem alone, and it reframes the whole conversation with the team.",
+    followups: ["How would you get buy-in from developers who've already given up on paying attention to the suite?", "What would you prioritize first if you could only tackle speed or trust this quarter, not both?"],
+    good: ["Recognize this as two connected problems (trust and speed) and address both, tying the speed fix back to the Testing Pyramid from Level 2 — that synthesis is exactly what this question is checking for."],
+    bad: ["Proposing only a speed fix (like parallelizing the suite) without addressing why developers stopped trusting and acting on its results in the first place."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 9 · LESSON 2</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
