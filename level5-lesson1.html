@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 5 · Lesson 1 — Error, Defect, Bug &amp; Failure, the Bug Life Cycle, Severity vs Priority</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:48px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  /* chain */
+  .chain{ display:flex; align-items:stretch; gap:0; margin:20px 0 8px; flex-wrap:wrap; }
+  .chain-box{ flex:1; min-width:130px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px; box-shadow:var(--shadow); }
+  .chain-box h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--accent); margin:0 0 6px; text-transform:uppercase; letter-spacing:.04em; }
+  .chain-box p{ font-size:13.5px; margin:0; color:var(--ink-muted); }
+  .chain-arrow{ display:flex; align-items:center; justify-content:center; padding:0 8px; color:var(--ink-faint); font-size:18px; font-family: ui-monospace, monospace; }
+  .chain-cap{ text-align:center; font-size:12.5px; color:var(--ink-faint); margin:10px 0 26px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  /* lifecycle flow */
+  .flow{ display:flex; flex-direction:column; gap:0; margin:20px 0 8px; }
+  .flow-step{ display:grid; grid-template-columns: 140px 1fr; align-items:center; gap:14px; padding:10px 0; }
+  .flow-name{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; font-weight:700; color:var(--accent-ink); background:var(--accent); padding:8px 10px; border-radius:2px; text-align:center; }
+  .flow-desc{ font-size:14px; color:var(--ink-muted); }
+  .flow-arrow{ text-align:center; color:var(--ink-faint); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:14px; margin-left:70px; }
+  .flow-branch{ margin-left:70px; font-size:12.5px; color:var(--warn); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; padding:4px 0; }
+  /* severity/priority quadrant */
+  .quadrant{ display:grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap:2px; margin:20px 0 10px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--line); }
+  .qcell{ background:var(--surface); padding:16px; }
+  .qcell h5{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); margin:0 0 8px; }
+  .qcell p{ font-size:13.5px; margin:0; color:var(--ink-muted); }
+  .quad-axis-x{ display:flex; justify-content:space-between; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; color:var(--ink-faint); margin-top:6px; padding:0 4px; }
+  .quad-axis-y{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; color:var(--ink-faint); text-align:center; margin-bottom:6px; }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 5 — Bug / Defect Management &nbsp;·&nbsp; Lesson 1</div>
+        <h1 class="title">Error, Defect, Bug &amp; Failure, the Bug Life Cycle, Severity vs Priority</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The exact chain from a human mistake to a filed ticket, the states a bug moves through, and the two axes — impact and urgency — that decide what gets fixed first.</p>
+    <div class="lesson-nav"><a href="level4-lesson2.html" style="color:inherit;">← Level 4, Lesson 2: Test Case Writing Best Practices + the Login Page Exercise</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#chain" data-track="chain">1. Error, Defect, Bug &amp; Failure</a>
+    <a href="#lifecycle" data-track="lifecycle">2. The Bug Life Cycle</a>
+    <a href="#severity" data-track="severity">3. Severity</a>
+    <a href="#priority" data-track="priority">4. Priority</a>
+    <a href="#quadrant" data-track="quadrant">5. Severity vs Priority</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="chain">
+      <h2>1. Error, Defect, Bug &amp; Failure</h2>
+      <p>Four words that sound like synonyms in casual speech but describe four distinct points in the same chain of events — a favorite fundamentals question precisely because most people have never had to separate them.</p>
+
+      <div class="chain">
+        <div class="chain-box"><h4>Error</h4><p>A human mistake — a developer misreads a requirement, or writes the wrong logic.</p></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-box"><h4>Defect</h4><p>The flaw left behind in the code as a result of that mistake — sits there whether or not anyone has hit it yet.</p></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-box"><h4>Failure</h4><p>The observable, run-time consequence — the system actually misbehaves when that defect gets executed.</p></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-box"><h4>Bug</h4><p>What the defect gets called once a tester finds the failure and formally logs it.</p></div>
+      </div>
+      <div class="chain-cap">Human mistake → latent flaw in code → observed misbehavior → filed report</div>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A developer misreads a requirement and writes <code class="inline">age &gt; 18</code> instead of <code class="inline">age &gt;= 18</code> (the <b>error</b>). That incorrect line of code is now a <b>defect</b> sitting in the codebase — even before anyone tests it. A tester enters age 18 and sees it get rejected when it should be accepted — that's the <b>failure</b>, the defect actually manifesting. The tester writes it up as a <b>bug</b> report.</p>
+      </div>
+
+      <h3 class="sub">The subtle, often-missed point</h3>
+      <p>A defect can exist without ever causing a failure — if the buggy code path never actually gets executed (dead code, or a specific condition nobody has triggered yet), the defect just sits there, silent and undiscovered, sometimes for years.</p>
+    </section>
+
+    <section class="block" id="lifecycle">
+      <h2>2. The Bug Life Cycle</h2>
+      <p>Once a bug is logged, it moves through a defined sequence of states — a workflow, not unlike the state transition testing concept from Level 3, applied to the bug tracking process itself.</p>
+
+      <div class="flow">
+        <div class="flow-step"><div class="flow-name">New</div><div class="flow-desc">Tester logs the bug for the first time.</div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="flow-name">Assigned</div><div class="flow-desc">A lead routes it to a specific developer.</div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="flow-name">Open / In Progress</div><div class="flow-desc">Developer is actively investigating or fixing it.</div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="flow-name">Fixed</div><div class="flow-desc">Developer believes the fix is complete, ready for verification.</div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="flow-name">Retest</div><div class="flow-desc">Tester re-runs the original repro steps (Level 2's "retesting," applied directly).</div></div>
+        <div class="flow-arrow">↓ fix confirmed → <b>Closed</b> &nbsp;·&nbsp; fix fails → <b>Reopened</b> (back to Open)</div>
+      </div>
+
+      <h3 class="sub">Alternate &amp; terminal states</h3>
+      <p>Not every bug follows the straight path above. A few off-ramps exist, and interviewers like asking candidates to tell them apart:</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>State</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Rejected</td><td>Investigated and determined not to be a real bug — working as designed, or a misunderstanding of the requirement.</td></tr>
+            <tr><td class="k">Duplicate</td><td>Already reported under a different bug ID — closed with a reference to the original.</td></tr>
+            <tr><td class="k">Deferred</td><td>A real, valid bug — but deliberately postponed to a future release, usually a lower-priority call.</td></tr>
+            <tr><td class="k">Won't Fix</td><td>A real, valid bug — but the team deliberately decides never to fix it (not worth the cost/risk, or the feature is being deprecated).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="severity">
+      <h2>3. Severity</h2>
+      <p><b>Concept.</b> Severity measures how <i>badly</i> a bug damages the software's functionality — a technical assessment, usually set by the tester who found it, independent of business timing.</p>
+      <ul class="tight">
+        <li><b>Blocker:</b> completely halts testing or usage, no workaround exists (e.g. the app crashes on launch).</li>
+        <li><b>Critical:</b> a major feature is completely broken with no workaround, though the rest of the app still works (e.g. checkout fails entirely).</li>
+        <li><b>Major:</b> a significant feature is broken, but a workaround exists.</li>
+        <li><b>Minor:</b> a small functional issue with limited impact on real usage.</li>
+        <li><b>Trivial:</b> a cosmetic issue — a typo, a misaligned icon — with no functional impact at all.</li>
+      </ul>
+    </section>
+
+    <section class="block" id="priority">
+      <h2>4. Priority</h2>
+      <p><b>Concept.</b> Priority measures how <i>urgently</i> a bug needs to be fixed relative to business goals and release timing — a business/scheduling decision, usually set by a product owner or team lead, often labeled P0 (urgent) through P3 (low).</p>
+      <p>Severity asks "how bad is this?" Priority asks "how soon do we need to deal with it?" — and critically, <b>these two don't always move together.</b></p>
+    </section>
+
+    <section class="block" id="quadrant">
+      <h2>5. Severity vs Priority — the classic 2×2</h2>
+      <p>This exact pairing is one of the most-asked comparisons in all of SQA interviewing, and the reason is this 2×2 — severity and priority are independent axes, and the two "mismatched" quadrants are what interviewers actually want to hear about.</p>
+
+      <div class="quad-axis-y">↑ High Severity</div>
+      <div class="quadrant">
+        <div class="qcell"><h5>High Sev · Low Pri</h5><p>A crash in a rarely-used internal admin tool, touched by one employee once a year. Technically severe, but nobody's blocked right now.</p></div>
+        <div class="qcell"><h5>High Sev · High Pri</h5><p>Checkout crashes for every customer during a live sale. Severe, and it needs fixing immediately.</p></div>
+        <div class="qcell"><h5>Low Sev · Low Pri</h5><p>A slightly awkward line-wrap in a rarely-visited footer. Cosmetic, and nobody's waiting on it.</p></div>
+        <div class="qcell"><h5>Low Sev · High Pri</h5><p>A typo in the company logo or tagline on the homepage. Doesn't break anything, but it's urgent for brand reputation.</p></div>
+      </div>
+      <div class="quad-axis-x"><span>← Low Priority</span><span>High Priority →</span></div>
+
+      <p class="muted">Those bottom-left/top-right cells are the intuitive, "obvious" cases. The two that actually demonstrate understanding in an interview are the mismatched ones — a severe bug nobody urgently needs fixed, and a cosmetically trivial bug that's urgent for non-technical reasons.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 5, Lesson 1</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 5 · Lesson 2 — Writing Bug Reports + Real-World Scenarios</b></div>
+    <div class="l"><span class="mono">Coming soon</span></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "Explain the difference between an error, a defect, a bug, and a failure — in order.",
+    tests: "The classic fundamentals vocabulary question — checks whether you know these are four distinct points in a causal chain, not four synonyms.",
+    simple: "Error is the human mistake that causes it. Defect is the resulting flaw sitting in the code. Failure is the defect actually causing incorrect behavior when it runs. Bug is what the failure gets called once a tester finds and reports it.",
+    strong: "These describe four different points in the same causal chain. An error is the human mistake — a developer misunderstanding a requirement or mistyping a condition. That mistake leaves behind a defect: the actual flaw sitting in the code, which exists whether or not it's ever triggered. When that defect actually gets executed under the right conditions, it produces a failure — the system visibly behaving incorrectly. And once a tester observes that failure and formally logs it, it becomes what everyone informally calls a bug. So the chain runs: human error creates a defect, which under the right conditions causes a failure, which gets reported as a bug.",
+    example: "Misreading a requirement (error) produces a wrong comparison operator in the code (defect); testing age=18 and seeing it wrongly rejected (failure); writing that up in the tracker (bug).",
+    followups: ["Can a defect exist without ever becoming a failure? How?", "Is 'bug' really a formal QA term, or just informal shorthand?"],
+    good: ["Present all four in the correct causal order, not just as a list of definitions."],
+    bad: ["Treating all four as pure synonyms with no real distinction."]
+  },
+  {
+    q: "Can a defect exist in production without ever causing a failure? Explain how.",
+    tests: "Checks the subtle but important point that defects are latent — they don't announce themselves until executed under the right conditions.",
+    simple: "Yes — if the specific buggy code path or condition is never actually triggered (dead code, an edge case nobody has hit, a rarely-used feature), the defect just sits there silently without ever producing an observable failure.",
+    strong: "Yes, and this is an important distinction: a defect is a static property of the code — it exists the moment it's written, regardless of whether it's ever exercised. A failure only happens when that defect actually gets triggered at runtime under the specific conditions that expose it. If a piece of code is rarely called, or a particular edge-case input is never entered by a real user, the defect can sit dormant indefinitely — technically present, but never observed as a failure. This is exactly why exhaustive testing matters as a goal, even though it's impossible in practice: untested code paths are exactly where dormant, unknown defects live.",
+    example: "A bug in a 'delete account' confirmation flow that's rarely used might sit in production for years with zero reported failures, until one day a specific rare combination of actions finally triggers it.",
+    followups: ["How does this relate to the difference between static testing (code review) and dynamic testing (execution)?", "Why might a company choose not to fix a known defect that's never caused a failure?"],
+    good: ["Clearly separate the static existence of a defect from the runtime event of a failure — that's the whole point of this question."],
+    bad: ["Saying no, defects and failures always happen together — that misses the latency this question is checking for."]
+  },
+  {
+    q: "Walk me through the full bug life cycle, including what happens when a fix doesn't actually work.",
+    tests: "Checks whether you know the full state sequence, including the retest step and the reopened branch, not just 'open then closed.'",
+    simple: "New → Assigned → Open/In Progress → Fixed → Retest → Closed if the retest confirms the fix, or Reopened (back to Open) if it doesn't.",
+    strong: "A bug starts as New when a tester first logs it, then gets Assigned to a specific developer. It moves to Open or In Progress while the developer investigates and works on it, then to Fixed once the developer believes the fix is complete. From there it goes to Retest, where a tester re-runs the exact original repro steps — this is literally the 'retesting' concept from Level 2 applied to the bug workflow. If the retest confirms the fix actually works, the bug is Closed. If it doesn't — the original issue still reproduces, or reproduces differently — it gets Reopened and goes back to Open for more work, restarting that part of the cycle.",
+    example: "A checkout bug marked Fixed gets retested using the exact original steps; if the discount still calculates incorrectly, it's Reopened rather than closed on the developer's word alone.",
+    followups: ["What are Rejected, Duplicate, Deferred, and Won't Fix, and how are they different from each other?", "Who typically has the authority to reopen a bug versus close one?"],
+    good: ["Include the Retest step and the Reopened branch explicitly — many candidates forget the cycle isn't strictly linear."],
+    bad: ["Describing only a simple 'Open → Closed' flow with no mention of retesting or the possibility of reopening."]
+  },
+  {
+    q: "What's the difference between Rejected, Duplicate, Deferred, and Won't Fix? They all sound like 'this isn't getting fixed right now.'",
+    tests: "A nuance question checking whether you can distinguish four superficially similar 'off-ramp' states by their actual underlying reason.",
+    simple: "Rejected means it's not actually a real bug. Duplicate means it's already reported under another ID. Deferred means it's a real bug being postponed to later. Won't Fix means it's a real bug the team has deliberately decided never to fix.",
+    strong: "These four all end the active fixing cycle, but for very different reasons. Rejected means the team investigated and determined it isn't actually a defect — the software is working as designed, or there was a misunderstanding of the requirement. Duplicate means it's a real, valid issue, but it's already been logged under a different bug ID, so this one gets closed with a reference to the original rather than tracked separately. Deferred means it's a genuine, valid bug that the team has chosen to postpone to a later release, usually a prioritization call rather than a technical one. Won't Fix means it's also a genuine, valid bug, but the team has made a deliberate, permanent decision never to fix it — maybe the cost outweighs the benefit, or the affected feature is being deprecated anyway.",
+    example: "A bug reported twice by two different testers becomes a Duplicate; a bug that's real but only affects an obscure workflow scheduled for removal next quarter might become Won't Fix instead of being scheduled for a fix.",
+    followups: ["Who typically has the authority to mark something Won't Fix versus Deferred?", "What would you do if you disagreed with a bug being marked Rejected?"],
+    good: ["Get the underlying reason right for all four, not just that they're all 'not being actively worked on.'"],
+    bad: ["Conflating any two of these as the same thing, especially Deferred and Won't Fix, which are commonly confused."]
+  },
+  {
+    q: "What's the difference between severity and priority, and who typically decides each?",
+    tests: "The other classic pairing for this lesson — checks whether you know these are independent axes set by different roles, not the same measurement.",
+    simple: "Severity is how badly the bug damages functionality — a technical judgment, usually made by the tester who found it. Priority is how urgently it needs fixing relative to business goals — usually decided by a product owner or team lead.",
+    strong: "Severity measures technical impact — how badly the defect breaks functionality — and is typically assessed by the tester who found it, based on what the software actually does wrong. Priority measures business urgency — how soon it needs to be addressed relative to release schedules, customer impact, and other competing work — and is typically set by a product owner, team lead, or in collaboration between QA and the business. They're deliberately independent axes; a bug's technical severity doesn't automatically dictate how urgently the business needs it fixed, which is exactly why the classic mismatched examples exist.",
+    example: "A tester sets severity based on what breaks; a product owner sets priority based on what the business needs fixed first — the two conversations often happen separately.",
+    followups: ["Should a tester ever have influence over priority, not just severity?", "What happens when severity and priority genuinely conflict during a release planning meeting?"],
+    good: ["Name who typically sets each — that's often the differentiator between a memorized definition and real workplace understanding."],
+    bad: ["Saying they're basically the same thing measured slightly differently."]
+  },
+  {
+    q: "Give a real example of a bug that's high severity but low priority, and one that's low severity but high priority.",
+    tests: "The signature illustration for this pairing — almost every interviewer asks for this exact example, so it needs to be fluent and immediate.",
+    simple: "High severity, low priority: a crash in a rarely-used internal tool used by one employee once a year. Low severity, high priority: a typo in the company's logo or tagline on the homepage — cosmetic, but urgent for reputation.",
+    strong: "High severity, low priority: a complete crash in a rarely-used internal admin feature that one employee touches once a year — technically about as severe as a bug can be, since it fully breaks that functionality with no workaround, but nobody's business operations are blocked by it right now, so it can wait. Low severity, high priority: a typo in the company's logo or tagline visible on the homepage — it doesn't break any functionality at all, so its severity is trivial, but it needs fixing immediately because of the reputational and brand impact of leaving it visible to every visitor.",
+    example: "The first bug might sit in the backlog for months with zero customer complaints; the second gets fixed same-day even though nothing is technically 'broken.'",
+    followups: ["Could a bug be both low severity and low priority, and still be worth tracking? Why track it at all?", "Have you seen (or can you imagine) a real disagreement between a tester's severity rating and a PM's priority call?"],
+    good: ["Have this example ready instantly and fluently — it's asked often enough that hesitating here reads as not having internalized the concept."],
+    bad: ["Only giving the two 'obvious' matched examples (high/high, low/low) without addressing the mismatched cases the question specifically asks for."]
+  },
+  {
+    q: "You log a bug you believe is severe, but your lead marks its priority as low. What do you do?",
+    tests: "A workplace scenario checking whether you understand severity/priority as separate judgment calls owned by different roles, and how to raise a disagreement professionally.",
+    simple: "I'd separate the two concerns — my severity assessment can stand on its own — and if I think the priority is wrong, I'd raise it with clear business reasoning (not just 'it feels important'), and ultimately accept that priority is often a business call outside pure technical judgment.",
+    strong: "First, I'd recognize that severity and priority are different judgments owned differently — my job is to accurately assess and clearly justify severity, and priority is often legitimately a business call that accounts for things I might not have full visibility into, like upcoming release plans or other competing priorities. That said, if I genuinely believe the priority is wrong, I'd raise it specifically — not just 'I disagree,' but with concrete reasoning: who's affected, how often, and what the real-world consequence of leaving it unfixed is. If after that conversation the lead still sets it as low priority, I'd accept that as a legitimate business decision I don't have to personally agree with, while making sure the severity rating itself stays accurately documented for whoever revisits it later.",
+    example: "If I believe a severe bug affects more users than my lead realizes, I'd bring usage data to the conversation rather than just restating that I think it's important.",
+    followups: ["What would you do if this kept happening repeatedly with the same lead?", "Is there a scenario where you'd escalate this disagreement further?"],
+    good: ["Show you'd advocate with concrete reasoning rather than either silently complying or being combative about it."],
+    bad: ["Saying you'd just silently accept it every time with no attempt to raise well-reasoned concerns, or insisting you're right without engaging with the business context."]
+  },
+  {
+    q: "What does it mean for a bug to be 'Reopened,' and how is that different from just staying in 'Open'?",
+    tests: "Checks understanding of the retest-and-verify step as the actual gate to closing a bug, not just developer say-so.",
+    simple: "Reopened specifically means a bug had already reached Fixed and gone through Retest, but the retest showed the issue wasn't actually resolved — it's different from a bug that simply stayed Open the whole time because it was never marked fixed in the first place.",
+    strong: "'Open' describes a bug still being actively worked on that has never yet been marked Fixed. 'Reopened' is a distinct state specifically for a bug that reached Fixed, went through Retest, and failed verification — the original issue still reproduces, or a related issue does. The distinction matters because it's evidence of a verification failure, not just ongoing work — a bug that gets reopened multiple times is a meaningful signal, worth tracking, that something about the fix process for that issue (or that developer, or that area of code) isn't working the first time.",
+    example: "A bug fixed and closed, then found still broken by a customer weeks later, gets reopened — and if the same bug gets reopened three times, that pattern itself becomes worth investigating.",
+    followups: ["Would you track how often bugs get reopened as a quality metric for the team? Why?", "What's the difference between reopening a bug and filing a brand new one for what looks like the same issue?"],
+    good: ["Emphasize that Reopened specifically implies a failed retest, which is a meaningfully different signal than a bug that was simply never marked fixed."],
+    bad: ["Treating 'Open' and 'Reopened' as interchangeable labels for the same thing."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 5 · LESSON 1</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
