@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 4 · Lesson 2 — Test Case Writing Best Practices + the Login Page Exercise</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:48px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  .bp-item{ display:grid; grid-template-columns: 26px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .bp-item:last-child{ border-bottom:none; }
+  .bp-num{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color:var(--accent); font-weight:700; }
+  .bp-item h4{ font-size:15.5px; margin:0 0 4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .bp-item p{ font-size:14.5px; margin:0; color:var(--ink-muted); }
+  /* exercise */
+  .exercise{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px 22px; margin:18px 0 28px; }
+  .exercise h3{ font-size:17px; margin-bottom:8px; }
+  .exercise textarea{ width:100%; min-height:220px; resize:vertical; margin-top:14px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:14px; padding:14px; line-height:1.6; }
+  .exercise textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .exercise-actions{ display:flex; gap:10px; margin-top:14px; align-items:center; flex-wrap:wrap; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:9px 18px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .model-answer{ display:none; margin-top:18px; border-top:1px solid var(--line); padding-top:16px; }
+  .model-answer.open{ display:block; }
+  .cat{ margin-bottom:18px; }
+  .cat h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent); margin-bottom:8px; }
+  .cat ul{ margin:0; padding-left:20px; }
+  .cat li{ font-size:14.5px; margin-bottom:5px; }
+  .review-note{ background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-top:18px; font-size:14.5px; }
+  .review-note b{ color:var(--accent); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 4 — Test Cases &amp; Test Scenarios &nbsp;·&nbsp; Lesson 2 (final of Level 4)</div>
+        <h1 class="title">Test Case Writing Best Practices + the Login Page Exercise</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">How an experienced SQA actually thinks when a blank feature lands on their desk — then a real exercise to try it yourself.</p>
+    <div class="lesson-nav"><a href="level4-lesson1.html" style="color:inherit;">← Level 4, Lesson 1: Test Scenario, Test Case, Test Condition &amp; the Vocabulary of Execution</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#practices" data-track="practices">1. Test Case Writing Best Practices</a>
+    <a href="#terms" data-track="terms">2. Happy Path, Positive, Negative &amp; Edge Cases</a>
+    <a href="#thinking" data-track="thinking">3. How an Experienced SQA Thinks About a Login Page</a>
+    <a href="#exercise" data-track="exercise">4. Your Turn: Write the Test Cases</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="practices">
+      <h2>1. Test Case Writing Best Practices</h2>
+
+      <div class="bp-item">
+        <div class="bp-num">1</div>
+        <div><h4>One test case, one objective</h4><p>Each test case should verify exactly one thing. A test case that checks five unrelated behaviors makes a failure ambiguous — which of the five broke?</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">2</div>
+        <div><h4>Steps precise enough for someone else to run</h4><p>"Enter a valid password" is vague. "Enter Passw0rd! in the Password field" is not. If two different testers would do something different, the step isn't precise enough.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">3</div>
+        <div><h4>Independent of other test cases</h4><p>A test case shouldn't secretly depend on a previous one having run first (unless that dependency is explicitly stated as a precondition). Otherwise, running cases out of order — which happens constantly with automation and parallel runs — silently breaks things.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">4</div>
+        <div><h4>Traceable back to a requirement</h4><p>Every test case should exist because of something specific it's verifying. If you can't say which requirement or scenario a test case traces back to, it's a sign it may be redundant or its purpose has drifted.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">5</div>
+        <div><h4>Cover positive, negative, and edge cases — not just the happy path</h4><p>A suite that only ever tests success paths gives false confidence. The next section covers exactly this distinction.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">6</div>
+        <div><h4>Written to survive change</h4><p>Avoid hard-coding details likely to change often (exact button pixel positions, wording of non-critical copy) into the steps unless that's literally what's being tested — small UI tweaks shouldn't force a rewrite of unrelated test cases.</p></div>
+      </div>
+    </section>
+
+    <section class="block" id="terms">
+      <h2>2. Happy Path, Positive, Negative &amp; Edge Cases</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Happy path</td><td>The single, primary, most common flow through a feature with no errors — the "everything goes right" scenario.</td></tr>
+            <tr><td class="k">Positive test case</td><td>Any test using valid input/conditions, expecting success. The happy path is the most important positive test case, but not the only one.</td></tr>
+            <tr><td class="k">Negative test case</td><td>A test using invalid input or conditions, expecting the system to correctly reject or handle it.</td></tr>
+            <tr><td class="k">Edge case</td><td>An unusual but still technically valid situation, often (but not always) at the extreme end of what's allowed — connects directly to Boundary Value Analysis from Level 3, but also covers unusual valid situations that aren't strictly numeric boundaries.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout example">
+        <span class="tag">Real-world example — all four on one feature</span>
+        <p>A cart discount field: <b>Happy path</b> — customer enters a valid 10%-off code and sees the discount applied. <b>Positive</b> — same, or a valid free-shipping code, or a valid code entered in lowercase when the system correctly normalizes case. <b>Negative</b> — an expired code, a code for a different store, gibberish text. <b>Edge case</b> — a code that would bring the total to exactly $0.00, or the very last valid code before a promotion's expiry timestamp.</p>
+      </div>
+    </section>
+
+    <section class="block" id="thinking">
+      <h2>3. How an Experienced SQA Thinks About a Login Page</h2>
+      <p>Before writing a single test case, an experienced tester doesn't start typing — they scan the feature across several lenses, because a login page is never just "does the button work."</p>
+      <ul class="tight">
+        <li><b>Functional — positive:</b> valid credentials succeed, "remember me" persists a session, redirect lands on the right page.</li>
+        <li><b>Functional — negative:</b> wrong password, non-existent account, empty fields, account locked after repeated failures.</li>
+        <li><b>Edge cases:</b> password at exactly the max length, email with a "+" alias, credentials with leading/trailing spaces, extremely rapid repeated submit clicks.</li>
+        <li><b>Security:</b> password is masked and not visible in page source, no sensitive data in the URL, brute-force lockout actually works, SQL/script injection in the fields doesn't do anything unexpected, error messages don't reveal whether an email exists in the system.</li>
+        <li><b>Usability:</b> clear, specific error messages; obvious focus states; "forgot password" is easy to find.</li>
+        <li><b>Compatibility:</b> works across the browsers/devices that matter for this product (Level 2).</li>
+        <li><b>Accessibility:</b> full keyboard operability, screen reader announces field labels and errors correctly (Level 2).</li>
+        <li><b>Performance/Recovery:</b> reasonable response time under normal load; a dropped connection mid-submit doesn't leave the user in a broken or ambiguous state (Level 2).</li>
+      </ul>
+      <p class="muted">Notice this list is really the whole course so far, applied to one feature — functional testing types, security and accessibility basics, EP/BVA edge cases, and the vocabulary from earlier this lesson, all at once. That's what test design actually looks like on the job.</p>
+    </section>
+
+    <section class="block" id="exercise">
+      <h2>4. Your Turn: Write the Test Cases</h2>
+      <div class="exercise">
+        <h3>Exercise: Write test cases for a login page</h3>
+        <p class="muted">Using the categories above as a guide, write as many test cases as you can — scenario-level one-liners are fine ("verify X"), full detail if you want the extra practice. Aim for at least 12–15, spanning more than just the functional happy path.</p>
+        <textarea placeholder="1. Verify user can log in with a valid email and password...
+2. Verify an incorrect password shows a clear error message...
+3. ..." spellcheck="false"></textarea>
+        <div class="exercise-actions">
+          <button class="btn-reveal" type="button" id="reveal-model">Reveal a model answer</button>
+        </div>
+        <div class="model-answer" id="model-answer">
+          <div class="cat">
+            <h4>Functional — Positive</h4>
+            <ul>
+              <li>Valid email + valid password logs in successfully and redirects to the dashboard.</li>
+              <li>"Remember me" checked keeps the user logged in after closing and reopening the browser.</li>
+              <li>Login works via both email and username, if both are supported.</li>
+            </ul>
+          </div>
+          <div class="cat">
+            <h4>Functional — Negative</h4>
+            <ul>
+              <li>Valid email + wrong password shows a clear, generic error (without confirming the email exists).</li>
+              <li>Non-existent email shows the same generic error as a wrong password (no information leak).</li>
+              <li>Empty email and/or password field(s) show inline validation errors, not a silent failure or crash.</li>
+              <li>Account is locked after N consecutive failed attempts, with an appropriate lockout message.</li>
+              <li>Expired or deactivated account is rejected with an appropriate, specific message.</li>
+            </ul>
+          </div>
+          <div class="cat">
+            <h4>Edge Cases</h4>
+            <ul>
+              <li>Email/password with leading or trailing whitespace is handled correctly (trimmed or rejected consistently).</li>
+              <li>Password at exactly the maximum allowed length is accepted.</li>
+              <li>Rapid double-submission (double-click) doesn't trigger duplicate login attempts or errors.</li>
+              <li>Email entered in a different case (e.g. Name@Test.com) than it was registered with still logs in, if email matching is meant to be case-insensitive.</li>
+            </ul>
+          </div>
+          <div class="cat">
+            <h4>Security</h4>
+            <ul>
+              <li>Password field masks input by default and isn't exposed in page source or browser autofill in plaintext.</li>
+              <li>Entering script/SQL-like text (e.g. <code class="inline">' OR 1=1 --</code>) in either field is safely rejected, not executed or logged in.</li>
+              <li>Credentials aren't passed in the URL or exposed in browser history.</li>
+              <li>Session token is invalidated on logout and can't be reused.</li>
+            </ul>
+          </div>
+          <div class="cat">
+            <h4>Usability, Compatibility &amp; Accessibility</h4>
+            <ul>
+              <li>Entire form is operable using only the keyboard, including submitting via Enter.</li>
+              <li>Screen reader announces field labels and any validation errors.</li>
+              <li>Form renders and functions correctly across the browsers/devices that matter for this product.</li>
+              <li>"Forgot password" link is visible and clearly labeled without hunting.</li>
+            </ul>
+          </div>
+          <div class="cat">
+            <h4>Performance &amp; Recovery</h4>
+            <ul>
+              <li>Login completes within an acceptable response time under normal load.</li>
+              <li>Network interruption right after submitting doesn't leave the user unsure whether they're logged in — on reconnect, the actual state is shown accurately.</li>
+            </ul>
+          </div>
+          <div class="review-note">
+            <b>Now for the real review:</b> paste what you wrote into the chat and I'll go through it properly — what you covered well, what's missing compared to this list, and how to sharpen the ones you have. That personalized feedback is the part a static page genuinely can't do for you.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 4, Lesson 2</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 4.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 4 complete<b>Level 5 — Bug / Defect Management</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('reveal-model').addEventListener('click', function(){
+  const panel = document.getElementById('model-answer');
+  const open = panel.classList.toggle('open');
+  this.textContent = open ? 'Hide model answer' : 'Reveal a model answer';
+});
+
+const QUESTIONS = [
+  {
+    q: "What makes a test case 'well-written' and easy to maintain over time?",
+    tests: "A synthesis of the best-practices list — checks whether you can prioritize and explain the reasoning, not just recite a checklist.",
+    simple: "It's atomic (checks one thing), has precise steps anyone could follow identically, is independent of other test cases, traces back to a specific requirement, and avoids hard-coding details likely to change often.",
+    strong: "A well-maintained test case is atomic — verifying exactly one objective, so a failure is immediately unambiguous about what broke. Its steps are precise enough that any two testers running it would do the exact same thing and get a comparable result. It's independent, not silently relying on another test case having run first. It traces back to a specific requirement or scenario, so its purpose stays clear even months later. And it avoids baking in details that change often for unrelated reasons, like exact non-critical wording, so a small UI tweak doesn't force a rewrite of test cases that have nothing to do with that change.",
+    example: "A test case that hard-codes a marketing tagline's exact wording into its steps will break every time marketing changes the copy, even though the test has nothing to do with marketing copy.",
+    followups: ["What's the cost of NOT following these practices, concretely, six months into a project?", "How would you refactor a large, tangled test case that's checking five things at once?"],
+    good: ["Explain the reasoning behind each practice (why atomicity matters, why independence matters) rather than just listing them."],
+    bad: ["Listing practices with no explanation of the actual problems they prevent."]
+  },
+  {
+    q: "Why should test cases be independent of each other? What goes wrong if they're not?",
+    tests: "Checks whether you understand the practical failure mode of dependent test cases, especially relevant to automation and parallel execution.",
+    simple: "If test case B secretly relies on test case A having already run, running them out of order, in isolation, or in parallel (common with automation) will cause B to fail for reasons that have nothing to do with an actual bug.",
+    strong: "If a test case has a hidden dependency on another one having executed first — relying on data or state it created — then running it out of order, on its own, or in parallel with other tests will cause a false failure that has nothing to do with a real defect in the software. This is especially damaging with automated suites, which very often run tests in parallel or in a different order for speed, and with manual testing, when someone needs to re-run just one specific failing case without re-running the whole suite around it. Any real dependency should be an explicit, stated precondition, not an implicit assumption baked silently into the test case.",
+    example: "A test case that logs in relying on a user account created by a previous, unrelated test case will fail mysteriously the moment that other test case is skipped, disabled, or runs later.",
+    followups: ["How would you handle a genuinely necessary setup step shared across many test cases without creating hidden dependencies?", "Why does this matter especially for parallel test execution?"],
+    good: ["Mention automation/parallel execution specifically — that's where hidden dependencies cause the most real damage."],
+    bad: ["Saying independence is 'just good practice' without explaining the concrete failure mode it prevents."]
+  },
+  {
+    q: "What's the difference between the 'happy path' and a 'positive test case'? Aren't they the same thing?",
+    tests: "A subtle distinction that trips people up — checks whether you know happy path is one specific positive case, not a synonym for the whole category.",
+    simple: "The happy path is the one primary, most common success scenario. A positive test case is any test expecting success — the happy path is the most important one, but there can be other positive cases too.",
+    strong: "The happy path refers specifically to the single, most typical flow through a feature where everything goes right with no complications — it's a specific scenario. 'Positive test case' is the broader category: any test case using valid input and expecting a successful outcome. The happy path is always a positive test case, but not every positive test case is the happy path — a valid but less common success scenario, like logging in via a secondary supported method, is still positive without being 'the' happy path.",
+    example: "For login: 'valid email and password succeeds' is the happy path. 'Valid username and password succeeds' (a secondary, less common method) is also a positive test case, but not the happy path.",
+    followups: ["Why is it risky for a test suite to only cover the happy path?", "Give an example of a positive test case that isn't the happy path, for a checkout flow."],
+    good: ["Clearly state that happy path is a subset of positive test cases, not a synonym for the category."],
+    bad: ["Treating the two terms as fully interchangeable."]
+  },
+  {
+    q: "Give an edge case for a numeric quantity field with a max of 10, and explain how it's different from a pure boundary value test.",
+    tests: "Checks whether you understand edge cases as a broader, informal concept that overlaps with but isn't identical to the formal BVA technique from Level 3.",
+    simple: "Testing quantity=10 (the boundary) IS a boundary value test; an edge case might be something less formal, like ordering the maximum quantity of the very last item in stock, or a quantity that exactly zeroes out a discount threshold — an unusual valid situation the strict numeric technique alone wouldn't necessarily surface.",
+    strong: "Testing quantity=10 or quantity=11 is a textbook boundary value test — it comes directly from applying BVA to a known numeric limit. An 'edge case' is a broader, less formal idea: an unusual but valid situation that might not even be about the number itself. For this same field, an edge case might be ordering exactly the last unit of an item in stock at quantity 10 — combining the numeric boundary with an inventory-state boundary that BVA on the quantity field alone wouldn't capture. Edge cases often live at the intersection of multiple things going to their limits at once, not just one field's numeric range.",
+    example: "Quantity=10 with only 10 units left in stock is an edge case that combines a field boundary and a business-state boundary — a bug here (like allowing quantity=11 to still submit) is easy to miss if you only test the quantity field in isolation.",
+    followups: ["How would state transition testing from Level 3 relate to this inventory example?", "What's a non-numeric edge case you'd think to test for a text field?"],
+    good: ["Show that edge cases can be broader than a single field's numeric boundary, sometimes combining multiple things reaching their limits together."],
+    bad: ["Treating 'edge case' and 'boundary value' as strictly identical terms with no distinction at all."]
+  },
+  {
+    q: "What would you test on a login page if you only had 30 minutes?",
+    tests: "A classic time-pressure prioritization scenario, one of the most commonly asked practical questions in SQA interviews — checks risk-based thinking under a hard constraint.",
+    simple: "I'd prioritize the highest-risk, highest-traffic functional paths first — valid login, invalid login, empty fields, account lockout — then spend any remaining time on a quick security sanity check and a smoke pass across the most common browser/device, rather than trying to cover accessibility, full compatibility, or deep edge cases.",
+    strong: "With 30 minutes, I'm not attempting comprehensive coverage — I'm doing risk-based triage. I'd spend the first chunk on core functional paths: valid login succeeds, wrong password is rejected with a clear message, empty fields are validated, and — if applicable — account lockout after repeated failures actually works, since these are the highest-traffic, highest-impact paths. I'd spend a few minutes on a basic security sanity check: password masking, no credentials leaking into the URL, and a quick injection attempt in the fields. If time remains, I'd do a fast smoke check on the one or two browsers/devices that matter most for this product. I'd explicitly skip deep accessibility testing, full cross-browser coverage, and performance testing under load — not because they don't matter, but because 30 minutes isn't enough to do them meaningfully, and I'd say so directly rather than pretending a shallow pass on everything is real coverage.",
+    example: "I'd rather thoroughly check 5 high-risk scenarios in 30 minutes than superficially glance at 20 scenarios and give false confidence about all of them.",
+    followups: ["What would you explicitly tell a manager you did NOT get to cover in those 30 minutes?", "How would your priorities change if this were a payment page instead of a login page?"],
+    good: ["Explicitly name what you're deliberately skipping and why — that transparency about trade-offs is what separates a strong answer from a rushed, shallow one."],
+    bad: ["Trying to describe comprehensive coverage of everything in 30 minutes — that's not a credible answer and interviewers notice."]
+  },
+  {
+    q: "A junior tester shows you 5 test cases for a login page: valid login, invalid password, empty email, empty password, and wrong email format. What's missing, and what would you tell them?",
+    tests: "A review/mentorship scenario — checks whether you can evaluate someone else's test coverage critically and communicate feedback constructively, a real day-to-day QA skill.",
+    simple: "All 5 are reasonable functional negative/positive cases, but they're missing account lockout, security checks (masking, injection), edge cases (whitespace, case sensitivity, rapid double-submit), and anything beyond pure functional testing like usability or accessibility — I'd frame the feedback as 'strong start on the functional core, let's build outward from there' rather than just listing gaps.",
+    strong: "Those 5 cover a reasonable functional core — one positive path and a few sensible negative/validation cases — so I'd start by acknowledging that's a solid foundation, not nothing. But there are clear gaps: nothing about account lockout after repeated failed attempts, nothing security-related (password masking, injection attempts, no data leaking about whether an email exists), no edge cases like leading/trailing whitespace or rapid double-submission, and nothing beyond pure functional testing — no usability, accessibility, or compatibility consideration at all. I'd frame this as constructive, not critical: 'this is a good functional foundation — let's now think about what happens under attack, under unusual input, and for a user who isn't using a mouse and a modern browser,' and walk through those categories together rather than just handing over a list of what's missing.",
+    example: "I'd specifically ask them: 'what happens if I get the password wrong five times in a row?' — a question that usually reveals the lockout gap themselves, which is a more effective teaching moment than just stating it.",
+    followups: ["How would you prioritize which of the missing categories to add first if the team has limited time?", "How do you give this kind of feedback without discouraging a junior tester?"],
+    good: ["Acknowledge what's good before listing gaps, and demonstrate a constructive, mentoring tone — interviewers are also evaluating how you'd work with less experienced teammates."],
+    bad: ["Only listing gaps with no acknowledgment of what the 5 cases already got right, or being unnecessarily harsh in tone."]
+  },
+  {
+    q: "How do you keep a large regression suite of test cases maintainable as the application keeps changing?",
+    tests: "A practical, longer-horizon question about test suite health, connecting several best practices together.",
+    simple: "Keep each test case atomic and independent, avoid duplicating the same steps across many cases (use shared/reusable preconditions instead), regularly review and retire test cases for removed or changed features, and periodically refresh the suite so it doesn't go stale — directly connecting to the pesticide paradox from Level 1.",
+    strong: "A few things compound over time to keep a suite healthy: keeping test cases atomic and independent so a single change doesn't ripple through many unrelated tests; avoiding duplicated steps across many test cases by using shared, reusable preconditions or setup instead of copy-pasting the same steps everywhere, so a UI change only needs updating in one place; and treating the suite as something that needs active maintenance, not a write-once artifact — regularly reviewing it to retire test cases for features that no longer exist, and refreshing it to cover new functionality. That last point connects directly back to the pesticide paradox from Level 1: an untouched, aging suite quietly stops finding new categories of bugs even while it keeps passing.",
+    example: "If 40 test cases all individually hard-code the same 5-step login sequence as a precondition, a single login page redesign forces updating 40 places instead of one shared setup step.",
+    followups: ["How would you decide when a test case is safe to retire?", "What's a practical way to audit whether your regression suite still reflects the current application?"],
+    good: ["Explicitly connect suite staleness back to the pesticide paradox — that's the strongest possible synthesis for this question."],
+    bad: ["Only talking about writing new test cases without addressing maintenance and retirement of old ones."]
+  },
+  {
+    q: "You wrote a thorough set of login test cases, but your reviewer says '75% of these check different flavors of the same thing — trim it down.' How would you decide what to cut?",
+    tests: "A prioritization/self-critique scenario testing whether you can apply risk-based judgment to your own work, not just generate exhaustive coverage.",
+    simple: "I'd group similar test cases and keep the one that best represents each meaningful risk, cutting near-duplicates that don't actually add new coverage — prioritizing by likelihood and impact of failure, similar to how EP avoids testing every value in a partition.",
+    strong: "I'd start by grouping my test cases by what underlying risk each one is actually checking, the same logic behind Equivalence Partitioning — if three test cases are really just testing 'invalid password' with cosmetically different wrong passwords, they belong to the same partition and only one needs to survive. I'd prioritize keeping the test case from each group that represents the highest real-world likelihood or highest impact if it failed, and cut near-duplicates that aren't adding genuinely new coverage. I'd also make sure I'm not accidentally cutting a test that looks similar on the surface but is actually checking something distinct, like an edge case dressed up to look like a routine negative test.",
+    example: "'Wrong password: abc123' and 'wrong password: xyz789' are the same test in disguise; 'wrong password with 200 characters' might look similar but is actually a distinct edge case worth keeping separately.",
+    followups: ["How would you defend keeping a test case your reviewer wants to cut, if you believe it's genuinely important?", "What's the risk of over-trimming a test suite in the name of efficiency?"],
+    good: ["Apply the EP grouping logic explicitly to your own test case set — that's a strong, self-aware synthesis of an earlier lesson."],
+    bad: ["Cutting test cases arbitrarily or by count alone, without reasoning about which risks each one actually represents."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 4 · LESSON 2</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
