@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 2 · Lesson 4 — Performance, Security, Accessibility &amp; the Rest of Non-Functional Testing</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:44px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  .callout.note{ border-left-color: var(--ink-faint); background:var(--surface-2); }
+  .callout.note .tag{ color:var(--ink-faint); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:15px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  .typegrid{ display:grid; grid-template-columns: 1fr; gap:0; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--surface); }
+  .typerow{ display:grid; grid-template-columns: 150px 1fr; border-bottom:1px solid var(--line); }
+  .typerow:last-child{ border-bottom:none; }
+  .typerow .tname{ background:var(--surface-2); padding:12px 14px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; font-weight:700; color:var(--accent); border-right:1px solid var(--line); display:flex; align-items:center; }
+  .typerow .tdesc{ padding:12px 16px; font-size:14.5px; }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 2 — Testing Types &nbsp;·&nbsp; Lesson 4 (final of Level 2)</div>
+        <h1 class="title">Performance, Security, Accessibility &amp; the Rest of Non-Functional Testing</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Eight specialty testing types, all answering a version of the same question: not "does it work," but "does it hold up under real-world conditions?"</p>
+    <div class="lesson-nav"><a href="level2-lesson3.html" style="color:inherit;">← Level 2, Lesson 3: Exploratory, Ad-hoc, Usability, Compatibility &amp; Cross-browser</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#perf" data-track="perf">1. Performance, Load &amp; Stress</a>
+    <a href="#security" data-track="security">2. Security Testing</a>
+    <a href="#accessibility" data-track="accessibility">3. Accessibility Testing</a>
+    <a href="#recovery" data-track="recovery">4. Recovery Testing</a>
+    <a href="#installation" data-track="installation">5. Installation Testing</a>
+    <a href="#i18n" data-track="i18n">6. Localization vs Internationalization</a>
+    <a href="#summary" data-track="summary">7. All Eight, Side by Side</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="perf">
+      <h2>1. Performance, Load &amp; Stress Testing</h2>
+      <p><b>Concept.</b> Performance testing is the umbrella term for evaluating how a system behaves in terms of speed, responsiveness, and stability under a given workload. Two of its most common specific forms:</p>
+      <ul class="tight">
+        <li><b>Load testing</b> — checking behavior under an <i>expected, realistic</i> level of usage (e.g. normal peak traffic).</li>
+        <li><b>Stress testing</b> — pushing usage <i>beyond</i> normal limits, deliberately, to find the breaking point and see how the system fails.</li>
+      </ul>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>A feature can be functionally perfect and still fail the business the moment real traffic hits it — a checkout that works flawlessly for one user can collapse under 10,000 simultaneous users during a big sale.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Load testing an airline booking site with a simulated 5,000 concurrent users (expected peak traffic) to confirm response times stay acceptable. Stress testing the same site with 50,000 simulated users to see whether it degrades gracefully (slower, but still working) or crashes outright.</p>
+      </div>
+
+      <div class="callout note">
+        <span class="tag">Going deeper later</span>
+        <p>This lesson keeps these as testing <i>types</i> — Level 10 covers Performance Testing in full depth: spike and soak testing, response time vs. throughput, concurrent users, bottlenecks, and tools like JMeter.</p>
+      </div>
+    </section>
+
+    <section class="block" id="security">
+      <h2>2. Security Testing</h2>
+      <p><b>Concept.</b> Security testing checks whether the system protects data and functionality from unauthorized access, misuse, or attack — covering things like authentication, authorization, and how sensitive data is handled.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>A functionally perfect app that lets one user see another user's private data isn't a minor bug — it's a trust and legal liability issue. Security failures tend to be the most expensive category of defect a company can ship.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Checking whether a regular user account can access an admin-only URL just by typing it directly into the browser, even without a link to it anywhere in the UI — a basic authorization check.</p>
+      </div>
+
+      <div class="callout note">
+        <span class="tag">Going deeper later</span>
+        <p>Level 11 covers this properly — SQL injection, XSS, CSRF, broken access control, and session management. For now, know that security testing exists as its own testing type and broadly what it protects against.</p>
+      </div>
+    </section>
+
+    <section class="block" id="accessibility">
+      <h2>3. Accessibility Testing</h2>
+      <p><b>Concept.</b> Accessibility testing checks whether people with disabilities — visual, auditory, motor, or cognitive — can actually use the software, typically measured against standards like WCAG (Web Content Accessibility Guidelines).</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Beyond being a legal requirement in many jurisdictions, accessible design is usually just better design for everyone — good keyboard navigation and clear contrast help every user, not only those using assistive technology.</p>
+
+      <h3 class="sub">How it works</h3>
+      <ul class="tight">
+        <li>Can every interactive element be reached and operated using only a keyboard (no mouse)?</li>
+        <li>Does a screen reader announce content and controls meaningfully?</li>
+        <li>Is text color contrast sufficient for low-vision users to read comfortably?</li>
+      </ul>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A "submit" button that only responds to a mouse click, with no way to reach or activate it via Tab and Enter, completely blocks a keyboard-only user from completing the form — a real accessibility failure, not an edge case.</p>
+      </div>
+    </section>
+
+    <section class="block" id="recovery">
+      <h2>4. Recovery Testing</h2>
+      <p><b>Concept.</b> Recovery testing checks how well a system bounces back from a crash, power loss, network failure, or other disruption — whether it resumes cleanly, without data loss or corruption.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Failures happen in the real world — networks drop, servers restart, apps get killed by the OS. What separates reliable software isn't the absence of failure, it's what happens immediately after.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A user's phone loses signal mid-checkout, right after payment was submitted but before confirmation loaded. Recovery testing checks: does the order get created exactly once (not zero times, not twice), and does the app, once reconnected, show the user an accurate status instead of leaving them unsure if they were charged.</p>
+      </div>
+    </section>
+
+    <section class="block" id="installation">
+      <h2>5. Installation Testing</h2>
+      <p><b>Concept.</b> Installation testing verifies that installing, updating, and uninstalling the software works correctly across the environments it's meant to support.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>It's a user's very first experience with the product — a broken install is the fastest possible way to lose a user before they've even seen the actual software.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Installing a desktop app on a clean machine (does setup complete without errors?), upgrading from the previous version (do the user's saved settings survive?), and uninstalling it afterward (does it clean up all its files, or leave orphaned data behind?).</p>
+      </div>
+    </section>
+
+    <section class="block" id="i18n">
+      <h2>6. Localization (L10n) vs Internationalization (I18n)</h2>
+      <p><b>Concept.</b> These two are almost always asked as a pair. <b>Internationalization</b> is designing and building the software so it's <i>capable</i> of supporting multiple languages and regions — a structural, engineering property. <b>Localization</b> is the actual process of adapting the software for one specific language or region — translating text, formatting dates/currency, adjusting layout.</p>
+
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Internationalization (i18n)</th><th>Localization (l10n)</th></tr></thead>
+          <tbody>
+            <tr><td class="k">What it is</td><td>Building the app to be locale-ready</td><td>Adapting the app for one specific locale</td></tr>
+            <tr><td class="k">Example</td><td>Storing all UI text in external resource files instead of hard-coding it</td><td>Translating that resource file into Japanese, with correct date/currency formats</td></tr>
+            <tr><td class="k">Who does it</td><td>Developers, as part of the architecture</td><td>Translators, content teams, and QA verifying the result</td></tr>
+            <tr><td class="k">When it happens</td><td>Once, early — a foundational design decision</td><td>Repeatedly, once per new market/language</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>An app hard-codes the string "Total: $" + amount directly into its UI code — when localized for Germany, this breaks, because German uses a comma for decimals and puts the currency symbol after the number. If the app had been properly internationalized from the start (using locale-aware formatting instead of a hard-coded string), localizing it for a new market would have been a content problem, not a code problem.</p>
+      </div>
+    </section>
+
+    <section class="block" id="summary">
+      <h2>7. All Eight, Side by Side</h2>
+      <div class="typegrid">
+        <div class="typerow"><div class="tname">Performance</div><div class="tdesc">Speed and responsiveness under a given workload.</div></div>
+        <div class="typerow"><div class="tname">Load</div><div class="tdesc">Behavior under expected, realistic peak usage.</div></div>
+        <div class="typerow"><div class="tname">Stress</div><div class="tdesc">Behavior beyond normal limits — where and how it breaks.</div></div>
+        <div class="typerow"><div class="tname">Security</div><div class="tdesc">Protection against unauthorized access and misuse.</div></div>
+        <div class="typerow"><div class="tname">Accessibility</div><div class="tdesc">Usable by people with disabilities; keyboard/screen-reader support.</div></div>
+        <div class="typerow"><div class="tname">Recovery</div><div class="tdesc">Clean, data-safe recovery after a crash or failure.</div></div>
+        <div class="typerow"><div class="tname">Installation</div><div class="tdesc">Install, upgrade, and uninstall all work cleanly.</div></div>
+        <div class="typerow"><div class="tname">Localization</div><div class="tdesc">Correctly adapted for a specific language/region.</div></div>
+      </div>
+      <p class="muted">This directly echoes the "testing is context-dependent" principle from Level 1 — a hospital app weighs security and recovery heavily; a casual game barely needs recovery testing at all; a globally-launching consumer app leans hard on localization. None of these are universally "the most important" one — priority always depends on the product.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 2, Lesson 4</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 2 — nice work getting through the full Testing Types level.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 2 complete<b>Level 3 — Test Design Techniques (Equivalence Partitioning, BVA, Decision Tables &amp; more)</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What's the difference between load testing and stress testing?",
+    tests: "The most common comparison question in this cluster — checks whether you know load testing stays within expected limits while stress testing deliberately exceeds them.",
+    simple: "Load testing checks how the system behaves under expected, realistic usage. Stress testing deliberately pushes past normal limits to find the breaking point and see how it fails.",
+    strong: "Load testing validates performance under a realistic, expected workload — think normal peak traffic — to confirm response times and stability hold up under conditions the system is actually designed for. Stress testing intentionally exceeds those limits, pushing usage well beyond expected peaks, not to confirm normal behavior but to find where and how the system breaks, and whether it fails gracefully — degrading, queuing, returning a clear error — or catastrophically, like crashing or corrupting data.",
+    example: "Load testing a ticket-sale site with the expected 5,000 concurrent buyers; stress testing it with 100,000 to see if it degrades gracefully or crashes hard.",
+    followups: ["What does 'graceful degradation' mean, and why is it preferable to a hard crash?", "What's spike testing, and how is it different from stress testing?"],
+    good: ["Emphasize the goal difference: load confirms normal behavior, stress finds the breaking point — not just 'more users vs. even more users.'"],
+    bad: ["Saying stress testing is 'just load testing with more users' without mentioning the goal is finding the failure point, not just confirming performance."]
+  },
+  {
+    q: "As a QA engineer without deep security expertise, what would you still check as basic security testing?",
+    tests: "Checks whether you understand security testing's basics belong to every tester's toolkit, not only specialists — without expecting deep penetration-testing knowledge (that's Level 11).",
+    simple: "Basic access control checks — can a regular user reach admin-only pages or data by directly navigating to a URL, does the app expose sensitive data it shouldn't, and are passwords/sensitive fields handled reasonably (not shown in plain text, for example).",
+    strong: "Even without specialist security training, there's a baseline every tester can and should check: authorization boundaries — can a logged-in regular user access another user's data or an admin-only page just by changing a URL or ID; whether sensitive data like passwords is masked and not exposed in places like error messages or browser storage; and basic input handling — what happens if you submit unexpected or malformed data into a form. I wouldn't claim to be doing a full security audit, but these basic checks catch a meaningful share of real-world security defects and are a reasonable baseline for any QA engineer.",
+    example: "Logging in as User A, noting their account URL contains an ID, then manually changing that ID in the URL to see if User B's private data loads without authorization.",
+    followups: ["What's the difference between authentication and authorization?", "Why might this kind of bug (accessing another user's data via a changed URL/ID) be especially common?"],
+    good: ["Be honest about scope — basic access-control and data-exposure checks, not claiming deep expertise you don't have yet."],
+    bad: ["Claiming you'd run a full penetration test without the training to back that up — overclaiming expertise is a red flag to interviewers."]
+  },
+  {
+    q: "Why does accessibility testing matter beyond just legal compliance?",
+    tests: "Checks whether you see accessibility as a genuine quality concern rather than a box-ticking legal exercise.",
+    simple: "Because accessible design tends to be better design for everyone, not just users with disabilities — keyboard navigation, clear contrast, and clean structure improve usability broadly, and the population of users who benefit is larger than people often assume.",
+    strong: "Compliance is a real driver, but treating accessibility as only a legal checkbox undersells it. Accessible design principles — full keyboard operability, sufficient color contrast, clear focus states — tend to improve the experience for everyone, not only users relying on assistive technology; a keyboard power-user or someone on a broken trackpad benefits from the same fixes a screen-reader user needs. It's also a much larger user population than people assume, including temporary and situational impairments, like someone using a phone one-handed in bright sunlight. Building it in is also far cheaper than retrofitting it after launch.",
+    example: "Adding visible focus outlines for keyboard navigation helps a screen-reader user, a keyboard-only user, and a mouse user who tabs through a form out of habit — one fix, several beneficiaries.",
+    followups: ["How would you test keyboard-only navigation on a page you're unfamiliar with?", "What's WCAG, at a high level?"],
+    good: ["Go beyond 'it's the law' — connect it to broader usability and a larger affected user base than people assume."],
+    bad: ["Treating it purely as a compliance/legal checkbox with no real usability argument."]
+  },
+  {
+    q: "How would you test recovery for a mobile app that loses network connection mid-transaction?",
+    tests: "A realistic recovery-testing scenario checking whether you think about data integrity, not just 'does the app not crash.'",
+    simple: "I'd simulate the connection dropping at several precise points in the transaction and check that the app never creates a duplicate or lost transaction, and that it correctly informs the user of the real status once reconnected.",
+    strong: "I'd deliberately kill the network connection at several precise moments — right before the request is sent, right after it's sent but before a response arrives, and right after the response arrives but before the UI updates — because each moment risks a different failure mode. The core thing I'm checking is data integrity: does the transaction end up happening exactly once, never zero times when it should have gone through, and never twice due to an automatic retry. Then I'd check what the user actually sees once connectivity returns — an accurate, current status, not a stale loading spinner or an incorrect success/failure message.",
+    example: "If the payment actually succeeded server-side but the confirmation response never reached the app due to the dropped connection, the app must not let the user think it failed and retry, creating a duplicate charge.",
+    followups: ["How would you actually simulate a dropped connection at a precise moment during testing?", "What's the difference between recovery testing and reliability testing?"],
+    good: ["Focus on data integrity (exactly-once outcomes) as the core risk, not just 'does the app crash.'"],
+    bad: ["Only checking that the app doesn't crash, without considering whether the underlying transaction state stays correct."]
+  },
+  {
+    q: "What would a thorough installation test plan check, beyond just 'does the installer run without errors'?",
+    tests: "Checks whether you think about the full install lifecycle — upgrade and uninstall — not just a fresh install.",
+    simple: "Fresh install on a clean system, upgrade from a previous version with existing user data intact, and a full uninstall that removes all files and leftover data cleanly — across the different environments the software needs to support.",
+    strong: "A thorough plan covers the full lifecycle, not just day one: a clean install on a fresh system to confirm setup completes correctly with correct default settings; an upgrade path from a previous version, checking that existing user data and settings survive intact rather than getting wiped or corrupted; and uninstallation, verifying the software removes itself completely without leaving orphaned files, registry entries, or residual data behind. I'd also check this across the different supported environments — different OS versions, with and without admin privileges, low disk space scenarios — since installation is often where environment-specific issues surface first.",
+    example: "Upgrading a desktop app from v2.1 to v3.0 and confirming a user's saved preferences and login session are preserved, not reset to defaults.",
+    followups: ["What would you test for a mobile app update delivered through an app store, versus a desktop installer?", "What's a realistic failure mode during an uninstall that users actually run into?"],
+    good: ["Cover all three lifecycle stages explicitly — install, upgrade, uninstall — not just the initial install."],
+    bad: ["Only checking the initial install and ignoring upgrade and uninstall paths entirely."]
+  },
+  {
+    q: "Explain the difference between internationalization and localization, with a concrete example of a bug that shows why the distinction matters.",
+    tests: "The other classic paired-comparison question in this lesson — checks whether you understand i18n as an engineering property and l10n as the content adaptation built on top of it.",
+    simple: "Internationalization is building the software so it can support multiple languages/regions structurally. Localization is actually adapting it for one specific language/region — translation, date formats, currency. A bug that shows the difference: hard-coded currency formatting that breaks the moment you try to localize for a country with different formatting conventions.",
+    strong: "Internationalization is an engineering decision made early — designing the app so text, dates, currency, and layout aren't hard-coded to one locale's assumptions, making it structurally ready to support others. Localization is the downstream content work of actually adapting the app for one specific market — translating strings, applying that locale's date and currency formats, adjusting layout for text that expands or reads right-to-left. The distinction matters because a localization effort can only go as smoothly as the internationalization work allows: if a developer hard-coded 'Total: $' + amount directly into the code instead of using locale-aware formatting, localizing for Germany — comma decimals, symbol placement after the number — becomes a code-level bug fix, not a simple translation update.",
+    example: "A price hard-coded as '$1,234.56' breaks silently when localized for a German audience, who expect '1.234,56 €' — the bug is really a missing internationalization step, surfacing during localization.",
+    followups: ["Why is internationalization usually cheaper to do early rather than retrofit later?", "What's a UI layout issue that commonly surfaces when localizing into German or Arabic?"],
+    good: ["Use a concrete example showing the bug traces back to a missing i18n step, not just define the two terms abstractly."],
+    bad: ["Defining both terms correctly but never connecting them with a concrete example showing why the distinction is practically important."]
+  },
+  {
+    q: "Your company is launching in a new country next quarter. What testing types from this lesson become relevant, and how would they interact?",
+    tests: "A synthesis scenario forcing you to combine multiple testing types from this lesson into a coherent test strategy, rather than answering about them in isolation.",
+    simple: "Localization testing for translated content and correct date/currency formats, compatibility testing for devices and networks common in that market, performance testing if network conditions there are slower or less reliable, and possibly accessibility or legal/security considerations if that market has different regulations.",
+    strong: "Localization testing is the obvious core — verifying translated text displays correctly, dates/currency/number formats match local conventions, and nothing overflows or breaks layout with longer translated strings. But it doesn't stand alone: I'd also want compatibility testing tuned to that market's common devices and browsers, which can differ significantly from our existing user base. If that region has generally slower or less reliable networks, performance testing becomes more important too, since the app needs to hold up under real-world conditions there, not just our home market's typical connectivity. And depending on the country, there may be local regulatory requirements touching security or accessibility that didn't apply before. The point is these testing types aren't independent silos — a market launch is exactly where several of them have to be planned together.",
+    example: "Launching in a market with predominantly older, lower-end Android devices and patchier mobile networks means localization testing alone isn't enough — compatibility and performance testing on realistic devices and network conditions matter just as much.",
+    followups: ["How would you prioritize between these if the timeline only allows for two of them before launch?", "Who outside of QA would you need to involve in preparing for this launch?"],
+    good: ["Show that testing types interact and get planned together for a real scenario, not treated as isolated checklist items."],
+    bad: ["Only mentioning localization/translation and missing that compatibility, performance, or regulatory testing are also directly relevant."]
+  },
+  {
+    q: "For a public-facing banking app versus an internal company tool used by 20 employees, how would you prioritize these eight testing types differently?",
+    tests: "A direct application of the 'testing is context-dependent' principle from Level 1 — checks whether you can reason about priority rather than treating all eight as equally weighted everywhere.",
+    simple: "For the banking app, I'd heavily prioritize security, recovery, and performance under load, since the cost of failure is high and it faces the public internet at scale. For the internal tool, most of these matter much less — 20 known users on company devices means compatibility, load, and installation testing barely register, though basic security around access control probably still matters.",
+    strong: "This is exactly the 'testing is context-dependent' principle in practice. For a public banking app: security testing is close to non-negotiable given the sensitivity of financial data and regulatory exposure; recovery testing matters a great deal, since a botched mid-transaction failure has real financial consequences; and performance/load testing matters because it faces unpredictable public traffic at scale, including potential spikes. For an internal tool used by 20 known employees on company-managed devices: load and stress testing are nearly irrelevant at that scale, compatibility testing narrows dramatically since the device/browser variety is small and known, and installation testing may not apply at all if it's a web app. Security still matters — even internal tools handle data worth protecting — but the bar and the specific risks look different, since the threat model is 20 trusted employees rather than the open internet.",
+    example: "Stress-testing the internal tool for 100,000 concurrent users would be a waste of time; skipping stress testing on the banking app before a high-traffic period like tax season would be a serious risk.",
+    followups: ["Would your answer change if that internal tool started being used by 5,000 employees across the company instead of 20?", "Which of these eight would you never fully skip, regardless of context?"],
+    good: ["Explicitly reference context-dependence from Level 1, and give genuinely different, reasoned priorities for each scenario rather than a generic 'it depends.'"],
+    bad: ["Giving the same prioritization for both scenarios, or a vague 'it depends' without actually working through the reasoning for each."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 2 · LESSON 4</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
