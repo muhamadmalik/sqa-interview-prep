@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 8 · Lesson 1 — Database Basics &amp; Core SQL for QA</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:46px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:480px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:9px 13px; border-bottom:1px solid var(--line); font-size:14px; vertical-align:top; font-variant-numeric: tabular-nums; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  table.spec.data td, table.spec.data th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; }
+  pre.sql{ background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13.5px; overflow-x:auto; margin:14px 0; line-height:1.6; }
+  pre.sql .c{ color:var(--accent); }
+  /* venn */
+  .venn-row{ display:flex; gap:20px; flex-wrap:wrap; margin:18px 0 10px; justify-content:space-between; }
+  .venn-item{ flex:1; min-width:150px; text-align:center; }
+  .venn-item svg{ width:100%; max-width:180px; height:auto; }
+  .venn-item h5{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); margin:8px 0 4px; }
+  .venn-item p{ font-size:12.5px; color:var(--ink-muted); margin:0; }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 8 — SQL / Database for QA &nbsp;·&nbsp; Lesson 1</div>
+        <h1 class="title">Database Basics &amp; Core SQL for QA</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Reading data straight from the source — the one skill that turns "I think the UI is showing the wrong number" into "I can prove it."</p>
+    <div class="lesson-nav"><a href="level7-lesson2.html" style="color:inherit;">← Level 7, Lesson 2: Auth, Positive/Negative API Testing &amp; Testing with Postman</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#basics" data-track="basics">1. Database, Table, Row, Column</a>
+    <a href="#keys" data-track="keys">2. Primary Key &amp; Foreign Key</a>
+    <a href="#crud" data-track="crud">3. CRUD</a>
+    <a href="#core-sql" data-track="core-sql">4. SELECT, WHERE, ORDER BY, GROUP BY, HAVING</a>
+    <a href="#aggregates" data-track="aggregates">5. Aggregate Functions</a>
+    <a href="#joins" data-track="joins">6. JOINs</a>
+    <a href="#null-case" data-track="null-case">7. NULL &amp; CASE</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="basics">
+      <h2>1. Database, Table, Row, Column</h2>
+      <p>A <b>database</b> is an organized collection of structured data. A <b>table</b> holds one entity type — Customers, Orders — arranged into <b>rows</b> (one record each) and <b>columns</b> (one attribute each, shared by every row).</p>
+      <div class="table-wrap">
+        <table class="spec data">
+          <thead><tr><th>id</th><th>name</th><th>email</th><th>signup_date</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Jordan Lee</td><td>jordan@test.com</td><td>2026-01-14</td></tr>
+            <tr><td>2</td><td>Ava Chen</td><td>ava@test.com</td><td>2026-02-03</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">This is table <code class="inline">customers</code>: 4 columns, 2 rows shown. Every row in the same table shares the same columns.</p>
+    </section>
+
+    <section class="block" id="keys">
+      <h2>2. Primary Key &amp; Foreign Key</h2>
+      <p><b>Primary Key (PK):</b> a column (or set of columns) that uniquely identifies every row in a table — no duplicates, no nulls allowed. <b>Foreign Key (FK):</b> a column in one table that points to the Primary Key of another table, creating a relationship between them.</p>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p><code class="inline">customers.id</code> is the Primary Key of the customers table. <code class="inline">orders.customer_id</code> is a Foreign Key in the orders table, pointing back to <code class="inline">customers.id</code> — this is how the database knows which customer placed which order, without repeating that customer's full name and email on every single order row.</p>
+      </div>
+    </section>
+
+    <section class="block" id="crud">
+      <h2>3. CRUD</h2>
+      <p>The four basic operations on data, and their SQL equivalents:</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Operation</th><th>SQL</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Create</td><td class="mono">INSERT</td></tr>
+            <tr><td class="k">Read</td><td class="mono">SELECT</td></tr>
+            <tr><td class="k">Update</td><td class="mono">UPDATE</td></tr>
+            <tr><td class="k">Delete</td><td class="mono">DELETE</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="core-sql">
+      <h2>4. SELECT, WHERE, ORDER BY, GROUP BY, HAVING</h2>
+      <pre class="sql"><span class="c">-- All orders over $100, newest first</span>
+SELECT order_id, customer_id, total
+FROM orders
+WHERE total > 100
+ORDER BY order_date DESC;</pre>
+      <ul class="tight">
+        <li><b>SELECT / FROM</b> — which columns, from which table.</li>
+        <li><b>WHERE</b> — filters individual <i>rows</i>, before any grouping happens.</li>
+        <li><b>ORDER BY</b> — sorts the final result set.</li>
+        <li><b>GROUP BY</b> — collapses rows sharing a value into one group per value, almost always paired with an aggregate function.</li>
+        <li><b>HAVING</b> — filters <i>groups</i>, after aggregation — the key difference from WHERE.</li>
+        <li><b>DISTINCT</b> — removes duplicate rows from the result.</li>
+      </ul>
+      <pre class="sql"><span class="c">-- Customers who have placed more than 3 orders</span>
+SELECT customer_id, COUNT(*) AS order_count
+FROM orders
+GROUP BY customer_id
+HAVING COUNT(*) > 3;</pre>
+      <p class="muted">WHERE couldn't do this job — <code class="inline">COUNT(*)</code> doesn't exist yet until the rows are grouped, so filtering on it has to happen with HAVING, after grouping.</p>
+    </section>
+
+    <section class="block" id="aggregates">
+      <h2>5. Aggregate Functions</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+          <tbody>
+            <tr><td class="k mono">COUNT()</td><td>Number of rows</td></tr>
+            <tr><td class="k mono">SUM()</td><td>Total of a numeric column</td></tr>
+            <tr><td class="k mono">AVG()</td><td>Average of a numeric column</td></tr>
+            <tr><td class="k mono">MIN()</td><td>Smallest value</td></tr>
+            <tr><td class="k mono">MAX()</td><td>Largest value</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="joins">
+      <h2>6. JOINs</h2>
+      <p>JOINs combine rows from two tables based on a related column — usually a Foreign Key matching a Primary Key.</p>
+      <div class="venn-row">
+        <div class="venn-item">
+          <svg viewBox="0 0 160 100"><circle cx="60" cy="50" r="38" fill="none" stroke="var(--line-strong)" stroke-width="2"/><circle cx="100" cy="50" r="38" fill="var(--accent)" opacity="0.6" stroke="var(--accent)" stroke-width="2"/><circle cx="60" cy="50" r="38" fill="none" stroke="var(--line-strong)" stroke-width="2"/></svg>
+          <h5>INNER JOIN</h5>
+          <p>Only rows with a match in both tables.</p>
+        </div>
+        <div class="venn-item">
+          <svg viewBox="0 0 160 100"><circle cx="60" cy="50" r="38" fill="var(--accent)" opacity="0.6" stroke="var(--accent)" stroke-width="2"/><circle cx="100" cy="50" r="38" fill="none" stroke="var(--line-strong)" stroke-width="2"/></svg>
+          <h5>LEFT JOIN</h5>
+          <p>All of the left table, matched rows from the right (else NULL).</p>
+        </div>
+        <div class="venn-item">
+          <svg viewBox="0 0 160 100"><circle cx="60" cy="50" r="38" fill="none" stroke="var(--line-strong)" stroke-width="2"/><circle cx="100" cy="50" r="38" fill="var(--accent)" opacity="0.6" stroke="var(--accent)" stroke-width="2"/></svg>
+          <h5>RIGHT JOIN</h5>
+          <p>All of the right table, matched rows from the left (else NULL).</p>
+        </div>
+      </div>
+      <pre class="sql"><span class="c">-- Every customer, and their orders if they have any</span>
+SELECT customers.name, orders.order_id, orders.total
+FROM customers
+LEFT JOIN orders ON customers.id = orders.customer_id;</pre>
+      <p class="muted">A customer with zero orders still appears in this result, with <code class="inline">order_id</code> and <code class="inline">total</code> shown as NULL — an INNER JOIN would have silently dropped that customer entirely.</p>
+    </section>
+
+    <section class="block" id="null-case">
+      <h2>7. NULL &amp; CASE</h2>
+      <p><b>NULL</b> represents an unknown or absent value — it is not zero, and it is not an empty string. Because of that, <code class="inline">= NULL</code> never works as expected in SQL; you have to use <code class="inline">IS NULL</code> or <code class="inline">IS NOT NULL</code> instead.</p>
+      <p><b>CASE</b> is SQL's conditional expression — an if/else you can use inside a query to compute a new value based on conditions.</p>
+      <pre class="sql"><span class="c">-- Label orders by size</span>
+SELECT order_id, total,
+  CASE
+    WHEN total &gt;= 200 THEN 'Large'
+    WHEN total &gt;= 50  THEN 'Medium'
+    ELSE 'Small'
+  END AS order_size
+FROM orders;</pre>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 8, Lesson 1</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 8 · Lesson 2 — Subqueries, INSERT/UPDATE/DELETE &amp; How QA Actually Uses SQL</b></div>
+    <div class="l"><span class="mono">Coming soon</span></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What's the difference between a Primary Key and a Foreign Key?",
+    tests: "A foundational database vocabulary question — checks whether you know PKs enforce uniqueness within a table while FKs express relationships across tables.",
+    simple: "A Primary Key uniquely identifies every row in its own table, with no duplicates or nulls allowed. A Foreign Key is a column in one table that references another table's Primary Key, linking the two tables together.",
+    strong: "A Primary Key is a column, or combination of columns, that uniquely identifies each row within its own table — by definition it can't contain duplicate values or nulls, since it has to unambiguously identify exactly one row. A Foreign Key lives in a different (or sometimes the same) table and references another table's Primary Key, which is how relational databases express relationships between entities without duplicating data — instead of repeating a customer's full details on every order row, the orders table just stores a foreign key pointing back to that customer's primary key.",
+    example: "customers.id is a Primary Key; orders.customer_id is a Foreign Key referencing it, linking each order back to exactly one customer.",
+    followups: ["Can a table have more than one column as its Primary Key?", "What happens if you try to insert an order with a customer_id that doesn't exist in the customers table?"],
+    good: ["Explain the uniqueness constraint on Primary Keys specifically, and frame Foreign Keys as the mechanism for cross-table relationships."],
+    bad: ["Describing both as just 'important columns' without explaining the actual constraint or relationship each one enforces."]
+  },
+  {
+    q: "What's the difference between WHERE and HAVING? Why can't you just use WHERE everywhere?",
+    tests: "One of the most classic SQL interview questions — checks whether you understand the row-filtering vs. group-filtering distinction and the order of execution.",
+    simple: "WHERE filters individual rows before any grouping happens. HAVING filters groups after GROUP BY has aggregated the data — so HAVING can filter on an aggregate result like COUNT(*), which doesn't exist yet at the point WHERE would run.",
+    strong: "WHERE filters rows at the earliest stage, before any grouping or aggregation occurs — it can't reference an aggregate function's result because that result doesn't exist yet at that point in the query. HAVING filters after GROUP BY has collapsed rows into groups and aggregate functions have been calculated, which is exactly why HAVING is required (not WHERE) when filtering on something like COUNT(*) > 3 — you're filtering on the group's aggregated count, not on a value present in any individual row.",
+    example: "'Find customers with more than 3 orders' requires HAVING COUNT(*) > 3, since COUNT(*) is a group-level aggregate that only exists after GROUP BY runs — WHERE COUNT(*) > 3 would be invalid.",
+    followups: ["Can a single query use both WHERE and HAVING together? What would each filter in that case?", "What's the execution order of a SQL query's clauses, roughly?"],
+    good: ["Explain WHY WHERE can't do the aggregate-filtering job — the timing/execution-order reasoning, not just 'they're different.'"],
+    bad: ["Saying they're interchangeable, or that HAVING is 'just WHERE for GROUP BY' without explaining why that distinction actually exists."]
+  },
+  {
+    q: "Explain the difference between INNER JOIN, LEFT JOIN, and RIGHT JOIN.",
+    tests: "Checks whether you understand which rows survive each join type, especially around unmatched rows — a very common practical SQL question.",
+    simple: "INNER JOIN returns only rows that have a match in both tables. LEFT JOIN returns all rows from the left table, plus matched data from the right table (or NULL where there's no match). RIGHT JOIN is the mirror — all rows from the right table, plus matched data from the left.",
+    strong: "INNER JOIN returns only the rows where the join condition matches in both tables — anything unmatched on either side is dropped entirely. LEFT JOIN returns every row from the left (first-listed) table regardless of whether a match exists in the right table; where there's no match, the right table's columns come back as NULL rather than dropping the row. RIGHT JOIN does the same thing in the opposite direction — every row from the right table is kept, with NULLs filling in for any unmatched left-table columns.",
+    example: "An INNER JOIN between customers and orders would completely exclude a customer who's never placed an order; a LEFT JOIN from customers would still include that customer, with NULL in the order columns.",
+    followups: ["Which join would you use to find customers who have never placed an order, and how?", "Is there a meaningful difference between LEFT JOIN and RIGHT JOIN, or could you always rewrite one as the other?"],
+    good: ["Be specific about what happens to unmatched rows in each case — that's the actual substance of the question."],
+    bad: ["Describing all three joins vaguely as 'combining two tables' without distinguishing what happens to unmatched rows."]
+  },
+  {
+    q: "What does NULL actually represent in SQL, and why doesn't 'column = NULL' work to find NULL values?",
+    tests: "Checks a subtle but very commonly tested SQL gotcha — NULL represents unknown, not a comparable value, so equality comparisons against it don't behave as expected.",
+    simple: "NULL means 'unknown' or 'absent,' not zero or an empty string — and because it represents an unknown value, comparing anything to it with = also returns unknown (not true), so you have to use IS NULL or IS NOT NULL instead.",
+    strong: "NULL represents the absence of a known value — it is fundamentally different from zero or an empty string, both of which are actual, defined values. Because NULL means 'unknown,' comparing it with the standard equality operator doesn't behave the way you'd expect: 'column = NULL' doesn't evaluate to true even for rows where the column is NULL, because SQL treats the comparison of an unknown value to anything, including another NULL, as itself unknown rather than true. SQL provides the dedicated IS NULL and IS NOT NULL operators specifically to check for this correctly.",
+    example: "Running 'WHERE email = NULL' will silently return zero rows even if many rows genuinely have a NULL email — 'WHERE email IS NULL' is what actually finds them.",
+    followups: ["What happens if you SUM() a column that contains some NULL values?", "How would you test that an API correctly represents a missing value as NULL rather than an empty string?"],
+    good: ["Explain that NULL represents 'unknown' rather than a comparable value, which is the actual reason equality comparison fails."],
+    bad: ["Saying NULL is 'the same as zero' or 'the same as an empty string.'"]
+  },
+  {
+    q: "What's the difference between DISTINCT and GROUP BY? They can seem to do the same thing.",
+    tests: "A common point of confusion — checks whether you understand DISTINCT deduplicates the final result set while GROUP BY is fundamentally about aggregation, even when used without an aggregate function.",
+    simple: "DISTINCT simply removes duplicate rows from the query's result. GROUP BY is built for aggregation — collapsing rows that share a value so aggregate functions like COUNT or SUM can be applied per group — and can look similar to DISTINCT only when used without any aggregate function.",
+    strong: "DISTINCT operates on the final result set and simply removes exact duplicate rows, with no concept of aggregation involved. GROUP BY is fundamentally about aggregation — it collapses rows sharing the same value in the grouped column(s) so that aggregate functions like COUNT, SUM, or AVG can be computed per group. When GROUP BY is used with no aggregate function at all, it can produce a result that looks identical to DISTINCT, which is exactly where the confusion comes from — but GROUP BY's actual purpose, and its real power, is enabling per-group aggregation, which DISTINCT simply can't do.",
+    example: "'SELECT DISTINCT customer_id FROM orders' and 'SELECT customer_id FROM orders GROUP BY customer_id' return the same list of unique customer IDs, but only GROUP BY can be extended to also show 'SELECT customer_id, COUNT(*) FROM orders GROUP BY customer_id' for each customer's order count.",
+    followups: ["Would DISTINCT or GROUP BY be more efficient for simply listing unique values, with no aggregation needed?", "Can you use DISTINCT inside an aggregate function, like COUNT(DISTINCT customer_id)? What would that do?"],
+    good: ["Point out that they only look equivalent in the no-aggregate-function case, and that GROUP BY's real purpose is enabling aggregation."],
+    bad: ["Claiming DISTINCT and GROUP BY are always fully interchangeable in every situation."]
+  },
+  {
+    q: "What is CASE used for in SQL, and why would a tester ever need to use it?",
+    tests: "Checks whether you understand CASE as a practical tool for QA-style data investigation, not just an abstract SQL feature.",
+    simple: "CASE is SQL's conditional expression — an if/else you can use inside a query to compute a derived value based on conditions, which a tester can use to categorize or flag data directly in a query instead of eyeballing raw rows.",
+    strong: "CASE lets you compute a conditional value directly within a query, similar to an if/else statement in a programming language — evaluating a series of WHEN conditions and returning a corresponding value for each. For a tester, this is genuinely useful beyond just being a SQL feature to know: it lets you label or flag data directly in a query result, like categorizing orders as 'Large / Medium / Small' by total, or flagging rows that look suspicious, which turns a manual eyeballing exercise into something the query itself surfaces clearly.",
+    example: "Using CASE to add a computed 'status_flag' column that shows 'Suspicious' for any order with a total under $0.01 or over $10,000, making anomalies immediately visible in the query result rather than requiring a manual scan.",
+    followups: ["Could you use CASE inside a WHERE clause as well as a SELECT clause?", "How would CASE help you validate data during defect investigation specifically?"],
+    good: ["Give a concrete QA-relevant use case for CASE, not just describe the syntax abstractly."],
+    bad: ["Describing CASE purely as a generic programming concept with no connection to how a tester would actually use it."]
+  },
+  {
+    q: "Why does a QA engineer need to know SQL at all, if testing is usually done through the UI or API?",
+    tests: "Checks whether you understand SQL as a verification tool that lets a tester check ground truth independent of the layers that might be masking a bug.",
+    simple: "The UI and API can both display or return incorrect data due to bugs in the layers between the database and what's shown — SQL lets a tester query the database directly to check the actual, underlying ground truth, independent of whether the UI or API is representing it correctly.",
+    strong: "The UI shows what the API returns, and the API returns what application logic decides to construct from the database — any of those layers could be introducing a bug. Knowing SQL lets a tester bypass all of that and check the database directly, establishing ground truth independent of whatever the UI or API happens to be displaying. That's essential for investigating a defect precisely: is the underlying data actually wrong, or is a correct piece of data being incorrectly transformed or displayed somewhere between the database and the screen? SQL is what lets you answer that question directly instead of guessing.",
+    example: "If a user's account balance shows $0.00 on screen, querying the database directly reveals whether the stored balance is actually wrong, or whether it's correct in the database and the bug is really in how the API or UI is fetching or rendering it.",
+    followups: ["What kind of bug would only be catchable by checking the database directly, and not through the UI or API at all?", "How would you validate that a UI-displayed value matches its underlying database value?"],
+    good: ["Frame SQL as a way to independently verify ground truth and isolate which layer a bug actually lives in — that's the real value proposition."],
+    bad: ["Saying SQL is 'nice to have' without explaining the specific investigative advantage it provides."]
+  },
+  {
+    q: "Write a query (in plain English or SQL) to find every customer who has never placed an order.",
+    tests: "A practical application question combining JOINs and NULL handling — a very common real SQL exercise in interviews.",
+    simple: "LEFT JOIN customers to orders on the customer ID, then filter for rows where the orders side is NULL — since a LEFT JOIN keeps every customer, unmatched customers show up with NULL in the order columns.",
+    strong: "I'd LEFT JOIN customers to orders on the matching ID, which keeps every customer regardless of whether they have any orders, filling unmatched order columns with NULL. Then I'd filter with 'WHERE orders.order_id IS NULL,' since that specifically identifies the customers whose LEFT JOIN found no matching order row at all — exactly the customers who have never ordered anything.",
+    example: "SELECT customers.name FROM customers LEFT JOIN orders ON customers.id = orders.customer_id WHERE orders.order_id IS NULL;",
+    followups: ["Would an INNER JOIN work for this same purpose? Why or why not?", "How would this query change if you wanted customers with fewer than 2 orders, instead of exactly zero?"],
+    good: ["Correctly combine LEFT JOIN with an IS NULL filter — this exact pattern is a very common real-world and interview SQL exercise."],
+    bad: ["Suggesting an INNER JOIN for this task — that would silently produce zero results, since INNER JOIN drops exactly the unmatched rows this question needs to find."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 8 · LESSON 1</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
