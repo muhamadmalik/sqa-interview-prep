@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 2 · Lesson 2 — Unit, Integration, System, E2E &amp; Acceptance Testing</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:52px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:22px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 14px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:16px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 14px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:15px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  /* pyramid */
+  .pyramid{ margin:20px 0 8px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .pyramid .tier{ display:flex; align-items:center; justify-content:center; color:var(--accent-ink); background:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; font-weight:700; padding:12px 0; border-radius:2px; text-align:center; letter-spacing:.02em; }
+  .pyramid .tier.t1{ width:96%; }
+  .pyramid .tier.t2{ width:70%; opacity:.88; }
+  .pyramid .tier.t3{ width:44%; opacity:.76; }
+  .pyramid-cap{ text-align:center; font-size:12.5px; color:var(--ink-faint); margin-bottom:22px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 2 — Testing Types &nbsp;·&nbsp; Lesson 2</div>
+        <h1 class="title">Unit, Integration, System, End-to-End &amp; Acceptance Testing</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The test-level hierarchy — five zoom levels on the same software, each answering a different question, each usually owned by different people.</p>
+    <div class="lesson-nav"><a href="level2-lesson1.html" style="color:inherit;">← Level 2, Lesson 1: Smoke, Sanity, Regression &amp; Retesting</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#unit" data-track="unit">1. Unit Testing</a>
+    <a href="#integration" data-track="integration">2. Integration Testing</a>
+    <a href="#system" data-track="system">3. System Testing</a>
+    <a href="#e2e" data-track="e2e">4. End-to-End Testing</a>
+    <a href="#acceptance" data-track="acceptance">5. Acceptance Testing / UAT</a>
+    <a href="#compare" data-track="compare">6. All Five, Side by Side</a>
+    <a href="#pyramid" data-track="pyramid">7. The Testing Pyramid</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="unit">
+      <h2>1. Unit Testing</h2>
+      <p><b>Concept.</b> Unit testing checks the smallest testable piece of code in isolation — usually a single function or method — to confirm it does exactly what it's supposed to, independent of everything else in the system.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>It's the cheapest, fastest place to catch a bug — no UI, no network, no database, just the logic itself. A broken discount calculation function is far cheaper to catch here than after it's wired into a full checkout flow.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Almost always written and run by developers, usually in the same language as the code, using a unit-testing framework. Dependencies the unit relies on (a database call, another service) are typically replaced with fakes so the test stays isolated and fast.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A function <code class="inline">calculateDiscount(price, code)</code> gets tested directly: does it return the right value for a valid code, zero for an invalid one, and does it handle a null price without crashing — all without touching a real checkout page or database.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Assuming unit testing is "QA's job." In most teams it's written by developers as they code — QA's involvement is usually indirect: caring that unit coverage exists on risky logic, not writing the unit tests themselves.</p>
+    </section>
+
+    <section class="block" id="integration">
+      <h2>2. Integration Testing</h2>
+      <p><b>Concept.</b> Integration testing checks that two or more units or modules — each already unit-tested individually — work correctly <i>together</i>, once connected. It targets the interfaces and data flow between components, not the components' internal logic.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Two modules can each pass every unit test perfectly and still fail the moment they're wired together — mismatched data formats, wrong assumptions about what the other side returns, a field the other module expects but never receives.</p>
+
+      <h3 class="sub">How it works</h3>
+      <ul class="tight">
+        <li><b>Big Bang:</b> integrate everything at once, then test. Fast to set up, but a failure is hard to isolate — could be anywhere.</li>
+        <li><b>Incremental:</b> integrate and test modules gradually, one connection at a time — either <b>top-down</b> (test high-level modules first, simulate lower ones with placeholder "stubs") or <b>bottom-up</b> (test low-level modules first, simulate higher ones with "drivers"). Slower to set up, but failures are much easier to pinpoint.</li>
+      </ul>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>The "inventory" module and the "checkout" module each pass their unit tests separately. Integration testing checks: when checkout asks inventory "is this item in stock," does it correctly receive and interpret the response — including what happens when inventory returns an unexpected format.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Confusing integration testing with system testing. Integration testing checks specific connection points between a few modules; it doesn't require the whole application to be complete or behave like a finished product yet.</p>
+    </section>
+
+    <section class="block" id="system">
+      <h2>3. System Testing</h2>
+      <p><b>Concept.</b> System testing evaluates the complete, fully integrated application as a whole, checking it against the overall functional and non-functional requirements — this is the first point where you're testing "the product," not "the pieces."</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Even after every module and every connection between modules has been verified, the application as a complete product hasn't actually been tested yet. System testing is where you finally validate the whole thing behaves as one coherent system.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Usually owned by an independent QA team (not the developers who wrote it), performed in an environment as close to production as practical, and covers both functional requirements and non-functional ones — performance, security, usability — as a black box, without regard to internal code structure.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Testing the entire e-commerce application — browsing, cart, checkout, order confirmation, email notification — as one continuous product, checking it against the original requirements document, without caring how any individual module is implemented internally.</p>
+      </div>
+    </section>
+
+    <section class="block" id="e2e">
+      <h2>4. End-to-End (E2E) Testing</h2>
+      <p><b>Concept.</b> End-to-end testing validates a complete real-world user journey through the fully deployed application, often including the external systems and integrations it actually depends on in production — payment gateways, third-party APIs, email services — rather than simulating them.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>System testing already checks the whole app — but E2E goes further by validating the app in as close to a real production context as possible, including the outside services it can't fully control. This is where integration assumptions about the <i>real</i> outside world get tested, not just internal modules.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>Pick a realistic, complete user scenario from start to finish, and run it against a near-production environment with real (or realistically simulated) external dependencies.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A user signs up, browses, adds an item to cart, pays through the real (sandboxed) payment gateway, receives an actual confirmation email via the real email service, and the order appears correctly in the fulfillment system — the entire real-world chain, not just the app's own code.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Treating "system testing" and "E2E testing" as identical. They overlap heavily and many teams use the terms loosely, but the distinction interviewers are checking for is: system testing validates the application against requirements as a whole; E2E testing specifically validates a real user journey through real-world integrations end to end. Know the difference exists even if the boundary is fuzzy in practice.</p>
+    </section>
+
+    <section class="block" id="acceptance">
+      <h2>5. Acceptance Testing / UAT</h2>
+      <p><b>Concept.</b> Acceptance testing checks whether the system satisfies business requirements and is acceptable for delivery — the final gate before release, and the only test level primarily done by or with actual business stakeholders or end users rather than the technical team.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Every prior level can pass and the software can still miss what the business actually needed — acceptance testing exists specifically to answer "does this solve the real problem, from the customer's perspective?" It's the practical check against the absence-of-errors fallacy from Level 1.</p>
+
+      <h3 class="sub">How it works — common types</h3>
+      <ul class="tight">
+        <li><b>UAT (User Acceptance Testing):</b> real or representative end users try the system against real-world scenarios before go-live.</li>
+        <li><b>Alpha testing:</b> done in-house, by internal staff who aren't the developers, simulating real usage before release to outside users.</li>
+        <li><b>Beta testing:</b> done by real external users in their own environment, before general availability.</li>
+        <li><b>Contract / Regulation acceptance:</b> checking the system meets a specific contractual or legal/compliance requirement.</li>
+      </ul>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Before a new inventory management system goes live, the warehouse staff who'll actually use it daily run through their real workflows — receiving stock, processing an order, printing a shipping label — and sign off (or don't) based on whether it actually works for their job, not just whether it passes technical test cases.</p>
+      </div>
+    </section>
+
+    <section class="block" id="compare">
+      <h2>6. All Five, Side by Side</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th></th><th>Unit</th><th>Integration</th><th>System</th><th>End-to-End</th><th>Acceptance</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Tests</td><td>One function/method</td><td>A few connected modules</td><td>Whole application</td><td>A real user journey, incl. external systems</td><td>Business fit for purpose</td></tr>
+            <tr><td class="k">Usually done by</td><td>Developers</td><td>Developers / QA</td><td>QA team</td><td>QA team</td><td>Business/end users, with QA support</td></tr>
+            <tr><td class="k">Environment</td><td>Isolated, fakes/mocks</td><td>Partial, some real connections</td><td>Near-production, black box</td><td>Production-like, real integrations</td><td>Production-like or staging</td></tr>
+            <tr><td class="k">Answers</td><td>"Does this piece of logic work?"</td><td>"Do these pieces work together?"</td><td>"Does the whole product meet requirements?"</td><td>"Does a real user's full journey work?"</td><td>"Is this acceptable for the business to ship?"</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">Notice the progression from V-Model in Level 1: each level here roughly pairs with a phase of design — unit tests trace to low-level design, integration to high-level design/architecture, system to system design, and acceptance to the original requirements themselves.</p>
+    </section>
+
+    <section class="block" id="pyramid">
+      <h2>7. The Testing Pyramid</h2>
+      <p><b>Concept.</b> A widely referenced model for how much automated testing effort to put at each level: lots of fast, cheap unit tests at the base, a moderate number of integration tests in the middle, and a small number of slow, expensive end-to-end/UI tests at the top.</p>
+
+      <div class="pyramid">
+        <div class="tier t3">E2E / UI (few, slow, expensive)</div>
+        <div class="tier t2">Integration (some)</div>
+        <div class="tier t1">Unit tests (many, fast, cheap)</div>
+      </div>
+      <div class="pyramid-cap">Bottom = fast &amp; cheap &amp; many · Top = slow &amp; expensive &amp; few</div>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>Unit tests run in milliseconds and pinpoint failures precisely; E2E tests run in seconds-to-minutes each, are more brittle (a UI tweak can break them even when the logic is fine), and are more expensive to maintain. A test suite that's shaped like an inverted pyramid — mostly slow E2E tests, few unit tests — is a common, expensive anti-pattern: slow to run, flaky, and painful to maintain, even though it "feels" more thorough because it looks like real usage.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A team with 2,000 unit tests, 200 integration tests, and 20 E2E tests gets fast feedback on every code change (the unit tests run in seconds) while still having a thin layer of E2E coverage for the handful of journeys that matter most — versus a team with 300 E2E tests and almost no unit tests, whose test suite takes an hour to run and breaks constantly on unrelated UI changes.</p>
+      </div>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 2, Lesson 2</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 2 · Lesson 3 — Exploratory, Ad-hoc, Usability, Compatibility &amp; Cross-browser Testing</b></div>
+    <div class="l"><span class="mono">Coming soon</span></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What's the difference between unit testing and integration testing?",
+    tests: "A foundational test-level question — checks whether you understand isolation vs. interaction as the key distinction.",
+    simple: "Unit testing checks one piece of code alone, with everything else faked out. Integration testing checks that multiple already-tested pieces work correctly once actually connected to each other.",
+    strong: "Unit testing isolates a single function or method and verifies its logic independently, typically replacing any dependencies with fakes so nothing outside that unit affects the result. Integration testing takes units that have already passed individually and checks the connections between them — the data passed back and forth, the assumptions each side makes about the other — because two individually correct components can still fail once wired together.",
+    example: "A discount calculation function passes its unit tests in isolation; integration testing then checks that the checkout module correctly sends it the right inputs and correctly handles its output.",
+    followups: ["Who typically writes unit tests versus integration tests?", "What's a stub, and where does it show up in integration testing?"],
+    good: ["Frame it as isolation vs. interaction — that's the cleanest one-line distinction."],
+    bad: ["Saying integration testing is just 'testing more things at once' without explaining the interface/connection focus."]
+  },
+  {
+    q: "Explain the difference between system testing and end-to-end testing. Interviewers often use these two interchangeably — what would you say if pushed to distinguish them?",
+    tests: "A nuanced comparison that many candidates can't articulate cleanly — checks whether you can hold a distinction even when real-world usage of the terms is fuzzy.",
+    simple: "System testing validates the whole application against its requirements, usually in a controlled test environment. End-to-end testing validates a specific real user journey through the app plus its real external dependencies, as close to true production conditions as possible.",
+    strong: "In practice, the two overlap a lot and many teams use the terms loosely — that's worth acknowledging honestly. But the distinction I'd draw is: system testing is about validating the complete, integrated application against its documented requirements, often still using some simulated dependencies for practicality. End-to-end testing specifically emphasizes a real, complete user journey running through actual external systems — the real payment gateway, the real email service — to validate the whole real-world chain, not just the application's own code. System testing asks 'does the product meet its spec'; E2E testing asks 'does a real user's real journey actually work, dependencies and all.'",
+    example: "System testing might use a mocked payment gateway that always succeeds; true E2E testing runs the same checkout flow against the real sandboxed payment gateway to catch things like an actual timeout.",
+    followups: ["Would you ever run E2E tests as part of your regression suite? What's the trade-off?", "How does this connect to the Testing Pyramid?"],
+    good: ["Acknowledge the real-world overlap/ambiguity before drawing the distinction — this shows maturity rather than dogmatism."],
+    bad: ["Confidently claiming they're 'exactly the same thing' — that misses a distinction interviewers do sometimes probe for."]
+  },
+  {
+    q: "What is the Testing Pyramid, and why does it recommend more unit tests than end-to-end tests?",
+    tests: "A very common automation-adjacent conceptual question, even for manual-leaning roles — checks whether you understand the cost/speed/reliability trade-off across test levels.",
+    simple: "It's a model recommending lots of fast, cheap unit tests, a moderate number of integration tests, and few slow, expensive E2E tests — because unit tests give fast, precise feedback while E2E tests are slow and prone to breaking for reasons unrelated to real bugs.",
+    strong: "The Testing Pyramid argues for shaping your automated test suite with many unit tests at the base, fewer integration tests in the middle, and a small number of end-to-end tests at the top. The reasoning is cost and reliability: unit tests run in milliseconds, pinpoint exactly what broke, and are cheap to maintain since they don't depend on UI or external systems. E2E tests are realistic but slow, expensive to maintain, and prone to flakiness — a minor UI change can break an E2E test even when the underlying logic is completely correct. So you want the bulk of your fast feedback coming from the cheap, reliable layer, with E2E tests reserved for the handful of journeys that really need that level of realism.",
+    example: "A team with mostly unit tests gets a broken-build signal in seconds; a team relying mostly on E2E tests might wait an hour for the suite to run, and half the failures turn out to be flaky UI timing issues, not real bugs.",
+    followups: ["What does an 'inverted pyramid' look like, and why is it considered an anti-pattern?", "Where does manual exploratory testing fit relative to this pyramid?"],
+    good: ["Explain the reasoning (speed, cost, flakiness), not just draw the shape.", "Mention the inverted-pyramid anti-pattern if you can — it shows you understand the failure mode, not just the ideal."],
+    bad: ["Describing the pyramid shape without explaining why that shape is recommended."]
+  },
+  {
+    q: "What's the difference between UAT and system testing, and why can't system testing replace it?",
+    tests: "Checks whether you understand acceptance testing as fundamentally different in purpose and ownership, not just 'more testing at the end.'",
+    simple: "System testing checks the product against written technical requirements, done by QA. UAT checks whether the product actually solves the real business problem, done by the actual business users — and a technically correct product can still fail that check.",
+    strong: "System testing is performed by the QA team and validates the application against the documented requirements — it's thorough, but it's still testing against someone's written interpretation of what's needed. UAT is performed by actual business stakeholders or end users, testing against their real-world workflows and expectations, which sometimes diverge from what got written down. System testing can pass completely and UAT can still fail, if the requirements themselves didn't fully capture what the business actually needed — which connects directly back to the absence-of-errors fallacy: technically correct isn't the same as actually useful.",
+    example: "A reporting feature passes every system test case exactly as specified, but in UAT, warehouse managers immediately say the report is missing a column they use every day that nobody thought to write into the requirements.",
+    followups: ["Who should be involved in UAT, and how would you prepare them for it?", "What would you do if UAT surfaces a major gap right before a planned release date?"],
+    good: ["Connect this back to the absence-of-errors fallacy from Level 1 — shows retention and real synthesis."],
+    bad: ["Treating UAT as 'just another round of the same testing, done later.'"]
+  },
+  {
+    q: "You're doing integration testing on a payment module that depends on an inventory service that isn't built yet. How do you proceed?",
+    tests: "A practical scenario checking whether you know stubs/drivers and incremental integration approaches, not just the vocabulary.",
+    simple: "Use a stub — a fake, simplified version of the inventory service that returns predictable responses — so the payment module can be integration-tested against a simulated version of the dependency it needs.",
+    strong: "I wouldn't block on the missing service — I'd use a stub: a lightweight fake implementation of the inventory service that returns controlled, predictable responses, so I can test how the payment module behaves when it calls that dependency, including edge cases like the dependency returning an error or an out-of-stock result. This is exactly the incremental, top-down integration approach — testing higher-level modules first using stubs for the lower-level ones that aren't ready yet — and it lets integration testing start well before every real dependency exists.",
+    example: "The stub could be configured to return 'in stock,' 'out of stock,' and 'service error' on demand, letting me test the payment module's handling of all three without a real inventory service running.",
+    followups: ["What's the difference between a stub and a driver, and when would you use each?", "What's the risk of relying too heavily on stubs instead of testing against the real service eventually?"],
+    good: ["Name the technique (stub) and the integration strategy (top-down/incremental) explicitly, not just 'I'd fake it somehow.'"],
+    bad: ["Saying you'd just wait until the real service is built before testing anything."]
+  },
+  {
+    q: "A feature passes unit, integration, and system testing perfectly, but fails UAT. What does that tell you, and what would you do next?",
+    tests: "A scenario question probing whether you understand what each level actually validates, and can reason about a gap between them rather than just being confused by it.",
+    simple: "It tells you the code is technically correct against what was specified, but the specification itself likely missed something real users actually need — I'd dig into exactly what UAT flagged and trace it back to a requirements gap, not a coding bug.",
+    strong: "Passing every technical level but failing UAT strongly suggests the written requirements didn't fully capture the real business need — the code faithfully does what it was told to do, but 'what it was told to do' wasn't quite right. I'd start by getting specific, concrete detail from the UAT feedback rather than a vague 'it doesn't feel right,' trace that back to which requirement was incomplete or wrong, and loop in whoever owns requirements to decide whether this needs a spec change and a new development cycle, or whether it's a smaller adjustment. I'd also treat this as a signal to review earlier: was there a way UAT-style feedback could have been gathered sooner, before the full technical cycle was already spent?",
+    example: "A checkout flow works exactly as specified, but real business users in UAT say they need a 'save for later' option — a totally valid, common workflow that simply never made it into the original requirements.",
+    followups: ["How would you prevent this kind of gap from recurring in future features?", "Is this a 'bug' in the traditional sense? Why or why not?"],
+    good: ["Recognize this as a requirements gap, not a testing failure at the lower levels — and connect it to getting business input earlier (shift-left applied to requirements, not just code)."],
+    bad: ["Treating this as evidence that system testing 'wasn't thorough enough' — that misattributes the actual cause."]
+  },
+  {
+    q: "How would you decide what belongs in your automated E2E suite versus what should just be covered by unit and integration tests?",
+    tests: "A practical prioritization question tying the Testing Pyramid to a real decision — checks judgment, not just recall of the pyramid shape.",
+    simple: "Reserve E2E tests for the small number of critical, high-value user journeys that genuinely need real-world, cross-system validation; push everything else — logic, edge cases, module interactions — down to the faster, cheaper unit and integration layers.",
+    strong: "I'd apply the Testing Pyramid's logic directly: anything that's really about internal logic or a specific module interaction belongs at the unit or integration level, where it's fast and precise. I'd reserve E2E tests for a small, deliberately curated set of the most critical, highest-value user journeys — the ones where what actually matters is confirming the real, full chain works, including real external systems. If I find myself wanting to E2E-test an edge case in a discount calculation, that's a sign it should really be a unit test instead — E2E is the wrong, expensive tool for that job.",
+    example: "'Can a user complete a purchase with a valid card' deserves an E2E test; 'does the discount function handle a null coupon code' does not — that belongs at the unit level.",
+    followups: ["What's a symptom that a team has too many E2E tests relative to unit tests?", "How would you convince a team that's over-invested in E2E tests to rebalance?"],
+    good: ["Give a clear rule of thumb (critical journeys only) plus a concrete example of what does and doesn't belong in E2E."],
+    bad: ["Saying 'test everything at every level' — that ignores the cost trade-off the pyramid exists to address."]
+  },
+  {
+    q: "Map each test level — unit, integration, system, acceptance — back to a phase of the V-Model from Level 1. Why does that pairing exist?",
+    tests: "A synthesis question connecting this lesson back to SDLC/V-Model from Level 1 — checks whether concepts are building on each other in your understanding, not sitting in isolated boxes.",
+    simple: "Unit testing pairs with low-level/detailed design, integration testing with high-level design/architecture, system testing with overall system design, and acceptance testing with the original requirements — because in the V-Model, each test level is planned alongside the development phase that defines what it should check.",
+    strong: "In the V-Model, each testing phase is deliberately paired with a corresponding development phase, planned at the same time: unit tests trace back to low-level/detailed design, since that's where individual component behavior is specified; integration tests trace back to high-level design or architecture, since that's where the connections between components are defined; system tests trace back to overall system design, validating the complete product against how it was meant to function; and acceptance tests trace all the way back to the original business requirements, since that's the one level checking against what the business actually asked for, not a technical design document. The pairing exists so that test design starts as early as the corresponding development phase — a direct application of the early-testing principle from Level 1 — rather than being an afterthought bolted on once code exists.",
+    example: "While architects are still designing how the payment and inventory modules will communicate, integration test cases for that exact interface can already be drafted, well before either module is coded.",
+    followups: ["Why does this pairing make defects cheaper to catch overall?", "How does this look different in an Agile team that isn't strictly following V-Model?"],
+    good: ["Explicitly reference the V-Model and the early-testing principle from Level 1 — this is exactly the kind of cross-lesson synthesis that reads as strong, senior-level understanding in an interview."],
+    bad: ["Answering only with the test-level definitions again, without making the V-Model connection the question is actually asking for."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 2 · LESSON 2</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
