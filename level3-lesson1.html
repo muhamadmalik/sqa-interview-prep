@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 3 · Lesson 1 — Equivalence Partitioning &amp; Boundary Value Analysis</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:52px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:22px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 14px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:16px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 14px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:15px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  /* number line */
+  .numline{ margin:20px 0 8px; position:relative; height:86px; }
+  .numline svg{ width:100%; height:100%; display:block; overflow:visible; }
+  .numline-cap{ text-align:center; font-size:12.5px; color:var(--ink-faint); margin-bottom:26px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  /* test case table */
+  table.tc td, table.tc th{ font-size:14.5px; }
+  table.tc td.val{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:700; text-align:center; }
+  .pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; padding:3px 8px; border-radius:100px; white-space:nowrap; }
+  .pill.valid{ background:var(--accent); color:var(--accent-ink); }
+  .pill.invalid{ border:1px solid var(--warn); color:var(--warn); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 3 — Test Design Techniques &nbsp;·&nbsp; Lesson 1</div>
+        <h1 class="title">Equivalence Partitioning &amp; Boundary Value Analysis</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The two techniques that turn "test everything" into a small, deliberate, defensible set of test cases — worked through on a real field, value by value.</p>
+    <div class="lesson-nav"><a href="level2-lesson4.html" style="color:inherit;">← Level 2, Lesson 4: Performance, Security, Accessibility &amp; the Rest of NFR Testing</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#ep" data-track="ep">1. Equivalence Partitioning</a>
+    <a href="#bva" data-track="bva">2. Boundary Value Analysis</a>
+    <a href="#worked" data-track="worked">3. Worked Example: Age 18–60</a>
+    <a href="#relationship" data-track="relationship">4. How They Work Together</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="ep">
+      <h2>1. Equivalence Partitioning</h2>
+      <p><b>Concept.</b> Equivalence Partitioning (EP) divides the possible inputs to a field into groups — "partitions" — where the system is expected to behave identically for every value in that group. Instead of testing every possible value, you test <b>one representative value per partition</b>, on the logic that if one value in a partition works, the others almost certainly will too.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>This is the direct, practical answer to "exhaustive testing is impossible" from Level 1. A field accepting integers 1–1000 has 1000 possible valid values alone — nobody is testing all of them, and nobody needs to, if the values genuinely behave the same way within a range.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>For any input, identify the partitions: typically at least one <b>valid</b> partition (values the system should accept) and one or more <b>invalid</b> partitions (values it should reject) — below the valid range, above it, wrong data type, empty, and so on. Pick one representative value from each partition and write a test case for it.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A field accepting a percentage discount from 0–100 has three partitions: invalid-below (any negative number), valid (0–100), invalid-above (anything over 100). Testing <code class="inline">-5</code>, <code class="inline">50</code>, and <code class="inline">150</code> gives representative coverage of all three, without testing all 100+ possible valid values individually.</p>
+      </div>
+
+      <h3 class="sub">Common mistake</h3>
+      <p>Forgetting invalid partitions entirely, and only picking a "happy path" value from the valid range. EP's value comes specifically from deliberately including the invalid partitions too.</p>
+    </section>
+
+    <section class="block" id="bva">
+      <h2>2. Boundary Value Analysis</h2>
+      <p><b>Concept.</b> Boundary Value Analysis (BVA) is built on an observation about how bugs actually happen: defects cluster at the <i>edges</i> of a range far more than in the middle, usually because a developer wrote <code class="inline">&gt;</code> where they meant <code class="inline">&gt;=</code>, or got confused about whether a boundary is inclusive or exclusive. So BVA specifically targets the values right at, just below, and just above each boundary.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>A value comfortably in the middle of a valid range almost never reveals an off-by-one logic error — the boundary is where that class of bug actually lives. BVA is EP's natural partner: EP tells you which partitions exist, BVA tells you exactly where within (and around) them to look hardest.</p>
+
+      <h3 class="sub">How it works</h3>
+      <p>For each boundary of a range, test three values: the boundary itself, one value just inside it, and one value just outside it. For a range with a minimum and maximum, that's typically six values total: <code class="inline">min-1, min, min+1</code> and <code class="inline">max-1, max, max+1</code>.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A "free shipping over $50" rule is a single boundary. BVA tests $49.99 (just below — should charge shipping), $50.00 (exactly on the boundary — this is where a developer might have wrongly coded <code class="inline">&gt; 50</code> instead of <code class="inline">&gt;= 50</code>), and $50.01 (just above — should definitely be free). If the boundary logic is wrong, one of these three values will catch it; a value like $75 almost certainly won't.</p>
+      </div>
+    </section>
+
+    <section class="block" id="worked">
+      <h2>3. Worked Example: an age field accepting 18–60</h2>
+      <p>This is the example every SQA course uses because it's the clearest possible illustration. A form field only accepts applicants aged <b>18 to 60 inclusive</b>. Combining EP and BVA, here's exactly which values to test, and why each one earns its place.</p>
+
+      <div class="numline">
+        <svg viewBox="0 0 640 86" preserveAspectRatio="xMidYMid meet">
+          <line x1="20" y1="43" x2="620" y2="43" stroke="var(--line-strong)" stroke-width="2"/>
+          <!-- invalid low zone -->
+          <rect x="20" y="34" width="140" height="18" fill="var(--warn)" opacity="0.15"/>
+          <!-- valid zone -->
+          <rect x="160" y="34" width="320" height="18" fill="var(--accent)" opacity="0.18"/>
+          <!-- invalid high zone -->
+          <rect x="480" y="34" width="140" height="18" fill="var(--warn)" opacity="0.15"/>
+          <!-- ticks: 10,17,18,19,39,59,60,61,70 mapped roughly -->
+          <!-- 10 -->
+          <g><line x1="60" y1="36" x2="60" y2="50" stroke="var(--ink-faint)" stroke-width="1.5"/><text x="60" y="70" text-anchor="middle" font-size="12" fill="var(--ink-faint)" font-family="ui-monospace,Consolas,monospace">10</text></g>
+          <!-- 17 -->
+          <g><line x1="140" y1="30" x2="140" y2="56" stroke="var(--warn)" stroke-width="2"/><text x="140" y="24" text-anchor="middle" font-size="12" fill="var(--warn)" font-family="ui-monospace,Consolas,monospace" font-weight="700">17</text></g>
+          <!-- 18 -->
+          <g><line x1="180" y1="30" x2="180" y2="56" stroke="var(--accent)" stroke-width="2"/><text x="180" y="24" text-anchor="middle" font-size="12" fill="var(--accent)" font-family="ui-monospace,Consolas,monospace" font-weight="700">18</text></g>
+          <!-- 19 -->
+          <g><line x1="210" y1="36" x2="210" y2="50" stroke="var(--accent)" stroke-width="1.5"/><text x="210" y="70" text-anchor="middle" font-size="12" fill="var(--ink-muted)" font-family="ui-monospace,Consolas,monospace">19</text></g>
+          <!-- 39 -->
+          <g><line x1="320" y1="36" x2="320" y2="50" stroke="var(--ink-faint)" stroke-width="1.5"/><text x="320" y="70" text-anchor="middle" font-size="12" fill="var(--ink-faint)" font-family="ui-monospace,Consolas,monospace">39</text></g>
+          <!-- 59 -->
+          <g><line x1="430" y1="36" x2="430" y2="50" stroke="var(--accent)" stroke-width="1.5"/><text x="430" y="70" text-anchor="middle" font-size="12" fill="var(--ink-muted)" font-family="ui-monospace,Consolas,monospace">59</text></g>
+          <!-- 60 -->
+          <g><line x1="460" y1="30" x2="460" y2="56" stroke="var(--accent)" stroke-width="2"/><text x="460" y="24" text-anchor="middle" font-size="12" fill="var(--accent)" font-family="ui-monospace,Consolas,monospace" font-weight="700">60</text></g>
+          <!-- 61 -->
+          <g><line x1="500" y1="30" x2="500" y2="56" stroke="var(--warn)" stroke-width="2"/><text x="500" y="24" text-anchor="middle" font-size="12" fill="var(--warn)" font-family="ui-monospace,Consolas,monospace" font-weight="700">61</text></g>
+          <!-- 70 -->
+          <g><line x1="580" y1="36" x2="580" y2="50" stroke="var(--ink-faint)" stroke-width="1.5"/><text x="580" y="70" text-anchor="middle" font-size="12" fill="var(--ink-faint)" font-family="ui-monospace,Consolas,monospace">70</text></g>
+        </svg>
+      </div>
+      <div class="numline-cap">Invalid-below · Valid [18–60] · Invalid-above — bold ticks are the boundaries</div>
+
+      <div class="table-wrap">
+        <table class="spec tc">
+          <thead><tr><th>Value</th><th>Type</th><th>Why this value</th><th>Expected result</th></tr></thead>
+          <tbody>
+            <tr><td class="val">10</td><td><span class="pill invalid">Invalid partition</span></td><td>EP representative from deep inside the invalid-below partition — confirms the low end is rejected generally, not just near the edge.</td><td>Rejected</td></tr>
+            <tr><td class="val">17</td><td><span class="pill invalid">Boundary − 1</span></td><td>BVA: one below the minimum. If the code wrongly allows <code class="inline">age &gt;= 17</code>, this is the value that catches it.</td><td>Rejected</td></tr>
+            <tr><td class="val">18</td><td><span class="pill valid">Boundary (min)</span></td><td>BVA: the minimum itself. Confirms the boundary is inclusive, exactly as "18 to 60 inclusive" requires.</td><td>Accepted</td></tr>
+            <tr><td class="val">19</td><td><span class="pill valid">Boundary + 1</span></td><td>BVA: one above the minimum, confirming normal behavior resumes cleanly just past the edge.</td><td>Accepted</td></tr>
+            <tr><td class="val">39</td><td><span class="pill valid">EP representative</span></td><td>EP: a nominal value from the middle of the valid partition — the "happy path" check.</td><td>Accepted</td></tr>
+            <tr><td class="val">59</td><td><span class="pill valid">Boundary − 1</span></td><td>BVA: one below the maximum, confirming the upper boundary's neighbor still works.</td><td>Accepted</td></tr>
+            <tr><td class="val">60</td><td><span class="pill valid">Boundary (max)</span></td><td>BVA: the maximum itself. Catches a common bug where a developer wrote <code class="inline">age &lt; 60</code> instead of <code class="inline">age &lt;= 60</code>.</td><td>Accepted</td></tr>
+            <tr><td class="val">61</td><td><span class="pill invalid">Boundary + 1</span></td><td>BVA: one above the maximum. If the code wrongly allows up to 61, this is the value that catches it.</td><td>Rejected</td></tr>
+            <tr><td class="val">70</td><td><span class="pill invalid">Invalid partition</span></td><td>EP representative from deep inside the invalid-above partition.</td><td>Rejected</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted"><b>9 test cases</b> — not the 43 values between 18 and 60, and not the effectively infinite range of possible bad inputs — give strong, deliberate coverage of every partition and every boundary. That's the entire point of the two techniques used together.</p>
+    </section>
+
+    <section class="block" id="relationship">
+      <h2>4. How They Work Together</h2>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Equivalence Partitioning</th><th>Boundary Value Analysis</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Question it answers</td><td>"What are the distinct groups of input, and does each behave correctly?"</td><td>"Are the edges of each group handled correctly, inclusive/exclusive?"</td></tr>
+            <tr><td class="k">Where it looks</td><td>One representative value per partition, anywhere in that partition</td><td>Specifically at and immediately around each boundary</td></tr>
+            <tr><td class="k">Catches</td><td>Whole categories of input being mishandled</td><td>Off-by-one logic errors specifically</td></tr>
+            <tr><td class="k">Used</td><td>Almost always together — EP defines the partitions, BVA stress-tests their edges</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>In practice, most testers don't apply these as two separate exercises — they think in terms of partitions and automatically test the boundaries of each one, exactly as the worked example above does.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 3, Lesson 1</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 3 · Lesson 2 — Decision Tables, State Transition, Use Case, Error Guessing &amp; Pairwise Testing</b></div>
+    <div class="l"><span class="mono">Coming soon</span></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What is Equivalence Partitioning, and why does it work as a coverage strategy?",
+    tests: "A foundational definition question, but checking specifically whether you can justify WHY testing one value per partition is a defensible strategy, not just define the term.",
+    simple: "It's dividing possible inputs into groups that should all behave the same way, and testing one representative value from each group instead of every possible value — it works because values within a well-defined partition really do behave identically under correct logic.",
+    strong: "Equivalence Partitioning divides the input space for a field into partitions — groups of values the system is expected to treat identically — and then tests just one representative value from each partition rather than every possible value. It works as a strategy because it directly addresses the 'exhaustive testing is impossible' principle: since testing every value is infeasible, EP gives a principled way to sample intelligently, on the assumption that if the underlying logic handles one value in a partition correctly, it will handle the rest of that partition correctly too, since they're not treated differently by the code.",
+    example: "A field accepting 1–100 has three partitions — below range, in range, above range — so three test cases (e.g. 0, 50, 101) give meaningful coverage instead of testing all 100+ valid values individually.",
+    followups: ["What's the risk if your partitions are drawn incorrectly?", "How does EP relate to the 'exhaustive testing is impossible' principle specifically?"],
+    good: ["Explicitly connect this to the exhaustive-testing-impossible principle — it shows you understand why this technique exists, not just what it is."],
+    bad: ["Defining EP correctly but not being able to say why sampling one value per partition is actually defensible."]
+  },
+  {
+    q: "Why do bugs cluster at boundaries specifically? What kind of coding mistake does Boundary Value Analysis actually catch?",
+    tests: "Checks whether you understand the specific bug mechanism BVA targets (off-by-one/inclusive-exclusive errors), not just that 'edges are risky.'",
+    simple: "Boundaries are where developers most often make off-by-one mistakes — using > instead of >=, or < instead of <=, which changes whether the boundary value itself is included or excluded.",
+    strong: "Boundaries are where a very specific, very common class of coding mistake lives: getting the comparison operator wrong, like writing 'age > 18' when the requirement actually means 'age >= 18.' That single-character difference only produces a visible failure at the boundary value itself — every other value in the range behaves identically whether the operator is > or >=. BVA exists because it's precisely targeted at catching that class of bug, which a value comfortably in the middle of the range would never reveal.",
+    example: "If free shipping should apply 'over $50' but the code checks 'total >= 50' instead of 'total > 50,' testing exactly $50.00 is the only value that exposes the discrepancy.",
+    followups: ["Would BVA catch a bug where the entire valid range is shifted, like the field actually accepting 19–61 instead of 18–60?", "How would you adapt BVA for a boundary that isn't a number, like a maximum text length?"],
+    good: ["Name the specific mechanism (off-by-one / inclusive vs exclusive comparison operators) rather than a vague 'edges are risky.'"],
+    bad: ["Saying boundaries are 'just where bugs tend to happen' without explaining the actual coding mistake being targeted."]
+  },
+  {
+    q: "A form field accepts a quantity from 1 to 10 for an order. Walk me through the test cases you'd write using EP and BVA.",
+    tests: "A practical application question — nearly identical in shape to the age 18-60 example, checking whether you can actually apply the technique to a new range, not just recite the worked example.",
+    simple: "0 (invalid, boundary below), 1 (valid, min boundary), 2 (valid, just above min), 5 or 6 (valid, mid-range representative), 9 (valid, just below max), 10 (valid, max boundary), 11 (invalid, boundary above), plus maybe a deep-invalid value like -5 or 100.",
+    strong: "Using EP to identify the partitions — invalid-below, valid (1–10), invalid-above — and BVA to target each boundary, I'd test: 0 (one below the minimum, invalid), 1 (the minimum itself, valid), 2 (one above the minimum, valid), a mid-range value like 5 (EP's nominal valid representative), 9 (one below the maximum, valid), 10 (the maximum itself, valid), and 11 (one above the maximum, invalid). I might add a deep-invalid value like -1 or 999 to confirm the invalid partitions are rejected generally, not just near the edges. That's roughly 8 test cases giving strong, deliberate coverage instead of testing all 10 valid values individually.",
+    example: "If the field incorrectly allows quantity 11, the boundary test at 11 catches it immediately; a mid-range test at 5 never would.",
+    followups: ["What would change if the field also needed to reject non-integer input, like 5.5?", "How would zero specifically need to be handled if the business rule is 'orders must have at least one item'?"],
+    good: ["Walk through all the same boundary logic as the age example, applied cleanly to a new range — this is exactly what demonstrates real understanding versus memorization."],
+    bad: ["Only testing a couple of 'happy path' values in the middle of the range without any boundary values."]
+  },
+  {
+    q: "Does Boundary Value Analysis only apply to numeric ranges?",
+    tests: "A generalization question — checks whether you understand BVA as a concept about 'edges of any constraint,' not narrowly about numbers.",
+    simple: "No — it applies to any field with a defined limit, including text length, file size, date ranges, and array/list sizes, not just numeric input ranges.",
+    strong: "No, BVA generalizes to any constraint that has an edge, not just numeric ranges. A text field with a maximum length of 50 characters has the same boundary logic — test 49, 50, and 51 characters. A date range, a file upload size limit, or even the number of items allowed in a list all have boundaries where the same off-by-one class of bug can hide. The underlying principle is the same regardless of what's being constrained: find the edge of the accepted range, and test just inside, at, and just outside it.",
+    example: "A username field capped at 20 characters should be tested with a 19-character, a 20-character, and a 21-character username to confirm the limit is enforced exactly where specified.",
+    followups: ["How would you apply BVA to a file upload feature with a 5MB size limit?", "Can BVA apply to something with no explicit numeric limit, like a dropdown with a fixed list of options?"],
+    good: ["Give at least one non-numeric example (text length, file size, date range) to demonstrate the generalization concretely."],
+    bad: ["Saying BVA is strictly a numeric-range technique and doesn't apply elsewhere."]
+  },
+  {
+    q: "What's the risk of relying only on EP and BVA for your test design? What do they NOT catch?",
+    tests: "A nuance/limitation question — checks whether you understand these techniques address single-field input validation, not multi-field interactions or logic flow, setting up the next lesson's techniques (decision tables, pairwise).",
+    simple: "They're focused on a single field in isolation, so they don't catch bugs that only appear from combinations of multiple fields interacting, or from a sequence of actions/states — for those you need other techniques like decision tables, pairwise testing, or state transition testing.",
+    strong: "EP and BVA are extremely effective for validating a single input field's range and edges, but they're inherently single-variable techniques — they don't address what happens when multiple fields' values interact with each other, or when correct behavior depends on the order of a user's actions rather than just one input value. A discount field might independently pass EP and BVA perfectly, and a coupon-code field might too, yet a bug might only appear when a specific discount and a specific coupon are applied together. That kind of interaction bug needs a different technique — decision tables for combined business rules, pairwise testing for combinatorial input coverage, or state transition testing when behavior depends on sequence — which is exactly why test design uses multiple techniques together, not just one.",
+    example: "A 20%-off discount code and a 'buy one get one free' promotion might each work correctly alone, but stacking them together might produce an unintended 120% discount — no single-field EP/BVA test would ever surface that.",
+    followups: ["Which technique would you reach for to test that kind of multi-field interaction?", "How would you decide when EP/BVA is sufficient versus when you need a decision table?"],
+    good: ["Name at least one concrete technique that fills the gap (decision tables, pairwise, state transition) — shows awareness of the broader toolkit, not just this lesson's two techniques."],
+    bad: ["Claiming EP and BVA alone provide comprehensive coverage for any feature — that overstates what single-field techniques can catch."]
+  },
+  {
+    q: "For a discount percentage field that must accept 0 to 100, would you treat 0 and 100 as 'valid boundaries' or would you question whether they should even be allowed?",
+    tests: "A subtle, tricky question checking whether you distinguish 'applying a technique mechanically' from 'thinking critically about whether the requirement itself makes sense.'",
+    simple: "I'd apply BVA to 0 and 100 as written, but I'd also separately flag with the business or requirements owner whether a 0% or 100% discount is actually a valid real-world scenario — a technique doesn't replace the need to sanity-check the requirement itself.",
+    strong: "Mechanically, if the stated requirement is '0 to 100 inclusive,' then 0 and 100 are the boundaries and BVA says to test them directly, along with -1 and 101 as the invalid neighbors — that part is straightforward. But a good tester doesn't stop at applying the technique; I'd also ask a requirements question independent of the test design: does a 0% discount even make sense as a distinct case from 'no discount applied,' and is a 100% discount — giving the item away free — something the business actually intends to allow, or is that a sign the requirement itself needs a second look? BVA tells you what to test given the stated range; it doesn't tell you whether the stated range is actually correct, and that's a separate, equally important judgment call.",
+    example: "A 100% discount might technically pass every test case as 'valid,' but if it lets a customer receive an item for $0.00 due to a requirements oversight, that's a business logic problem no boundary test alone would flag as wrong.",
+    followups: ["How would you raise a concern like this without seeming like you're second-guessing the requirements team unnecessarily?", "Is 0 a meaningfully different case from 'the coupon field left empty'? Why might that distinction matter?"],
+    good: ["Separate 'applying the technique correctly' from 'questioning whether the requirement itself is sound' — that distinction is the whole point of this question."],
+    bad: ["Only answering the mechanical BVA part and never raising the deeper question about whether 0% and 100% are meaningful, intended values."]
+  },
+  {
+    q: "How many test cases does EP + BVA typically produce for a single range, and why is that number the right trade-off rather than testing more or fewer?",
+    tests: "Checks whether you can justify the coverage-vs-effort trade-off explicitly, connecting back to risk-based testing rather than just stating a formula.",
+    simple: "Usually around 7-9 test cases for a simple min/max range (two invalid-partition values, and three values at each boundary: min-1, min, min+1, max-1, max, max+1), plus a mid-range value — enough to catch both partition-level and boundary-level bugs without testing every possible value.",
+    strong: "For a straightforward min/max range, EP plus BVA typically produces around 7 to 9 test cases: one or two representative values from the invalid partitions, three values around each boundary (min-1, min, min+1, max-1, max, max+1), and one nominal value from the middle of the valid range. That number is the right trade-off because it's derived from where defects actually tend to occur — partition boundaries and category membership — rather than an arbitrary sample size. Testing fewer risks missing a boundary bug entirely; testing significantly more, like every value in the valid range, adds effort without meaningfully increasing the odds of catching a new class of bug, since values deep inside a partition are very unlikely to behave differently from each other under correct logic.",
+    example: "Testing all 43 valid ages from 18 to 60 individually would take far longer than the 9 test cases from the worked example, without any realistic increase in bugs found.",
+    followups: ["How would this number change for a range with more than one boundary condition, like a field with a required minimum but no explicit maximum?", "When would you decide the extra rigor of testing more than just the boundaries is actually worth it?"],
+    good: ["Justify the number by reasoning about where defects actually occur, not just reciting a formula — that's the difference between knowing the technique and understanding why it works."],
+    bad: ["Giving a made-up 'always test exactly N cases' rule without explaining the underlying reasoning."]
+  },
+  {
+    q: "Your manager asks why you only wrote 9 test cases for an age field with 43 possible valid values, instead of testing all of them. How do you defend that?",
+    tests: "A workplace-realistic defense scenario — checks whether you can communicate the value of a test design technique persuasively to a non-technical or skeptical stakeholder.",
+    simple: "I'd explain that the 9 test cases were deliberately chosen to cover every category of input and every boundary where a coding mistake is likely to hide, and that testing all 43 valid values would cost significantly more time while being very unlikely to catch anything the 9 wouldn't already catch.",
+    strong: "I'd explain that the 9 test cases weren't a shortcut — they were deliberately selected using Equivalence Partitioning and Boundary Value Analysis to cover every category of input (valid, invalid-below, invalid-above) and specifically the boundaries, which is where the overwhelming majority of real-world logic bugs in a range check actually occur. Testing all 43 valid values would cost roughly five times the effort for a very small, diminishing increase in bug-finding power, since values in the middle of a valid partition essentially never behave differently from one another under correct code. I'd frame it as risk-based test design, not corner-cutting: the goal isn't to run the maximum number of tests, it's to run the tests most likely to catch a real defect for the least effort — and I'd be glad to show the reasoning behind each of the 9 values individually.",
+    example: "If I'm asked 'but what about age 35, did you test that?' I can explain that 35 sits deep inside the same partition as the 39 I did test, and the code has no logical reason to treat 35 differently from 39.",
+    followups: ["How would you respond if the manager still insists on testing every value 'to be safe'?", "Would your answer change for a field where the underlying logic is unusually complex or has known historical bugs?"],
+    good: ["Reframe 'fewer test cases' as a deliberate, risk-based decision rather than something to apologize for — confidence in the technique is what a strong interview answer sounds like here."],
+    bad: ["Getting defensive or simply asserting '9 is enough' without walking through the actual reasoning that justifies it."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 3 · LESSON 1</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
