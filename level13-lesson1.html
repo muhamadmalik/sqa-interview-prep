@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 13 · Lesson 1 — Real Interview Prep: Behavioral Questions &amp; Mock Interviews</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:46px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:520px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  /* STAR */
+  .star-row{ display:flex; gap:12px; flex-wrap:wrap; margin:18px 0 10px; }
+  .star-item{ flex:1; min-width:130px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); }
+  .star-item .letter{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:20px; font-weight:700; color:var(--accent); }
+  .star-item h5{ font-size:13.5px; margin:4px 0 4px; }
+  .star-item p{ font-size:13px; color:var(--ink-muted); margin:0; }
+  /* behavioral card */
+  .bcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .bcard-head{ padding:16px 18px 14px; }
+  .bcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .bcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .bcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .bcard textarea{ width:100%; min-height:100px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .bcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .bcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .bcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .bcard-answer.open{ display:block; }
+  .bcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .bcard-answer h4:first-child{ margin-top:0; }
+  .bcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .bcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .bcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  /* tricky qcard reuse */
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  /* scorecard preview */
+  .score-grid{ display:grid; grid-template-columns: 1fr auto; gap:0; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin:18px 0 10px; background:var(--surface); }
+  .score-row{ display:contents; }
+  .score-row .sc-label{ padding:10px 16px; border-bottom:1px solid var(--line); font-size:14.5px; }
+  .score-row .sc-val{ padding:10px 16px; border-bottom:1px solid var(--line); border-left:1px solid var(--line); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color:var(--ink-faint); font-size:13px; }
+  .score-row:last-child .sc-label, .score-row:last-child .sc-val{ border-bottom:none; }
+  /* completion banner */
+  .complete-banner{ background:var(--accent); color:var(--accent-ink); border-radius:var(--radius); padding:26px 28px; margin:0 0 30px; box-shadow:var(--shadow); }
+  .complete-banner h3{ color:var(--accent-ink); font-size:19px; margin-bottom:8px; }
+  .complete-banner p{ color:var(--accent-ink); opacity:0.92; margin-bottom:0; font-size:15px; }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 13 — Real Interview Prep (final level)</div>
+        <h1 class="title">Behavioral Questions, Tricky Questions &amp; Mock Interviews</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Levels 1–12 already built the technical question bank — 183 questions across every SQA topic. This level fills the one gap they couldn't cover: you, telling your own story.</p>
+    <div class="lesson-nav"><a href="level12-lesson1.html" style="color:inherit;">← Level 12: CI/CD &amp; DevOps Basics</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#roadmap" data-track="roadmap">1. Where the Question Bank Already Lives</a>
+    <a href="#star" data-track="star">2. The STAR Method</a>
+    <a href="#behavioral" data-track="behavioral">3. Behavioral Question Bank</a>
+    <a href="#tricky" data-track="tricky">4. Tricky Questions — Final Round</a>
+    <a href="#mock" data-track="mock">5. Mock Interviews &amp; Your Scorecard</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Behavioral Practice</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="roadmap">
+      <h2>1. Where the Question Bank Already Lives</h2>
+      <p>The original brief for this course asked for question banks sorted into Beginner, Intermediate, Advanced, Scenario-Based, Tricky, Practical, and Behavioral. Rather than duplicate 183 questions into a new page, here's where each category actually is — every one of Levels 1 through 12 already tagged and structured its questions this way:</p>
+      <ul class="tight">
+        <li><b>Beginner / definitions</b> — concentrated in Level 1 (fundamentals), Level 5 (bug vocabulary), Level 6 (Agile vocabulary).</li>
+        <li><b>Intermediate / comparisons</b> — the "X vs Y" questions running through every level: QA vs QC, Smoke vs Sanity, Severity vs Priority, 401 vs 403, WHERE vs HAVING, Load vs Stress vs Spike vs Soak.</li>
+        <li><b>Advanced / real-world troubleshooting</b> — flaky test investigation (Level 9), CI/CD pipeline failures (Level 12), performance regression investigation (Level 10).</li>
+        <li><b>Scenario-based</b> — "test a login page in 30 minutes," "developer says it's not a bug," "works on my machine," "how would you test an API," "how would you test a payment system" — one in nearly every lesson.</li>
+        <li><b>Tricky / gotcha</b> — "why do bugs still reach production," "is a build with zero bugs ready to ship," questions built specifically to catch memorized-but-not-understood answers.</li>
+        <li><b>Practical / "how would you test this"</b> — the login page exercise (Level 4), the bug report exercise (Level 5), the SQL investigation exercise (Level 8).</li>
+      </ul>
+      <p class="muted">This level adds the one category that couldn't live in any earlier lesson: Behavioral. Every other category needed a right answer to teach — behavioral questions need <i>your</i> answer, so this lesson teaches the structure and leaves the content for you.</p>
+    </section>
+
+    <section class="block" id="star">
+      <h2>2. The STAR Method</h2>
+      <p>The standard structure for answering any "tell me about a time when..." question — it keeps an answer concrete and complete instead of vague and rambling.</p>
+      <div class="star-row">
+        <div class="star-item"><span class="letter">S</span><h5>Situation</h5><p>Brief context — what was going on, in one or two sentences.</p></div>
+        <div class="star-item"><span class="letter">T</span><h5>Task</h5><p>What you specifically needed to do or were responsible for.</p></div>
+        <div class="star-item"><span class="letter">A</span><h5>Action</h5><p>What <i>you</i> actually did — the longest, most specific part.</p></div>
+        <div class="star-item"><span class="letter">R</span><h5>Result</h5><p>What happened, ideally with a concrete outcome or number.</p></div>
+      </div>
+      <div class="callout example">
+        <span class="tag">Common mistake</span>
+        <p>Spending 80% of the answer on Situation and Task ("so there was this project, and the deadline was tight, and my manager said...") and rushing through Action and Result in one sentence. The Action is what the interviewer is actually trying to evaluate — it deserves the most airtime.</p>
+      </div>
+    </section>
+
+    <section class="block" id="behavioral">
+      <h2>3. Behavioral Question Bank</h2>
+      <p class="muted">For each one: what's being tested, how to shape it with STAR, and what to avoid. There's no "model answer" to reveal here — that part is genuinely yours. If you draft a real answer in the box and paste it into chat, that's exactly the kind of thing worth getting a real second opinion on.</p>
+      <div id="blist"></div>
+    </section>
+
+    <section class="block" id="tricky">
+      <h2>4. Tricky Questions — Final Round</h2>
+      <p class="muted">A last set of cross-cutting gotcha questions that specifically try to catch memorized-but-not-understood knowledge, pulling on multiple levels at once.</p>
+      <div id="tlist"></div>
+    </section>
+
+    <section class="block" id="mock">
+      <h2>5. Mock Interviews &amp; Your Scorecard</h2>
+      <p>The original brief for this course also described a live "Interviewer Mode" — one question at a time, no hints unless asked, follow-ups, pushback on weak answers, and a read on whether an answer sounds junior, mid-level, or senior. That's a genuinely interactive experience a static page can't deliver — it has to happen in a live conversation, where a real answer gets a real, specific response.</p>
+      <p><b>Just ask, any time:</b> say something like "let's do a mock interview" or "put me in interviewer mode," and that starts right in the chat — pulling from everything across all 13 levels of this course.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Category</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td>SQA Fundamentals</td><td class="mono">— / 10</td></tr>
+            <tr><td>Testing Concepts</td><td class="mono">— / 10</td></tr>
+            <tr><td>Test Case Design</td><td class="mono">— / 10</td></tr>
+            <tr><td>Bug/Defect Knowledge</td><td class="mono">— / 10</td></tr>
+            <tr><td>API Testing</td><td class="mono">— / 10</td></tr>
+            <tr><td>SQL / Database</td><td class="mono">— / 10</td></tr>
+            <tr><td>Agile / Scrum</td><td class="mono">— / 10</td></tr>
+            <tr><td>Automation</td><td class="mono">— / 10</td></tr>
+            <tr><td>Problem Solving</td><td class="mono">— / 10</td></tr>
+            <tr><td>Communication</td><td class="mono">— / 10</td></tr>
+            <tr><td><b>Overall Readiness</b></td><td class="mono">— / 10</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">This is the scorecard format from the original course spec — it fills in for real, with real notes on what to improve, at the end of a live mock interview session.</p>
+    </section>
+
+    <div class="complete-banner">
+      <h3>You've reached the end of the course.</h3>
+      <p>All 13 levels are live — 24 lessons, roughly 190 questions, covering everything from "what is testing" to security, SQL, automation, CI/CD, and now your own interview story. From here, the highest-value next step is a live mock interview to pressure-test all of it under real conditions.</p>
+    </div>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Course complete<b>All 13 levels are live on the course home page</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const BQUESTIONS = [
+  {
+    q: "Tell me about yourself.",
+    tests: "Not really a request for a biography — the interviewer is checking whether you can summarize your relevant experience clearly and concisely, and whether the story you tell naturally leads toward this role.",
+    star: "This one doesn't need full STAR — it needs a tight arc: where you are now professionally, the most relevant experience that brought you here, and why this specific role/company is the logical next step. Aim for under 90 seconds spoken.",
+    good: ["Keep it professional and relevant — not a full life story.", "End by connecting your background directly to why this SQA role makes sense next.", "Practice it out loud until it's under 90 seconds — a rambling answer here sets a bad tone for the rest of the interview."],
+    bad: ["Reciting your resume line by line.", "Starting from childhood or unrelated jobs with no throughline.", "Going over 2 minutes."]
+  },
+  {
+    q: "Tell me about a difficult bug you found.",
+    tests: "Technical depth and investigative process — can you describe a real, specific debugging story, not a generic 'I found a bug once' summary.",
+    star: "Situation: briefly set up the feature/context. Task: what you were testing and what made this bug hard to find (intermittent? deep in a data-dependent edge case? cross-team?). Action: the actual steps you took to isolate and confirm it — this is where technique from this course belongs: did you narrow it with SQL, check environment differences, use boundary values? Result: what happened — was it fixed, what was the impact, did it change a process afterward.",
+    good: ["Pick a genuinely specific bug, not a generic one — specificity is what makes this answer credible.", "Describe your investigative process, not just the discovery — the process is what's actually being evaluated.", "If it changed a team process afterward (like Level 6's retrospective example), mention that — it shows QA-level thinking, not just QC."],
+    bad: ["Picking a trivial bug (a typo) that doesn't demonstrate real investigative skill.", "Skipping straight from 'I found a bug' to 'it got fixed' with no description of the actual process."]
+  },
+  {
+    q: "Tell me about a conflict with a developer.",
+    tests: "Professionalism and collaboration under disagreement — this is the live version of Level 5's 'developer says it's not a bug' scenario, but now wanting a real personal story and how it was actually resolved.",
+    star: "Situation: a genuine disagreement, ideally about something substantive (a bug's validity, a scope question, a priority call). Task: what you needed to resolve and why it mattered. Action: how you approached it — staying factual, anchoring to requirements or data rather than opinion, per Level 5's guidance. Result: how it actually got resolved, and ideally what you learned or how it changed how you communicate now.",
+    good: ["Pick a real disagreement with genuine substance, not a manufactured one.", "Show that you resolved it constructively — through evidence, escalation, or conversation — not that you 'won.'", "A result where you learned something or adjusted your own approach reads as more mature than 'I was right and they admitted it.'"],
+    bad: ["Describing the developer as simply wrong or difficult with no self-reflection.", "A conflict story with no real resolution or lesson."]
+  },
+  {
+    q: "What do you do when deadlines are tight?",
+    tests: "Prioritization and composure under pressure — the personal, lived version of the risk-based prioritization scenarios from Levels 4 and 6.",
+    star: "Situation: a real crunch — a release date that couldn't move, a scope that grew. Task: what you were responsible for delivering. Action: how you actually prioritized — this is a great place to reference risk-based thinking explicitly: what got tested first, what got explicitly deprioritized and communicated as such. Result: how it turned out, and ideally evidence that transparent trade-offs (not silent corner-cutting) were the key to it going well.",
+    good: ["Emphasize transparent trade-offs — saying out loud what's being deprioritized, not silently skipping it.", "Reference actual prioritization logic (risk, business impact) rather than just 'I worked really hard.'"],
+    bad: ["Implying you just worked unsustainable hours to cover everything — that's not a repeatable, scalable answer.", "Vague answers with no specific example."]
+  },
+  {
+    q: "Tell me about a time requirements were unclear, and what you did.",
+    tests: "Different from the technical scenario version in Level 6 — this wants a real personal story showing initiative in resolving ambiguity, not just the general process.",
+    star: "Situation: a real story where a requirement or story was genuinely ambiguous. Task: what you needed to deliver despite the ambiguity. Action: what you actually did — asked specific clarifying questions, proposed an interpretation and confirmed it, updated documentation afterward. Result: how it turned out, and ideally, whether it changed how requirements get written going forward (a great callback to Level 6's Definition of Ready).",
+    good: ["Show initiative — asking a specific, well-formed question, not just flagging that something was unclear.", "If it fed back into a process improvement (updating Definition of Ready, adding a checklist item), mention it — that's QA-level thinking again."],
+    bad: ["A story where you just guessed and got lucky, framed as if it were good process.", "Vague description with no specific clarifying question actually described."]
+  },
+  {
+    q: "What is your biggest strength as a tester?",
+    tests: "Self-awareness and whether your stated strength is genuinely relevant to QA work, backed by a real example rather than just an adjective.",
+    star: "Pick one specific strength — not a generic list — and immediately back it with a concrete example of it in action, ideally something from earlier in this same course's vocabulary (attention to edge cases, structured investigation, clear bug reporting, cross-team communication).",
+    good: ["Pick ONE strength and go deep with a real example, rather than listing five adjectives.", "Make sure the example actually demonstrates the claimed strength, not just states it."],
+    bad: ["A generic, unverifiable claim like 'I'm a hard worker' with no example.", "Choosing a strength that isn't actually relevant to QA work."]
+  },
+  {
+    q: "What is your weakness?",
+    tests: "Honesty and self-awareness, and — critically — whether you can show you're actively addressing it, not just naming a fake weakness in disguise.",
+    star: "Pick a real, believable weakness (not 'I work too hard' or 'I'm too much of a perfectionist' — interviewers have heard those hundreds of times and read them as evasive). Briefly describe it, then focus most of the answer on the specific, concrete thing you're doing about it.",
+    good: ["Choose something genuinely believable and specific.", "Spend most of the answer on the concrete action you're taking to address it, not dwelling on the weakness itself."],
+    bad: ["A humble-brag disguised as a weakness ('I care too much about quality').", "A weakness with no plan or effort to address it at all."]
+  },
+  {
+    q: "Why should we hire you?",
+    tests: "Whether you can synthesize your fit for this specific role clearly and confidently, connecting your background to what they actually need.",
+    star: "This is a synthesis question, not a new story — pull together two or three concrete things from your background that map directly onto what this role needs, and say it directly and confidently rather than hedging.",
+    good: ["Be specific about what you bring, tied to what the role actually needs — generic confidence without substance falls flat.", "State it directly and confidently — this question rewards clarity, not modesty."],
+    bad: ["A vague, generic answer that could apply to any candidate for any job.", "Excessive hedging or false modesty that dodges actually answering the question."]
+  }
+];
+
+const blist = document.getElementById('blist');
+
+BQUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'bcard';
+  const idStr = 'B-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="bcard-head">
+      <div class="bcard-id">${idStr} · BEHAVIORAL</div>
+      <div class="bcard-q">${item.q}</div>
+      <div class="bcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your own answer here — this one only you can write..."></textarea>
+      <div class="bcard-actions">
+        <button class="btn-reveal" type="button">Show STAR structure &amp; tips</button>
+      </div>
+    </div>
+    <div class="bcard-answer">
+      <h4>How to structure it with STAR</h4><p>${item.star}</p>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.bcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide structure & tips' : 'Show STAR structure & tips';
+  });
+  blist.appendChild(card);
+});
+
+const TQUESTIONS = [
+  {
+    q: "If your regression suite has 100% pass rate and code coverage is 100%, is the software definitely bug-free?",
+    tests: "Combines the absence-of-errors fallacy (Level 1) with the limits of code coverage as a metric — a classic trap for candidates who equate 'covered' with 'correct.'",
+    a: "No. 100% code coverage only means every line of code executed at least once during testing — it says nothing about whether every meaningful combination of inputs, states, and edge cases was tested, and it says nothing about whether the code does the right thing, only that it ran. Combined with the absence-of-errors fallacy from Level 1, a system can have perfect coverage and a 100% pass rate against its own test cases and still fail to meet the actual user need, or still have untested combinations that a coverage report can't reveal."
+  },
+  {
+    q: "A test case has never failed in two years. Is that necessarily a good sign?",
+    tests: "The pesticide paradox from Level 1, applied as a trap — many candidates assume a never-failing test is a reliably passing test, rather than considering it might be a stale, no-longer-meaningful test.",
+    a: "Not necessarily — it could mean the code path it covers is genuinely solid, but it could also mean the test has become stale and isn't actually exercising anything at risk anymore, exactly the pesticide paradox from Level 1. A test that never fails deserves periodic scrutiny: is it still testing something meaningful, or has the surrounding code changed enough that it's essentially testing nothing interesting anymore?"
+  },
+  {
+    q: "If a bug is Severity: Trivial, does that mean it should always be Priority: Low too?",
+    tests: "The severity/priority independence trap from Level 5 — many candidates who can define both terms separately still default to assuming they move together.",
+    a: "No — this is exactly the mismatched quadrant from Level 5. A trivial-severity bug, like a typo in a company logo, can still be high priority for business reasons like brand reputation, completely independent of its technical severity. Severity and priority are separate axes, and assuming they always align is a common, testable misconception."
+  },
+  {
+    q: "Your API test suite is fully automated and green. Do you still need manual or exploratory testing on that same feature?",
+    tests: "Tests whether 'automated and passing' gets conflated with 'fully tested' — pulling on both the Testing Pyramid (Level 2) and the structural limits of automation (Level 9).",
+    a: "Yes, likely — an automated suite, no matter how green, can only check what it was explicitly told to check. It has no capacity for the kind of open-ended exploration that finds unanticipated problems, which is exactly why exploratory testing exists as a distinct, valuable activity even alongside a mature, fully passing automated suite."
+  }
+];
+
+const tlist = document.getElementById('tlist');
+TQUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'T-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · TRICKY</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your own answer here first..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Answer</h4><p>${item.a}</p>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide answer' : 'Reveal answer';
+  });
+  tlist.appendChild(card);
+});
+
+function updatePill(){
+  const total = document.querySelectorAll('.bcard-answer, .qcard-answer').length;
+  const opened = document.querySelectorAll('.bcard-answer.open, .qcard-answer.open').length;
+  document.getElementById('progress-pill').textContent = opened + ' / ' + total + ' reviewed';
+}
+document.addEventListener('click', function(e){
+  if(e.target.classList && e.target.classList.contains('btn-reveal')){
+    setTimeout(updatePill, 0);
+  }
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
