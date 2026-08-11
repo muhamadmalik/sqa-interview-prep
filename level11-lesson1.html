@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 11 · Lesson 1 — Security Basics for QA</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:44px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout.note{ border-left-color: var(--ink-faint); background:var(--surface-2); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  .callout.note .tag{ color:var(--ink-faint); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  pre.code{ background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13.5px; overflow-x:auto; margin:14px 0; line-height:1.6; }
+  .typegrid{ display:grid; grid-template-columns: 1fr; gap:0; margin:18px 0 28px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--surface); }
+  .typerow{ display:grid; grid-template-columns: 150px 1fr; border-bottom:1px solid var(--line); }
+  .typerow:last-child{ border-bottom:none; }
+  .typerow .tname{ background:var(--surface-2); padding:12px 14px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; font-weight:700; color:var(--accent); border-right:1px solid var(--line); display:flex; align-items:center; }
+  .typerow .tdesc{ padding:12px 16px; font-size:14.5px; }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 11 — Security Basics for QA</div>
+        <h1 class="title">Security Basics for QA</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Not a cybersecurity course — the specific, practical vocabulary an SQA is actually expected to know and test for, without needing a penetration-testing background.</p>
+    <div class="lesson-nav"><a href="level10-lesson1.html" style="color:inherit;">← Level 10: Performance Testing Deep Dive</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#session" data-track="session">1. Session Management</a>
+    <a href="#sqli" data-track="sqli">2. SQL Injection</a>
+    <a href="#xss" data-track="xss">3. Cross-Site Scripting (XSS)</a>
+    <a href="#csrf" data-track="csrf">4. CSRF</a>
+    <a href="#access" data-track="access">5. Broken Access Control &amp; IDOR</a>
+    <a href="#exposure" data-track="exposure">6. Sensitive Data Exposure</a>
+    <a href="#password" data-track="password">7. Password Testing</a>
+    <a href="#rbac" data-track="rbac">8. Role-Based Access Control</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="session">
+      <h2>1. Session Management</h2>
+      <p><b>Concept.</b> Once a user authenticates, the system needs to recognize them across subsequent requests without asking for a password every time — typically via a session ID stored in a cookie. Session management is how that tracking is handled securely.</p>
+      <ul class="tight">
+        <li>Does the session expire after a period of inactivity?</li>
+        <li>Does logout actually invalidate the session server-side, or just clear something client-side while the session ID would still work if reused?</li>
+        <li>Is a new session ID generated after login, rather than reusing one issued before authentication (preventing "session fixation")?</li>
+      </ul>
+    </section>
+
+    <section class="block" id="sqli">
+      <h2>2. SQL Injection</h2>
+      <p><b>Concept.</b> If an application builds database queries by directly concatenating raw user input into a SQL string, instead of using parameterized queries, an attacker can insert malicious SQL that gets executed against the database.</p>
+      <pre class="code">Username: admin' OR '1'='1
+<span style="color:var(--ink-faint)">-- if concatenated directly, this can make the WHERE clause always true,
+-- bypassing the password check entirely</span></pre>
+      <div class="callout note">
+        <span class="tag">What a QA engineer actually does about this</span>
+        <p>Not a full penetration test — basic negative testing. Try entering SQL-like text (quotes, semicolons, comment syntax) into ordinary input fields and confirm the application safely rejects or escapes it, rather than erroring in a revealing way or behaving unexpectedly.</p>
+      </div>
+    </section>
+
+    <section class="block" id="xss">
+      <h2>3. Cross-Site Scripting (XSS)</h2>
+      <p><b>Concept.</b> If user input gets rendered back into a page as raw HTML without proper escaping, an attacker can inject a malicious script that then runs in other users' browsers when they view that content.</p>
+      <pre class="code">Comment: &lt;script&gt;stealCookies()&lt;/script&gt;</pre>
+      <ul class="tight">
+        <li><b>Stored XSS</b> — the malicious script is saved (e.g. in a comment) and runs for every user who later views it.</li>
+        <li><b>Reflected XSS</b> — the script is part of a crafted link or request and only executes immediately for whoever clicks it.</li>
+      </ul>
+      <p>A basic test: enter a harmless script tag into any field that gets displayed back (a comment, a profile name) and confirm it's rendered as inert text, not executed.</p>
+    </section>
+
+    <section class="block" id="csrf">
+      <h2>4. CSRF (Cross-Site Request Forgery)</h2>
+      <p><b>Concept.</b> Tricking an already-authenticated user's browser into unknowingly submitting a request to a site they're logged into, riding on their existing session cookies — without the attacker ever needing to know the user's password.</p>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>While logged into your bank in one tab, visiting a malicious page in another tab that auto-submits a hidden form to <code class="inline">yourbank.com/transfer</code> — your browser happily attaches your valid session cookie, and the bank has no way to know the request wasn't intentional.</p>
+      </div>
+      <p><b>Defense:</b> a CSRF token — a unique, unpredictable value embedded in legitimate forms that a forged cross-site request wouldn't have access to, so the server can reject requests missing a valid one.</p>
+    </section>
+
+    <section class="block" id="access">
+      <h2>5. Broken Access Control &amp; IDOR</h2>
+      <p><b>Concept.</b> The umbrella category for authorization failures — a user accessing data or functionality they shouldn't be able to. The classic, most testable form is an <b>IDOR</b> (Insecure Direct Object Reference): directly manipulating an ID or URL to reach another user's data.</p>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Logged in as User A, viewing an order at <code class="inline">/orders/123</code>. Manually changing the URL to <code class="inline">/orders/124</code> loads User B's order — the server checked that <i>someone</i> was logged in, but never checked whether <i>this specific user</i> was allowed to see <i>this specific order</i>.</p>
+      </div>
+      <p class="muted">This is exactly the 403 Forbidden concept from Level 7, tested deliberately rather than encountered by accident.</p>
+    </section>
+
+    <section class="block" id="exposure">
+      <h2>6. Sensitive Data Exposure</h2>
+      <p><b>Concept.</b> Sensitive data — passwords, tokens, card numbers, personal information — showing up somewhere it shouldn't: in plaintext storage, in a URL, in logs, in an overly verbose error message, or in an API response returning more fields than the caller actually needs.</p>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A "get user profile" API response that includes the user's hashed password field, or their full card number, when the frontend only ever displays a name and email — extra exposed data is a real risk even if nothing currently on screen shows it.</p>
+      </div>
+    </section>
+
+    <section class="block" id="password">
+      <h2>7. Password Testing</h2>
+      <p>Checks a QA engineer can reasonably run without deep security expertise:</p>
+      <ul class="tight">
+        <li>Is a minimum complexity requirement actually enforced (not just described in a tooltip)?</li>
+        <li>Is the password field masked, and is the value absent from browser autofill exposure and network logs in plaintext?</li>
+        <li>Does the password reset flow avoid revealing whether a given email is registered (same message either way)?</li>
+        <li>Is there rate limiting or account lockout after repeated failed attempts (the bug life cycle's lockout state, from Level 5, now tested as a security control)?</li>
+      </ul>
+    </section>
+
+    <section class="block" id="rbac">
+      <h2>8. Role-Based Access Control (RBAC)</h2>
+      <p><b>Concept.</b> A permission model where access is granted based on a user's assigned role — Admin, Editor, Viewer — rather than configured individually per person. Testing RBAC means systematically confirming each role can do exactly what it should, and nothing more.</p>
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>Logging in as a "Viewer" role and confirming every edit and delete action is genuinely blocked — not just hidden from the UI, since a hidden button can often still be triggered by directly calling the underlying API, which is exactly what broken access control testing checks for.</p>
+      </div>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 11</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 11.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 11 complete<b>Level 12 — CI/CD &amp; DevOps Basics</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What is SQL injection, and how would you actually test for it as a QA engineer, without a penetration-testing background?",
+    tests: "Checks whether you understand the mechanism at a basic level and can scope your own realistic testing role, not overclaim security expertise you don't have.",
+    simple: "SQL injection happens when user input gets inserted directly into a SQL query without proper handling, letting an attacker manipulate the query. As a QA engineer, I'd do basic negative testing — enter SQL-like characters into ordinary input fields and confirm they're safely rejected or escaped, not run a full penetration test.",
+    strong: "SQL injection occurs when an application builds a database query by directly concatenating raw user input into the query string, rather than using parameterized queries — this lets an attacker craft input that changes the query's actual logic, like bypassing a login check entirely with input such as admin' OR '1'='1. As a QA engineer without specialist security training, I wouldn't claim to run a full penetration test, but I would do targeted negative testing: entering quotes, semicolons, and SQL comment syntax into ordinary text fields, and confirming the application handles it safely — rejecting it cleanly, not throwing a revealing database error, and definitely not behaving as if the malicious logic executed.",
+    example: "Entering ' OR '1'='1 into a login field and confirming it's correctly rejected rather than granting unintended access is a realistic, appropriately-scoped test for a QA engineer to run.",
+    followups: ["What would a revealing, security-relevant error message look like, if the app mishandles this input?", "Why are parameterized queries the actual fix, rather than just filtering out suspicious characters?"],
+    good: ["Be honest about the scope of what you'd test versus a specialist — that honesty is exactly what Level 2's security-testing framing established."],
+    bad: ["Claiming you'd run a full penetration test or deep exploit development without the background to back that up."]
+  },
+  {
+    q: "What is XSS (Cross-Site Scripting), and what's the difference between stored and reflected XSS?",
+    tests: "Checks basic understanding of the vulnerability mechanism and the two common variants.",
+    simple: "XSS happens when user input is rendered back into a page as raw HTML without being properly escaped, letting an attacker's script run in other users' browsers. Stored XSS persists (like in a saved comment) and affects everyone who later views it; reflected XSS only executes immediately, typically via a crafted link.",
+    strong: "XSS occurs when an application takes user input and renders it back into the page without properly escaping it, allowing an attacker to inject a script that then executes in the browser of anyone who views that content. Stored XSS is persistent — the malicious script gets saved, in a comment or profile field for example, and runs for every subsequent user who views that content. Reflected XSS is not persisted — it's typically delivered through a specially crafted link, and only executes immediately for whoever clicks it, without being saved anywhere.",
+    example: "Submitting a comment containing a script tag; if that script actually executes when a different user later views the comment page, that's stored XSS.",
+    followups: ["How would you test for XSS without actually causing harm to real users?", "Why is proper output escaping the fix, rather than just blocking the word 'script'?"],
+    good: ["Correctly distinguish persistence (stored) from immediacy-via-link (reflected)."],
+    bad: ["Describing XSS only vaguely as 'a hacking thing' without explaining the actual mechanism (unescaped input rendered as HTML)."]
+  },
+  {
+    q: "What is CSRF, and how does a CSRF token defend against it?",
+    tests: "Checks understanding of a subtler attack that doesn't require stealing credentials at all — and the actual mechanism of its defense.",
+    simple: "CSRF tricks an already-logged-in user's browser into unknowingly sending a request to a site they're authenticated with, riding on their existing session cookie — the attacker never needs the password. A CSRF token defends against this by requiring a unique, unpredictable value in legitimate requests that a forged cross-site request wouldn't have.",
+    strong: "CSRF exploits the fact that a browser automatically attaches session cookies to requests sent to a domain, regardless of what page triggered the request. An attacker's page can auto-submit a request to a site the victim happens to be logged into elsewhere, and the victim's browser will attach their valid session cookie without the attacker ever needing to know their password. A CSRF token defends against this by requiring every legitimate state-changing request to include a unique, unpredictable value that the server issued specifically to that user's session — a forged request from an attacker's page has no way to know or include that token, so the server can reject it even though the session cookie itself is valid.",
+    example: "A hidden auto-submitting form on a malicious page that posts to yourbank.com/transfer would be rejected if the bank requires a valid CSRF token that only the bank's own page would have embedded.",
+    followups: ["Would a CSRF token alone protect against XSS on the same site? Why or why not?", "How would you test whether a form is actually protected by a CSRF token?"],
+    good: ["Explain why the attacker doesn't need the victim's password at all — that's the specific, non-obvious mechanism behind CSRF."],
+    bad: ["Confusing CSRF with XSS or another attack type, or describing the token's purpose vaguely without explaining why a forged request can't have it."]
+  },
+  {
+    q: "What is broken access control, and what's an IDOR? How would you test for one?",
+    tests: "Connects directly back to the 403 status code from Level 7 — checks whether you can identify and deliberately test for this class of vulnerability.",
+    simple: "Broken access control is when a user can access data or actions they shouldn't be able to. An IDOR (Insecure Direct Object Reference) is the classic example — directly changing an ID in a URL to access another user's data. I'd test for it by logging in as one user, noting a resource's ID, then manually changing that ID to see if another user's data loads without authorization.",
+    strong: "Broken access control is the umbrella term for any case where a user reaches data or functionality they shouldn't have access to — this is the real-world consequence behind the 403 Forbidden status code from Level 7. An IDOR, Insecure Direct Object Reference, is the most directly testable form: an application exposes an internal identifier, like an order or account ID, directly in a URL or request, and fails to verify the currently logged-in user actually owns that specific resource before returning it. To test for it, I'd log in as one user, identify a resource's ID from a URL or API call, then deliberately change that ID while still authenticated as the same user, and check whether another user's data loads — it shouldn't.",
+    example: "Changing /invoices/501 to /invoices/502 while logged in as a regular customer and getting a stranger's invoice back is a textbook IDOR.",
+    followups: ["Would hiding the 'edit' button in the UI be a sufficient fix for broken access control? Why or why not?", "How would this connect to RBAC testing?"],
+    good: ["Connect this explicitly back to the 403 concept from Level 7, and describe the concrete ID-manipulation test method."],
+    bad: ["Describing broken access control only abstractly without mentioning IDOR or a concrete testing method."]
+  },
+  {
+    q: "What would you check for sensitive data exposure when reviewing an API response?",
+    tests: "Checks whether you think about data exposure at the API/response level, not just what's visibly rendered on screen — ties back to Level 7's response validation.",
+    simple: "I'd check whether the response includes any fields beyond what's actually needed by the frontend — like a hashed password, full card number, or internal-only data — even if the UI never displays them, since an exposed field in the response is a real risk regardless of what's shown on screen.",
+    strong: "I wouldn't just check what's visibly rendered on screen — this connects directly to Level 7's response validation, examining the full response body itself. I'd look for fields that shouldn't be included at all, like a hashed password field, a full card number instead of a masked version, or other internal-only data the frontend never actually uses but the API returns anyway. I'd also check whether sensitive values ever appear somewhere they shouldn't — in a URL as a query parameter, in a verbose error message, or in log output — since exposure isn't limited to the API response body alone.",
+    example: "An API returning a user's full, unmasked card number in a 'get order details' response is a real exposure risk, even if the frontend only ever displays the last four digits — anyone inspecting the raw network response can see the rest.",
+    followups: ["Why might returning 'extra' fields the frontend doesn't currently use still be a problem, even if nothing displays them today?", "How would you check whether sensitive data is being logged in plaintext?"],
+    good: ["Explicitly look beyond the UI to the raw API response and logs — that's the substantive check this question is testing for."],
+    bad: ["Only checking what's visible on the rendered page, missing that the underlying response or logs could still expose sensitive data."]
+  },
+  {
+    q: "How would you test password-related security without deep security expertise?",
+    tests: "A direct, practical follow-up checking the concrete checklist a QA engineer can realistically run.",
+    simple: "I'd verify the minimum complexity rule is actually enforced (not just described), that the password field is properly masked and doesn't leak in network traffic, that the reset flow doesn't reveal whether an email is registered, and that repeated failed login attempts trigger rate limiting or a lockout.",
+    strong: "I'd run a practical checklist within my actual scope: confirming any stated password complexity requirement is genuinely enforced server-side, not just suggested in the UI; confirming the password field is masked and that the actual password value doesn't leak in plaintext anywhere in network traffic or application logs; confirming the password reset flow gives an identical response whether or not the submitted email is actually registered, to avoid leaking which emails exist in the system; and confirming that repeated failed login attempts trigger rate limiting or account lockout rather than allowing unlimited guesses — this last one connects directly back to the bug life cycle's lockout state from Level 5, now being verified specifically as a security control.",
+    example: "Submitting a reset request for both a real and a fake email address and confirming the response message is identical either way, rather than one saying 'email sent' and the other 'email not found.'",
+    followups: ["Why is 'we return the same message either way' specifically important for the password reset flow?", "What would you do if you found the app doesn't lock out accounts after repeated failed attempts?"],
+    good: ["Name the concrete, testable checklist items rather than a vague 'I'd check password security.'"],
+    bad: ["Claiming you'd verify passwords are actually hashed in the database, which typically requires access a QA tester testing black-box wouldn't have."]
+  },
+  {
+    q: "What is RBAC, and how would you systematically test it across multiple roles?",
+    tests: "Checks whether you can design a structured testing approach for a permission model, not just define the term.",
+    simple: "RBAC grants access based on a user's assigned role rather than configuring permissions individually. I'd test it systematically by logging in as each role and confirming every action that role should and shouldn't be able to perform, checking directly against the underlying API or actions, not just what's visible in the UI.",
+    strong: "Role-Based Access Control grants permissions based on a user's assigned role — Admin, Editor, Viewer — rather than configuring access individually per person. To test it systematically, I'd build a matrix of roles against actions or resources, and for each role, confirm both that everything it should be able to do actually works, and that everything it shouldn't be able to do is genuinely blocked — not just visually hidden in the UI, since a hidden button often doesn't stop someone from directly calling the underlying API endpoint. This connects directly to broken access control testing: an incomplete RBAC implementation is exactly what produces those vulnerabilities.",
+    example: "A 'Viewer' role should see a 403 if they directly call the delete-item API endpoint, even though the delete button was never shown to them in the UI in the first place.",
+    followups: ["How would you organize test cases for RBAC if there were 6 roles and 20 distinct actions?", "What would you flag if a 'hidden' admin button turned out to still be functionally callable by a lower-privilege user?"],
+    good: ["Explicitly test at the API level, not just the UI level — that's the key insight connecting RBAC testing to broken access control."],
+    bad: ["Describing RBAC testing as only checking whether the UI shows or hides the right buttons for each role."]
+  },
+  {
+    q: "How would you test a payment system?",
+    tests: "A capstone scenario question explicitly requested in the original course spec — checks whether you can synthesize functional, security, boundary, API, SQL, and performance concepts from across the entire course into one coherent test approach.",
+    simple: "I'd cover functional correctness (successful and failed payments, refunds), security (PCI-relevant data handling, access control on payment endpoints, SQL injection/XSS on input fields), boundary and negative testing on amounts and card data, data validation directly against the database for transaction accuracy, API-level testing of the payment endpoints, and performance/load testing for peak traffic — treating this as the single feature in the whole course where nearly every earlier lesson applies at once.",
+    strong: "A payment system is exactly where nearly everything from this course converges, so I'd approach it in layers. Functionally: successful payments with valid cards, declined payments handled gracefully, refunds and partial refunds, and idempotency — confirming a network retry or double-click doesn't create a duplicate charge, straight from Level 7's idempotency discussion. Boundary and negative testing: a $0.00 charge, a charge at the maximum allowed amount, invalid card numbers, expired cards, and malformed input, using EP and BVA from Level 3. Security: this is a genuinely high-stakes area, so I'd check that sensitive card data isn't exposed in logs, URLs, or API responses beyond what's necessary (Level 11's sensitive data exposure), that payment endpoints correctly enforce authorization so one user can never access or act on another's payment methods (broken access control), and basic negative input testing for injection-style attacks. Data-level validation: querying the database directly, as in Level 8, to confirm a successful payment actually results in exactly one correct transaction record and the right balance changes — never trusting a success message on screen alone. API testing: validating the payment API's request/response contract directly, independent of the UI, as in Level 7. And performance: load and stress testing around expected and peak traffic, like a big sale event, since a payment system failing under load is one of the most damaging possible failures for a business. I'd also prioritize by risk — money-related correctness and security come before less critical polish, given how severe a payment defect can be.",
+    example: "A single test case validating a $49.99 purchase might touch nearly every layer: the API response, the database record it creates, the exact amount charged, and confirmation no sensitive card data leaked anywhere along the way.",
+    followups: ["If you only had one day to test a payment system before a release, what would you prioritize first?", "How would recovery testing from Level 2 apply specifically to a payment flow?"],
+    good: ["Synthesize concepts from multiple earlier levels (idempotency, EP/BVA, sensitive data exposure, SQL validation, API testing, load testing) into one coherent, layered approach — this is exactly the kind of capstone answer that shows the whole course clicking together."],
+    bad: ["Giving a shallow answer limited to 'test that a valid card works and an invalid card is rejected,' missing the security, data-integrity, and performance dimensions entirely."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 11</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
