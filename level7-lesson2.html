@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 7 · Lesson 2 — Auth, Positive/Negative API Testing &amp; Testing with Postman</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:46px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  .bp-item{ display:grid; grid-template-columns: 26px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .bp-item:last-child{ border-bottom:none; }
+  .bp-num{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color:var(--accent); font-weight:700; }
+  .bp-item h4{ font-size:15.5px; margin:0 0 4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .bp-item p{ font-size:14.5px; margin:0; color:var(--ink-muted); }
+  pre.json{ background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13.5px; overflow-x:auto; margin:14px 0; line-height:1.6; }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 7 — API Testing &nbsp;·&nbsp; Lesson 2 (final of Level 7)</div>
+        <h1 class="title">Auth, Positive/Negative API Testing &amp; Testing with Postman</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Who's allowed to do what, how to actually test an endpoint from every angle, and the tool everyone uses to do it without writing code.</p>
+    <div class="lesson-nav"><a href="level7-lesson1.html" style="color:inherit;">← Level 7, Lesson 1: API Fundamentals — REST, HTTP Methods, Status Codes &amp; JSON</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#authn-authz" data-track="authn-authz">1. Authentication vs Authorization</a>
+    <a href="#tokens" data-track="tokens">2. Tokens, Bearer Tokens &amp; Cookies</a>
+    <a href="#posneg" data-track="posneg">3. Positive, Negative &amp; Boundary API Testing</a>
+    <a href="#validation" data-track="validation">4. Data &amp; Response Validation</a>
+    <a href="#postman" data-track="postman">5. Testing with Postman</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="authn-authz">
+      <h2>1. Authentication vs Authorization</h2>
+      <p>The API-level version of a distinction that already showed up as 401 vs 403 in Lesson 1 — worth stating explicitly on its own.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Authentication</th><th>Authorization</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Question</td><td>"Who are you?"</td><td>"What are you allowed to do?"</td></tr>
+            <tr><td class="k">Happens</td><td>First — proving identity (login)</td><td>After — checking permissions for this identity</td></tr>
+            <tr><td class="k">Failure code</td><td>401 Unauthorized</td><td>403 Forbidden</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="tokens">
+      <h2>2. Tokens, Bearer Tokens &amp; Cookies</h2>
+      <p><b>Token.</b> A piece of data issued after successful authentication, proving identity on future requests so the client doesn't have to resend a username and password every time.</p>
+      <p><b>Bearer token.</b> A specific, extremely common token type sent in the request header as <code class="inline">Authorization: Bearer &lt;token&gt;</code>. "Bearer" means exactly what it sounds like — whoever holds (bears) the token gets access, no further proof required. That's precisely why protecting a bearer token matters: if it's stolen, the thief has full access as that user until the token expires or gets revoked, with no additional check standing in the way.</p>
+      <p><b>Cookies.</b> Small pieces of data stored by the browser and <i>automatically</i> attached to every request sent to the originating domain — commonly used for session management on traditional web apps. The key practical difference from a bearer token: a cookie is sent automatically by the browser, while a bearer token typically has to be deliberately attached to a header by the client's own code.</p>
+    </section>
+
+    <section class="block" id="posneg">
+      <h2>3. Positive, Negative &amp; Boundary API Testing</h2>
+      <p>Level 3 and Level 4's positive/negative/boundary vocabulary, applied directly to an API endpoint instead of a UI field.</p>
+      <ul class="tight">
+        <li><b>Positive API testing:</b> valid input, valid auth — expect success, correct status code, and a correct response body.</li>
+        <li><b>Negative API testing:</b> invalid input, missing required fields, invalid or missing auth — expect a proper, informative 4xx error, never a raw crash or a 500.</li>
+        <li><b>Boundary testing for APIs:</b> the exact same BVA logic from Level 3, applied to numeric or length-limited API parameters.</li>
+      </ul>
+      <div class="callout example">
+        <span class="tag">Real-world example — POST /orders</span>
+        <p><b>Positive:</b> a valid item ID and quantity of 2 returns 201 with the created order. <b>Negative:</b> a quantity of <code class="inline">-1</code>, a missing item ID, or no auth token at all should each return a clear 4xx, not a 500 crash or a silently-created broken order. <b>Boundary:</b> if the API caps order quantity at 100 per line item, test 99, 100, and 101 — exactly the same boundary logic as the age-18–60 field from Level 3, just applied to a request parameter instead of a form field.</p>
+      </div>
+    </section>
+
+    <section class="block" id="validation">
+      <h2>4. Data &amp; Response Validation</h2>
+      <p>A thorough API test checks more than just the status code — it's really several checks bundled together:</p>
+      <div class="bp-item">
+        <div class="bp-num">1</div>
+        <div><h4>Status code</h4><p>Is it the correct one for this scenario — not just "2xx," but the specific expected code?</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">2</div>
+        <div><h4>Response schema / structure</h4><p>Are all expected fields present, with the correct data types — a date field that's really a date, a number that's really a number, no unexpected <code class="inline">null</code> where a value is required?</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">3</div>
+        <div><h4>Response data correctness</h4><p>Not just the right shape, but the right values — does the returned price actually match what was calculated?</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">4</div>
+        <div><h4>Headers</h4><p>Is <code class="inline">Content-Type</code> correct? Are expected caching or security headers present?</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">5</div>
+        <div><h4>Response time</h4><p>Did it come back in a reasonable window — an early, cheap signal connecting forward to performance testing in Level 10?</p></div>
+      </div>
+    </section>
+
+    <section class="block" id="postman">
+      <h2>5. Testing with Postman</h2>
+      <p>Postman is a GUI tool for constructing and sending HTTP requests without writing code — the most common tool testers reach for to explore and test APIs directly.</p>
+      <h3 class="sub">A basic workflow</h3>
+      <ul class="tight">
+        <li>Pick the method (GET, POST, etc.) and enter the URL, adding any path or query parameters.</li>
+        <li>Add headers (like <code class="inline">Authorization: Bearer &lt;token&gt;</code>) and, for POST/PUT/PATCH, a JSON request body.</li>
+        <li>Send the request and inspect the response — status code, body, headers, and response time, all shown directly.</li>
+        <li>Write a simple test script that runs automatically after the response arrives, asserting things like "status code is 200" or "response body contains a <code class="inline">userId</code> field" — turning a one-off manual check into a repeatable, automated one.</li>
+        <li>Save requests into a <b>collection</b> so they can be re-run as a regression suite, and use <b>environment variables</b> to swap the base URL and token between dev, staging, and production without editing every request by hand.</li>
+        <li><b>Chain requests:</b> capture a value from one response (like an auth token from a login call) and automatically feed it into a variable used by later requests in the same collection.</li>
+      </ul>
+      <pre class="json">pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Response has a userId", function () {
+    const json = pm.response.json();
+    pm.expect(json).to.have.property("userId");
+});</pre>
+      <p class="muted">That's a real Postman test script pattern — an assertion on the status code, and an assertion on the response body's shape, both running automatically every time this request fires.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 7, Lesson 2</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 7.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 7 complete<b>Level 8 — SQL / Database for QA</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What's the difference between authentication and authorization, and how does that map to the status codes from Lesson 1?",
+    tests: "Ties the API-specific version of this distinction directly back to 401/403 from the previous lesson.",
+    simple: "Authentication is proving who you are; authorization is checking what you're allowed to do once you're identified. A failure in authentication returns 401; a failure in authorization returns 403.",
+    strong: "Authentication answers 'who are you' — it's the process of proving identity, typically via login credentials or a token. Authorization happens after that, answering 'what are you allowed to do' — checking whether the now-known identity has permission for the specific action being requested. This maps directly onto the status codes from Lesson 1: a 401 means authentication itself failed or is missing entirely, while a 403 means authentication succeeded, but authorization for this specific action failed.",
+    example: "A missing auth token entirely returns 401; a valid token for a regular user hitting an admin-only endpoint returns 403 — same underlying distinction, expressed as a status code.",
+    followups: ["Can a request be authenticated but still fail multiple different authorization checks depending on the action?", "How would you test authorization specifically, beyond just checking the status code?"],
+    good: ["Explicitly connect back to 401 vs 403 from Lesson 1 — that synthesis is exactly what this question is checking for."],
+    bad: ["Defining the two terms correctly but not connecting them back to the specific status codes."]
+  },
+  {
+    q: "What is a bearer token, and why does it matter to protect it carefully?",
+    tests: "Checks understanding of the practical security implication behind the term 'bearer,' not just the technical format.",
+    simple: "A bearer token is sent in the Authorization header to prove identity on each request — 'bearer' means whoever holds it gets access, with no further proof needed, so if it's stolen, the thief has full access as that user until it's revoked or expires.",
+    strong: "A bearer token is a credential sent as <code class=\"inline\">Authorization: Bearer &lt;token&gt;</code> on each request, proving the caller's identity without needing to resend a username and password every time. The name is literal and important: 'bearer' means possession alone is sufficient — the server grants access to whoever presents the token, without further verifying they're the legitimate original owner. That's exactly why bearer tokens need careful handling: if one is intercepted, leaked in a log, or exposed in a client-side script, the person who obtains it can act as that user with no additional barrier, until the token is revoked or naturally expires.",
+    example: "A bearer token accidentally logged in plaintext in a server log file becomes a real security exposure — anyone with access to those logs can use it exactly as if they were the original user.",
+    followups: ["How would you test that an expired token is correctly rejected?", "What's a mitigation that limits the damage if a bearer token is stolen?"],
+    good: ["Explain the literal meaning of 'bearer' and connect it directly to the security risk — that's the substance behind the definition."],
+    bad: ["Defining bearer tokens correctly but not explaining why the 'bearer' property specifically creates a security consideration."]
+  },
+  {
+    q: "What's the practical difference between a cookie and a bearer token for authentication?",
+    tests: "Checks whether you know the key mechanical difference — automatic browser attachment versus deliberate client-side header attachment.",
+    simple: "A cookie is automatically attached by the browser to every request to the originating domain. A bearer token has to be deliberately added to a request header by the client's own code — it's never attached automatically.",
+    strong: "The key practical difference is who attaches it and when. A cookie is stored by the browser and automatically sent along with every subsequent request to the domain that set it, without any explicit action from the client's code. A bearer token requires the client application to deliberately read it (usually from storage) and attach it to the Authorization header on each request it wants authenticated — nothing happens automatically. This has real testing implications: forgetting to attach a bearer token is a common, easy mistake to make and test for, while a cookie issue is more likely to show up as a scope or expiration problem, since attachment itself is automatic.",
+    example: "A mobile app calling a REST API almost always uses a bearer token, deliberately attached in code; a traditional server-rendered website login often relies on a session cookie the browser handles automatically.",
+    followups: ["Which one is generally considered more vulnerable to CSRF, and why?", "How would you test what happens when a bearer token is simply omitted from a request?"],
+    good: ["Focus on the automatic-vs-manual attachment distinction — that's the concrete mechanical difference interviewers want to hear."],
+    bad: ["Describing both as 'basically the same thing, just different names' without identifying the actual mechanical difference."]
+  },
+  {
+    q: "Give an example of positive, negative, and boundary test cases for a POST /orders endpoint.",
+    tests: "A direct application question — checks whether you can translate the abstract vocabulary into concrete API test cases for a specific endpoint.",
+    simple: "Positive: valid item and quantity returns 201 with the created order. Negative: a negative quantity, a missing item ID, or no auth token should each return a clear 4xx error, not a crash. Boundary: if quantity is capped at 100, test 99, 100, and 101.",
+    strong: "For a positive test, I'd send a valid item ID and a reasonable quantity, expecting a 201 Created response with the correctly created order in the body. For negative tests, I'd try a negative quantity, a missing required item ID, and a request with no auth token at all — each should return an appropriate 4xx error with a clear message, never a raw 500 crash or, worse, a silently created invalid order. For boundary tests, if the API enforces a maximum quantity of 100 per line item, I'd test 99 (should succeed), 100 (should succeed, the boundary itself), and 101 (should fail) — the exact same boundary value logic from Level 3, just applied to a request field instead of a UI form.",
+    example: "Sending <code class=\"inline\">{\"itemId\": \"A1\", \"quantity\": -1}</code> should return a 400 with a message like 'quantity must be positive,' not a 500 or a created order with negative quantity.",
+    followups: ["What would you check in the response body specifically for the negative test cases, beyond just the status code?", "How would boundary testing differ for a string-length-limited field versus a numeric one?"],
+    good: ["Give genuinely concrete examples with realistic field names and values for all three categories on the same endpoint."],
+    bad: ["Only giving a positive test case example and treating negative/boundary as an afterthought."]
+  },
+  {
+    q: "Beyond checking the status code, what else should a thorough API test validate?",
+    tests: "Checks whether you understand response validation as multi-layered — schema, data correctness, headers, and timing — not just pass/fail on the status code alone.",
+    simple: "The response body's structure and data types (schema), the actual correctness of the returned values, relevant response headers, and whether the response time is reasonable.",
+    strong: "A status code alone tells you almost nothing about whether the response is actually correct. A thorough test also validates the response schema — are all expected fields present with the right data types, no unexpected nulls where a value is required. It validates actual data correctness — not just that a price field exists, but that its value is actually right given the input. It checks relevant headers, like confirming Content-Type is what's expected. And it checks response time, which is a cheap, early signal connecting forward to performance testing — a functionally correct response that takes 8 seconds is still a real problem worth flagging.",
+    example: "A 200 OK response with a completely empty body, or a price field silently returned as a string instead of a number, would both pass a status-code-only check while being genuinely broken.",
+    followups: ["How would you validate a response schema automatically, rather than checking manually every time?", "What response time would you consider a red flag for a typical API endpoint?"],
+    good: ["Name all four layers (schema, data correctness, headers, timing) rather than stopping at just schema or just data."],
+    bad: ["Treating the status code as sufficient validation on its own."]
+  },
+  {
+    q: "Walk me through how you'd use Postman to test an API endpoint, from scratch.",
+    tests: "Checks practical, hands-on familiarity with the actual tool most commonly referenced in SQA interviews for API testing.",
+    simple: "Set the method and URL, add any headers (like an auth token) and a request body if needed, send it and inspect the status/body/response time, then write a simple test script to assert on the status code and key response fields, and save it into a collection so it can be re-run later as part of a regression suite.",
+    strong: "I'd start by selecting the HTTP method and entering the URL, including any path or query parameters. I'd add necessary headers, like an Authorization header with a bearer token, and for POST/PUT/PATCH requests, a JSON body with the test data. After sending, I'd inspect the response directly in Postman — status code, response body, headers, and response time. To make the check repeatable rather than a one-off manual glance, I'd write a short test script using Postman's built-in assertion syntax, checking things like the status code and the presence and type of key response fields. Finally, I'd save the request into a collection, so it becomes part of a reusable, re-runnable set of checks — and I'd use environment variables so the same collection can point at dev, staging, or production just by switching environments, without editing every request individually.",
+    example: "A saved 'Get User' request with a test script asserting <code class=\"inline\">pm.response.to.have.status(200)</code> and that the response contains a <code class=\"inline\">userId</code> field, reusable across environments via a variable for the base URL.",
+    followups: ["How would you chain requests in Postman — for example, using a login response's token in a later request?", "How is a Postman collection different from a full automated test suite in code?"],
+    good: ["Describe the full workflow end to end — request construction, assertions, collections, and environment variables — not just 'I'd send a request and look at the response.'"],
+    bad: ["Describing Postman usage as only manually sending requests and eyeballing results, with no mention of assertions or reusability."]
+  },
+  {
+    q: "How would you test an API you've never seen before, given just its documentation?",
+    tests: "The signature 'how would you test an API' scenario question — checks whether you can synthesize everything from this level into a coherent testing approach.",
+    simple: "I'd start by understanding what the endpoint does and its expected inputs/outputs from the docs, then test the happy path first, followed by negative cases (missing/invalid fields, bad auth), boundary values on any limited fields, and validate the full response — status code, schema, data correctness, and headers — rather than just checking it 'returns something.'",
+    strong: "I'd start by reading the documentation carefully to understand the endpoint's purpose, required and optional parameters, expected request/response format, and authentication requirements. I'd begin with a positive test — valid input, valid auth — to confirm the happy path works and returns the documented status code and response shape. From there, I'd move to negative testing: missing required fields, invalid data types, invalid or missing authentication, and confirm each returns an appropriate, informative error rather than a crash. For any numeric or length-limited fields, I'd apply boundary value analysis at the documented limits. Throughout, I wouldn't just check the status code — I'd validate the full response: schema correctness, actual data accuracy, relevant headers, and reasonable response time. If the API supports it, I'd also test different HTTP methods on the same resource to confirm each behaves as documented, and check idempotency where it's claimed. I'd capture all of this as saved, reusable requests — in Postman or otherwise — so it becomes a repeatable regression check, not a one-time manual pass.",
+    example: "For an undocumented edge like 'what happens if you request a page number beyond the last page of results,' I'd test that specifically even without explicit documentation, since it's exactly the kind of boundary a spec often omits.",
+    followups: ["What would you do if the documentation is incomplete or contradicts what the API actually does?", "How would you prioritize testing if the API has 40 endpoints and you have one day?"],
+    good: ["Synthesize positive, negative, boundary, and full response validation into one coherent, ordered approach — this question is specifically checking whether the whole level comes together."],
+    bad: ["Giving a vague, generic answer like 'I'd send some requests and check if it works' without a structured, layered approach."]
+  },
+  {
+    q: "Give a concrete example of boundary testing applied to an API parameter that isn't a simple numeric range.",
+    tests: "Checks whether you can generalize boundary thinking beyond the most obvious numeric-range case, similar to the generalization question from Level 3.",
+    simple: "A pagination 'limit' parameter capped at, say, 50 results per page — test 49, 50, and 51. Or a string field with a maximum length, like a 100-character product name — test at 99, 100, and 101 characters.",
+    strong: "Boundary testing generalizes well beyond simple numeric ranges to anything with a defined limit. A pagination parameter like <code class=\"inline\">?limit=50</code> capped at 50 results per page is a great example — testing limit values of 49, 50, and 51 checks whether the cap is enforced exactly where documented, the same off-by-one risk from Level 3 applied to an API query parameter instead of a form field. Similarly, a string field with a documented maximum length, like a 100-character product name, gets tested at 99, 100, and 101 characters to confirm the API correctly accepts up to the limit and correctly rejects just past it.",
+    example: "Requesting <code class=\"inline\">?limit=51</code> when the documented max is 50 should either be capped automatically to 50 or rejected with a clear error — silently returning 51 results would be a real bug worth catching specifically at that boundary.",
+    followups: ["What would you check if the API silently caps an over-limit value instead of rejecting it — is that a bug?", "How would you test a date-range parameter for boundary conditions?"],
+    good: ["Give a genuinely non-obvious example (pagination limit, string length) rather than just repeating a numeric age-style range."],
+    bad: ["Only giving a generic numeric example identical to the Level 3 age example without adapting it to something API-specific."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 7 · LESSON 2</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
