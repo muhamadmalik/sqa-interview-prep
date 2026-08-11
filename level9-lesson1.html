@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 9 · Lesson 1 — Automation Fundamentals: Why, What, Tools &amp; Locators</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:46px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  pre.code{ background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13.5px; overflow-x:auto; margin:14px 0; line-height:1.6; }
+  pre.code .c{ color:var(--accent); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 9 — Automation Testing &nbsp;·&nbsp; Lesson 1</div>
+        <h1 class="title">Automation Fundamentals: Why, What, Tools &amp; Locators</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Even in a manual-leaning role, these are the automation questions that come up in nearly every SQA interview — explained without assuming you're already an automation engineer.</p>
+    <div class="lesson-nav"><a href="level8-lesson2.html" style="color:inherit;">← Level 8, Lesson 2: Subqueries, INSERT/UPDATE/DELETE &amp; How QA Actually Uses SQL</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#what-why" data-track="what-why">1. What Is Automation, and Why?</a>
+    <a href="#not-automate" data-track="not-automate">2. What Should NOT Be Automated</a>
+    <a href="#framework" data-track="framework">3. Automation Frameworks</a>
+    <a href="#tools" data-track="tools">4. Selenium, Playwright &amp; Cypress</a>
+    <a href="#locators" data-track="locators">5. Locators: CSS Selectors vs XPath</a>
+    <a href="#waits" data-track="waits">6. Explicit vs Implicit Wait</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="what-why">
+      <h2>1. What Is Test Automation, and Why Automate?</h2>
+      <p><b>Concept.</b> Test automation is using software to execute test cases, compare actual results against expected ones, and report the outcome — without a human manually performing each step every time.</p>
+
+      <h3 class="sub">Why it matters</h3>
+      <p>This is the practical, at-scale version of the Manual vs Automation comparison from Level 2 and the Testing Pyramid from Level 2: automated tests are fast, consistent, and cheap to re-run constantly, which makes them ideal for the large base of stable regression checks a mature product accumulates. A human re-running the same 500 test cases by hand before every release simply doesn't scale.</p>
+
+      <div class="callout example">
+        <span class="tag">Real-world example</span>
+        <p>A team's core regression suite runs automatically on every code change, in minutes, catching a broken login flow before a human ever needs to look at it — freeing human testers to spend their time on the new feature that actually needs judgment and exploration this sprint.</p>
+      </div>
+    </section>
+
+    <section class="block" id="not-automate">
+      <h2>2. What Should NOT Be Automated</h2>
+      <p>Automation isn't a universal upgrade — it's a deliberate investment that only pays off for the right kind of test.</p>
+      <ul class="tight">
+        <li><b>Tests that run once, or rarely.</b> The upfront scripting cost never gets recovered.</li>
+        <li><b>Exploratory and usability testing.</b> These rely specifically on human judgment and curiosity — the entire point of exploratory testing (Level 2) is finding what a script wasn't told to look for.</li>
+        <li><b>Features still actively changing.</b> A UI being redesigned every sprint means constant, wasted script rewrites.</li>
+        <li><b>Purely subjective visual/aesthetic judgment.</b> "Does this look good" isn't something a standard assertion can evaluate.</li>
+      </ul>
+    </section>
+
+    <section class="block" id="framework">
+      <h2>3. Automation Frameworks</h2>
+      <p><b>Concept.</b> An automation framework is a structured set of guidelines, reusable components, and conventions that make writing, maintaining, and running automated tests consistent — not just a folder of unrelated scripts.</p>
+      <p>A real framework typically includes a consistent way to locate and interact with elements (often Page Object Model, covered in Lesson 2), shared configuration for different environments, reporting, and integration into a CI/CD pipeline (Level 12) so tests run automatically. Without this structure, a growing pile of scripts becomes duplicated, inconsistent, and painful to maintain — exactly the problem a framework exists to prevent.</p>
+    </section>
+
+    <section class="block" id="tools">
+      <h2>4. Selenium, Playwright &amp; Cypress</h2>
+      <p>Three of the most commonly referenced browser automation tools — worth knowing at a conceptual level even without hands-on experience with all three.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Selenium</th><th>Playwright</th><th>Cypress</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Age / maturity</td><td>Long-standing, most widely adopted historically</td><td>Newer (Microsoft), modern-web focused</td><td>Newer, JavaScript-focused</td></tr>
+            <tr><td class="k">Language support</td><td>Many (Java, Python, C#, JS, more)</td><td>Several (JS/TS, Python, Java, .NET)</td><td>JavaScript/TypeScript only</td></tr>
+            <tr><td class="k">Architecture</td><td>Controls a real browser externally via WebDriver</td><td>Controls browsers externally, with built-in auto-waiting</td><td>Runs directly inside the browser itself</td></tr>
+            <tr><td class="k">Known for</td><td>Broadest browser/language support, huge ecosystem</td><td>Fast, reliable, less flaky out of the box</td><td>Excellent developer experience and debugging</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">This course won't teach the hands-on syntax of any of them — the goal here is being able to speak to what each is and how they differ conceptually, which is exactly the level most SQA interviews probe for in a manual-leaning role.</p>
+    </section>
+
+    <section class="block" id="locators">
+      <h2>5. Locators: CSS Selectors vs XPath</h2>
+      <p><b>Concept.</b> A locator is how an automated script finds and identifies a specific element on a page in order to interact with it.</p>
+      <ul class="tight">
+        <li><b>CSS Selector</b> — locates elements using standard CSS syntax (<code class="inline">#id</code>, <code class="inline">.class</code>, <code class="inline">tag[attribute]</code>). Generally faster and more readable.</li>
+        <li><b>XPath</b> — a more powerful query language that can navigate the DOM in ways CSS can't, like selecting an element based on its visible text, or moving to a parent or sibling element. More flexible, but often more verbose and slower.</li>
+      </ul>
+      <div class="callout example">
+        <span class="tag">Best practice</span>
+        <p>Neither is ideal if it targets something likely to change — relying on a deep, brittle CSS path or a fragile XPath tied to page structure breaks the moment a developer reorders unrelated elements. A stable, dedicated attribute like <code class="inline">data-testid="submit-button"</code> is the most resilient kind of locator, precisely because it's not coupled to styling or layout at all.</p>
+      </div>
+    </section>
+
+    <section class="block" id="waits">
+      <h2>6. Explicit Wait vs Implicit Wait</h2>
+      <p>Web pages load asynchronously — content can appear a moment after the page technically "loads." Without proper waiting, a script tries to click something before it exists, and fails for reasons that have nothing to do with a real bug.</p>
+      <ul class="tight">
+        <li><b>Implicit wait</b> — a single, global setting telling the tool to wait up to X seconds for <i>any</i> element it's looking for, applied broadly across the whole script.</li>
+        <li><b>Explicit wait</b> — a targeted wait for a <i>specific condition</i> on a <i>specific element</i> (e.g. "wait until this button is clickable") before proceeding — generally the more precise, more reliable, and more recommended approach.</li>
+      </ul>
+      <p class="muted">Getting waiting wrong is one of the single biggest causes of flaky automated tests — the exact problem Lesson 2 digs into directly.</p>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 9, Lesson 1</h2>
+      <p class="muted">Draft your own answer first, then reveal.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Up next<b>Level 9 · Lesson 2 — Page Object Model, Data-Driven Testing, Assertions &amp; Flaky Tests</b></div>
+    <div class="l"><span class="mono">Coming soon</span></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "Why would you choose automation over manual testing for a given test case?",
+    tests: "One of the most classic automation interview questions, explicitly framed as a choice — checks whether you can articulate the trade-off precisely, connecting back to the Manual vs Automation comparison from Level 2.",
+    simple: "I'd automate when a test is stable, needs to run often and repeatedly, and its value comes from speed and consistency — automation pays off specifically because the upfront scripting cost gets repaid many times over across repeated runs, which manual testing can't match at that frequency.",
+    strong: "The choice comes down to the shape of the test, not a blanket preference. Automation is the right call for stable, repetitive checks that need to run frequently — a regression suite executed on every code change, for instance — because the upfront cost of scripting it pays for itself many times over across all those repeated runs, and it's faster and more consistent than a human doing the same steps by hand every time. I'd stick with manual testing for anything still changing shape, for exploratory or usability work requiring human judgment, or for a one-off check that will never be run again, where scripting it would cost more than it ever saves. This is really the same reasoning from Level 2's Manual vs Automation comparison, just applied as an active decision for a specific test case rather than a general philosophy.",
+    example: "A login regression check run on every deploy is a strong automation candidate; a one-time visual check of a new landing page design is not.",
+    followups: ["How would you calculate whether a specific test is 'worth' automating?", "What's the risk of automating a test too early, before a feature has stabilized?"],
+    good: ["Frame this as a deliberate cost/frequency trade-off, and connect it back to the Level 2 comparison — that's the strongest possible answer here."],
+    bad: ["Saying automation is just 'better' or 'the future' with no actual reasoning about when it pays off."]
+  },
+  {
+    q: "What kinds of tests should NOT be automated, and why?",
+    tests: "Checks whether you understand automation has real limits, not just where it's valuable — a nuanced, less commonly well-answered question.",
+    simple: "Tests that run rarely or only once, exploratory and usability testing that specifically needs human judgment, and tests on features still actively changing, since the constant rewrites would outweigh any benefit.",
+    strong: "A few categories are genuinely poor automation candidates. Tests that run only once, or very rarely, never earn back the upfront cost of scripting them. Exploratory and usability testing rely specifically on human curiosity and judgment — automating them would defeat their actual purpose, since a script can only ever check what it was explicitly told to check. And tests on features that are still actively changing shape create a maintenance trap, where the script needs rewriting almost as often as it would need running, erasing any time savings. Recognizing these limits is just as important as knowing where automation pays off — treating it as a universal default leads to wasted effort and brittle, high-maintenance suites.",
+    example: "Automating a detailed visual layout check for a landing page still being actively redesigned every sprint would mean rewriting that script almost weekly, for a check that might never even run against a stable version of the page.",
+    followups: ["What would you do if a stakeholder insisted on automating something you believed shouldn't be, like exploratory testing?", "How would you decide when a previously-unstable feature has become stable enough to finally automate?"],
+    good: ["Give multiple distinct categories with reasoning for each, not just one example."],
+    bad: ["Suggesting everything should eventually be automated given enough time, missing that some categories are poor fits regardless."]
+  },
+  {
+    q: "What is an automation framework, and why not just write a collection of standalone scripts instead?",
+    tests: "Checks whether you understand a framework as structural infrastructure, not just 'a folder of test scripts.'",
+    simple: "A framework is a structured, consistent set of conventions and reusable components — like a standard way to locate elements, handle config, and report results — that makes a growing set of automated tests maintainable, instead of becoming a pile of duplicated, inconsistent, hard-to-maintain scripts.",
+    strong: "A framework provides structure and reusable components across a whole suite of tests — consistent patterns for locating and interacting with elements, shared configuration for switching between environments, unified reporting, and integration into a CI/CD pipeline so tests run automatically. Without that structure, a growing collection of standalone scripts tends to duplicate the same logic repeatedly, handle things inconsistently from one script to the next, and become genuinely painful to maintain as the suite grows — a small UI change might require updating the same locator in fifteen different, unrelated scripts instead of one shared place.",
+    example: "A framework using Page Object Model means a login page's locators live in exactly one place; a page redesign requires updating one file instead of every individual test script that happens to touch the login page.",
+    followups: ["What's the Page Object Model, at a high level?", "How would you know a test suite has outgrown 'just a bunch of scripts' and genuinely needs a framework?"],
+    good: ["Give a concrete example of the maintenance pain a framework prevents, like the Page Object Model scenario."],
+    bad: ["Describing a framework only abstractly as 'organized tests' without explaining the concrete maintenance problem it solves."]
+  },
+  {
+    q: "At a high level, how do Selenium, Playwright, and Cypress differ?",
+    tests: "Checks conceptual familiarity with the major automation tools, even without hands-on experience — a common warm-up question in automation-adjacent interviews.",
+    simple: "Selenium is the longest-established, broadest tool, supporting many languages and controlling a real browser externally. Playwright is newer, built for modern web apps with strong built-in auto-waiting, also controlling browsers externally. Cypress is JavaScript-only and runs directly inside the browser itself, known for excellent developer experience.",
+    strong: "Selenium is the most established and broadly adopted tool, supporting many programming languages and controlling real browsers externally through the WebDriver protocol — its strength is breadth of language and browser support built up over a long history. Playwright is newer, built by Microsoft specifically for modern web applications, and also controls browsers externally, but with strong built-in auto-waiting that meaningfully reduces the kind of timing-related flakiness that plagues older automation setups. Cypress is JavaScript/TypeScript-only and takes a fundamentally different architectural approach, running directly inside the browser rather than controlling it from outside — this gives it excellent debugging and developer experience, though historically with more constraints around things like multi-tab or cross-origin scenarios.",
+    example: "A team already deeply invested in Java automation infrastructure would likely reach for Selenium; a team building a fast, modern JS-based test suite from scratch today might lean toward Playwright or Cypress instead.",
+    followups: ["Which of the three would you personally want to learn first, and why?", "What's a scenario where Cypress's in-browser architecture would actually be a limitation?"],
+    good: ["Get the architectural distinction right — Selenium/Playwright control the browser externally, Cypress runs inside it — that's the most substantive technical difference."],
+    bad: ["Describing all three as 'basically the same thing' with no meaningful distinction."]
+  },
+  {
+    q: "When would you use a CSS selector versus XPath to locate an element, and what's the risk with either if used carelessly?",
+    tests: "Checks whether you understand both the practical difference and the shared danger of brittle, non-resilient locators.",
+    simple: "CSS selectors are generally faster and simpler, and cover most common cases; XPath is more powerful for complex cases CSS can't express, like locating by visible text or navigating to a parent element. The shared risk with either is relying on something likely to change, like page structure or styling classes, which makes tests brittle.",
+    strong: "I'd default to a CSS selector for straightforward cases, since it's generally faster to execute and easier to read. I'd reach for XPath specifically when I need something CSS genuinely can't express — locating an element by its visible text content, or navigating to a parent or sibling element relative to a known one. The shared risk with either, though, is locating based on something fragile — a deep, structurally-dependent path, or a CSS class tied to styling that a developer might casually change — which makes tests break for reasons that have nothing to do with an actual functional bug. The best practice regardless of which locator strategy is a stable, purpose-built attribute like data-testid, which isn't coupled to layout or styling at all.",
+    example: "Locating a button via a long structural XPath tied to its exact position in a nested div structure will break the moment a developer wraps it in an extra container for an unrelated styling reason.",
+    followups: ["Have you seen (or can you imagine) a real test break purely from an unrelated CSS class rename?", "How would you convince a development team to add data-testid attributes to support more stable automation?"],
+    good: ["Land on the shared underlying risk (brittleness from relying on unstable attributes) as the real point, not just describe CSS vs XPath syntax."],
+    bad: ["Describing the syntax difference between CSS and XPath without addressing the shared brittleness risk."]
+  },
+  {
+    q: "What's the difference between an explicit wait and an implicit wait, and why does getting this right matter so much?",
+    tests: "Checks understanding of asynchronous page loading as the root cause automation waits exist to solve — sets up the flaky-test discussion in Lesson 2.",
+    simple: "An implicit wait is a single global setting telling the tool to wait up to a set time for any element it looks for. An explicit wait targets a specific condition on a specific element before proceeding. It matters because pages load asynchronously, and getting waiting wrong is one of the most common causes of tests failing for reasons unrelated to any real bug.",
+    strong: "An implicit wait is a global configuration applied across the whole script, telling the automation tool to wait up to a set amount of time for any element it's trying to find before giving up. An explicit wait is targeted and precise — waiting for a specific, named condition on a specific element, like 'wait until this button becomes clickable,' before the script proceeds. This matters because modern web pages load and update asynchronously — content can appear moments after the page technically finishes loading — and a script that doesn't wait properly will try to interact with something before it's actually ready, producing a failure that has nothing to do with a real defect in the software. Getting this wrong, especially relying too heavily on fixed or implicit waits instead of precise explicit ones, is one of the single biggest sources of flaky, unreliable automated tests.",
+    example: "A script that clicks 'Submit' immediately after a page loads, before a slow API call has finished populating a required dropdown, will fail intermittently — not because the feature is broken, but because the wait strategy was wrong.",
+    followups: ["Why is a fixed 'sleep for 5 seconds' generally considered worse than either implicit or explicit waiting?", "How would you diagnose whether a flaky test failure is a waiting problem versus a real bug?"],
+    good: ["Explain the root cause (asynchronous loading) clearly, and connect getting this wrong directly to flaky tests."],
+    bad: ["Defining the two types of wait correctly but not explaining why waiting matters in the first place."]
+  },
+  {
+    q: "Your team has 200 manual regression test cases and zero automation. If you could only automate 20 of them to start, how would you choose?",
+    tests: "A practical prioritization scenario applying the automation cost/value trade-off to a real, constrained decision.",
+    simple: "I'd prioritize the most stable, most frequently-run, highest-business-impact test cases — the ones that get executed every release and cover critical paths — since those are exactly where automation's upfront cost pays back the fastest and most reliably.",
+    strong: "I'd prioritize by where automation's value compounds fastest: test cases that are stable (not tied to a feature still actively changing), run frequently (ideally every release, not occasionally), and cover high-business-impact, critical paths, like login, checkout, or core account functionality. Those three factors together — stability, frequency, and impact — are exactly what make automation's upfront investment pay off quickly and reliably. I'd deliberately avoid starting with test cases tied to features still in flux, or low-traffic edge cases that barely ever matter, even if they're individually interesting, since they wouldn't demonstrate automation's value quickly or reliably to the team.",
+    example: "The core login flow, run on every single release, is a much stronger first automation candidate than a rarely-used admin settings page that gets manually tested twice a year.",
+    followups: ["How would you measure whether this initial automation investment was actually successful?", "What would you say to a team member who wants to automate the most 'interesting' technical test cases first, regardless of frequency or stability?"],
+    good: ["Name the three concrete selection criteria (stability, frequency, business impact) rather than a vague 'start with the important ones.'"],
+    bad: ["Suggesting you'd automate whichever test cases happen to be easiest to script, regardless of their actual value or frequency."]
+  },
+  {
+    q: "Can automation completely replace manual and exploratory testing? Why or why not?",
+    tests: "A values/philosophy question checking whether you understand automation's fundamental limits, tying back to what automation structurally cannot do.",
+    simple: "No — automation can only check what it was explicitly told to check, so it structurally can't replace exploratory testing's core value, which is a human's curiosity finding things nobody thought to script in the first place.",
+    strong: "No, and this isn't a matter of automation not being sophisticated enough yet — it's a structural limitation. An automated test can only verify what it was explicitly programmed to check; it has no capacity for the kind of open-ended curiosity that drives exploratory testing, which specifically exists to find the things nobody thought to write a test case for. Automation is genuinely excellent at consistently re-checking known, well-understood behavior at scale and speed no human can match, but that's a fundamentally different job from discovering the unknown. A mature testing strategy uses both deliberately: automation carrying the stable regression baseline, and human exploratory and usability testing covering what's new, subjective, or simply hasn't been thought of yet.",
+    example: "An automated suite can run 5,000 regression checks in ten minutes, but it will never notice that a newly redesigned checkout flow feels confusing to a first-time user — only a human trying it fresh would catch that.",
+    followups: ["Do you think AI-assisted testing tools change this answer at all?", "How would you communicate to a non-technical stakeholder why 100% automation isn't actually the goal?"],
+    good: ["Frame this as a structural limitation of automation, not a temporary technology gap — that's a stronger, more precise answer."],
+    bad: ["Suggesting automation will eventually replace manual/exploratory testing entirely as tools improve, missing the structural point."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 9 · LESSON 1</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
