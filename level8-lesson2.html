@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 8 · Lesson 2 — Subqueries, INSERT/UPDATE/DELETE &amp; How QA Actually Uses SQL</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:46px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout.warn{ border-left-color: var(--warn); background:var(--warn-bg); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag, .callout.warn .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  pre.sql{ background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13.5px; overflow-x:auto; margin:14px 0; line-height:1.6; }
+  pre.sql .c{ color:var(--accent); }
+  .bp-item{ display:grid; grid-template-columns: 26px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .bp-item:last-child{ border-bottom:none; }
+  .bp-num{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color:var(--accent); font-weight:700; }
+  .bp-item h4{ font-size:15.5px; margin:0 0 4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .bp-item p{ font-size:14.5px; margin:0; color:var(--ink-muted); }
+  /* exercise */
+  .exercise{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px 22px; margin:18px 0 28px; }
+  .exercise h3{ font-size:17px; margin-bottom:8px; }
+  .exercise textarea{ width:100%; min-height:140px; resize:vertical; margin-top:14px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:14px; padding:14px; line-height:1.6; }
+  .exercise textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .exercise-actions{ display:flex; gap:10px; margin-top:14px; align-items:center; flex-wrap:wrap; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:9px 18px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .model-answer{ display:none; margin-top:18px; border-top:1px solid var(--line); padding-top:16px; }
+  .model-answer.open{ display:block; }
+  .review-note{ background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-top:18px; font-size:14.5px; }
+  .review-note b{ color:var(--accent); }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 8 — SQL / Database for QA &nbsp;·&nbsp; Lesson 2 (final of Level 8)</div>
+        <h1 class="title">Subqueries, INSERT/UPDATE/DELETE &amp; How QA Actually Uses SQL</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">The write operations that demand real caution, and the five concrete situations where a tester actually reaches for SQL on the job.</p>
+    <div class="lesson-nav"><a href="level8-lesson1.html" style="color:inherit;">← Level 8, Lesson 1: Database Basics &amp; Core SQL for QA</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#subqueries" data-track="subqueries">1. Subqueries</a>
+    <a href="#write-ops" data-track="write-ops">2. INSERT, UPDATE &amp; DELETE</a>
+    <a href="#how-qa-uses" data-track="how-qa-uses">3. How QA Actually Uses SQL</a>
+    <a href="#exercise" data-track="exercise">4. Your Turn: Investigate the Duplicate Charge</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="subqueries">
+      <h2>1. Subqueries</h2>
+      <p><b>Concept.</b> A subquery is a query nested inside another query — used when you need the result of one query as the input to another, rather than something you could express in a single flat query.</p>
+      <pre class="sql"><span class="c">-- Customers who've placed at least one order over $500</span>
+SELECT name FROM customers
+WHERE id IN (
+  SELECT customer_id FROM orders WHERE total > 500
+);</pre>
+      <p class="muted">The inner query runs first, producing a list of customer IDs; the outer query then filters customers against that list.</p>
+    </section>
+
+    <section class="block" id="write-ops">
+      <h2>2. INSERT, UPDATE &amp; DELETE</h2>
+      <pre class="sql"><span class="c">-- Add a new row</span>
+INSERT INTO customers (name, email) VALUES ('Sam Rivera', 'sam@test.com');
+
+<span class="c">-- Modify existing rows</span>
+UPDATE orders SET status = 'Cancelled' WHERE order_id = 4821;
+
+<span class="c">-- Remove rows</span>
+DELETE FROM orders WHERE order_id = 4821;</pre>
+
+      <div class="callout warn">
+        <span class="tag">The single most important rule in this lesson</span>
+        <p>UPDATE and DELETE without a WHERE clause apply to <b>every row in the table.</b> This is a classic, real, career-story-level mistake — running <code class="inline">DELETE FROM orders;</code> with no WHERE clause doesn't delete one order, it empties the entire table. As QA, always run the equivalent SELECT with the same WHERE clause first, to see exactly which rows would be affected, before ever running an UPDATE or DELETE — and be especially cautious about running write operations against anything beyond an isolated test environment.</p>
+      </div>
+    </section>
+
+    <section class="block" id="how-qa-uses">
+      <h2>3. How QA Actually Uses SQL</h2>
+
+      <div class="bp-item">
+        <div class="bp-num">1</div>
+        <div><h4>Validating UI data</h4><p>A dashboard shows "142 active users" — run a matching COUNT query against the database directly to confirm the number is actually correct, not just plausible-looking.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">2</div>
+        <div><h4>Validating API data</h4><p>An API returns a list of orders — spot-check specific records directly against the database to confirm the API isn't silently transforming or mis-joining data before it reaches the response.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">3</div>
+        <div><h4>Finding duplicates</h4><p>The single most commonly asked practical SQL exercise in QA interviews:</p></div>
+      </div>
+      <pre class="sql">SELECT email, COUNT(*) AS occurrences
+FROM customers
+GROUP BY email
+HAVING COUNT(*) > 1;</pre>
+      <div class="bp-item">
+        <div class="bp-num">4</div>
+        <div><h4>Validating transactions</h4><p>After a "transfer $50 between accounts" action, query both account balances directly to confirm the money moved exactly once, correctly — this is Level 2's recovery-testing idea (exactly-once outcomes) verified with a query instead of a guess.</p></div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-num">5</div>
+        <div><h4>Investigating defects</h4><p>When a bug is reported, querying the actual underlying data is how you determine whether it's a real data problem, or a display/logic bug somewhere between the database and the screen — directly answering the "why does QA need SQL at all" question from Lesson 1.</p></div>
+      </div>
+    </section>
+
+    <section class="block" id="exercise">
+      <h2>4. Your Turn: Investigate the Duplicate Charge</h2>
+      <div class="exercise">
+        <h3>Exercise: a customer reports being charged twice for the same order</h3>
+        <p class="muted">Support ticket: "I was charged twice for order #4821." You have a <code class="inline">payments</code> table with columns <code class="inline">id, order_id, amount, charged_at</code>. Write the SQL you'd run to investigate — start narrow, then think about how you'd check if this is a wider pattern, not just this one order.</p>
+        <textarea placeholder="-- Step 1: confirm the specific complaint
+...
+
+-- Step 2: check if this is a wider pattern
+..." spellcheck="false"></textarea>
+        <div class="exercise-actions">
+          <button class="btn-reveal" type="button" id="reveal-model">Reveal a model answer</button>
+        </div>
+        <div class="model-answer" id="model-answer">
+          <pre class="sql"><span class="c">-- Step 1: confirm the specific complaint</span>
+SELECT * FROM payments WHERE order_id = 4821;
+<span class="c">-- If two rows come back for the same order_id, the charge really did happen twice.</span>
+
+<span class="c">-- Step 2: check if this is a wider pattern, not just one unlucky order</span>
+SELECT order_id, COUNT(*) AS charge_count
+FROM payments
+GROUP BY order_id
+HAVING COUNT(*) > 1;
+<span class="c">-- Reveals every order with more than one payment row — same duplicate-finding
+-- pattern from section 3, now applied to a real investigation.</span></pre>
+          <p>Step 1 confirms the customer's specific complaint with ground truth from the database. Step 2 escalates the investigation — a single duplicate could be a one-off fluke, but if this query returns dozens of order IDs, that's evidence of a systemic bug (like a retry mechanism firing twice on a slow network response) rather than an isolated incident, which completely changes how the bug should be prioritized and reported.</p>
+          <div class="review-note">
+            <b>Want a real review?</b> Paste your own version into the chat and I'll go through it with you — whether your query actually answers the question, and what an experienced tester would check next.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 8, Lesson 2</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 8.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 8 complete<b>Level 9 — Automation Testing Basics</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('reveal-model').addEventListener('click', function(){
+  const panel = document.getElementById('model-answer');
+  const open = panel.classList.toggle('open');
+  this.textContent = open ? 'Hide model answer' : 'Reveal a model answer';
+});
+
+const QUESTIONS = [
+  {
+    q: "What is a subquery, and when would you actually need one instead of a single flat query?",
+    tests: "Checks whether you understand subqueries as necessary specifically when one query's result has to feed into another's filtering logic.",
+    simple: "A subquery is a query nested inside another one, used when you need the result of the first query — like a list of matching IDs — as the input for the second query's filter.",
+    strong: "A subquery is a complete query embedded inside another query, and it's needed specifically when a single flat query can't express the logic — usually because you need to first compute a set of values (like a list of qualifying IDs) and then filter a different table against that set. The inner query executes first, producing that set of values, and the outer query then uses it, typically with IN, to filter its own results.",
+    example: "Finding customers who've placed an order over $500 requires first finding which customer_ids appear in the orders table with total > 500 (the subquery), then filtering the customers table against that list (the outer query).",
+    followups: ["Could this same result be achieved with a JOIN instead of a subquery? What's the trade-off?", "What's the difference between a subquery in a WHERE clause versus one in the FROM clause?"],
+    good: ["Explain that the inner query executes first and produces the value set the outer query depends on — that's the actual mechanism."],
+    bad: ["Describing subqueries vaguely as 'a query inside a query' without explaining why one would be necessary."]
+  },
+  {
+    q: "What happens if you run an UPDATE or DELETE statement without a WHERE clause? Why is this such a big deal?",
+    tests: "The single most important SQL safety question in this lesson — checks whether you understand the real, severe consequence, not just that it's 'bad practice.'",
+    simple: "Without a WHERE clause, UPDATE or DELETE applies to every single row in the table — not one row, not some rows, all of them — which for a DELETE means the entire table gets emptied, and it's a real, career-story-level mistake people actually make.",
+    strong: "WHERE is what scopes an UPDATE or DELETE down to specific rows; without it, the statement applies to every row in the table unconditionally. Running <code class=\"inline\">DELETE FROM orders;</code> with no WHERE clause doesn't delete a single problematic order — it empties the entire orders table, permanently, immediately, with no confirmation prompt. This is exactly why it's treated as such a serious risk in practice, not just a style preference — real, well-known industry incidents have happened from exactly this mistake. My habit would be to always write and run the equivalent SELECT with the same WHERE clause first, confirm it returns only the rows I actually intend to affect, and only then convert it to an UPDATE or DELETE.",
+    example: "Meaning to run 'DELETE FROM orders WHERE status = \\'test\\';' but accidentally omitting the WHERE clause would silently delete every real order in the table, not just the test ones.",
+    followups: ["What other safety habits would you use before running a write operation against a shared database?", "Should QA even have write access to a production database at all?"],
+    good: ["Describe the concrete, severe consequence (entire table affected) and a specific real habit (SELECT first) to prevent it — not just 'you should be careful.'"],
+    bad: ["Understating the severity, treating it as a minor inconvenience rather than a serious, sometimes catastrophic mistake."]
+  },
+  {
+    q: "How would you find duplicate records in a table — say, customers with the same email address registered twice?",
+    tests: "The single most commonly asked practical SQL exercise for QA roles — checks whether you know the GROUP BY + HAVING pattern fluently.",
+    simple: "GROUP BY the column you're checking for duplicates (email), then use HAVING COUNT(*) > 1 to keep only the groups that appear more than once.",
+    strong: "I'd group rows by the column in question — email — and then use HAVING COUNT(*) greater than 1, since HAVING is what filters on the aggregated count after grouping (WHERE couldn't do this, since COUNT doesn't exist until after grouping). This directly returns every email address that appears more than once, along with exactly how many times.",
+    example: "SELECT email, COUNT(*) FROM customers GROUP BY email HAVING COUNT(*) > 1; — this is close to a universal go-to pattern for duplicate-finding in QA work.",
+    followups: ["How would you then find the actual duplicate rows themselves, not just the duplicated email values?", "How would this query change if you needed to find duplicates based on a combination of two columns instead of one?"],
+    good: ["Produce this exact pattern fluently and immediately — it's asked often enough that hesitation here is a real signal of unfamiliarity with practical SQL."],
+    bad: ["Suggesting you'd need to manually scan all the data instead of using GROUP BY/HAVING, or forgetting HAVING and trying to use WHERE with COUNT()."]
+  },
+  {
+    q: "How would you use SQL to verify that a number displayed in the UI — say, an 'active users' count — is actually correct?",
+    tests: "Checks whether you can connect SQL directly to a real UI-validation workflow, not just describe SQL in the abstract.",
+    simple: "I'd write a query that counts active users using the same definition of 'active' the feature is supposed to use, run it directly against the database, and compare that number to what's displayed in the UI.",
+    strong: "I'd first make sure I understand exactly what 'active' means for this feature — logged in within the last 30 days, has a non-cancelled subscription, whatever the actual business definition is — since a mismatched definition would create a false positive or false negative on its own. Then I'd write a COUNT query against the database using that exact definition and compare the result directly to what's shown in the UI. If they match, that's real evidence the number is correct, not just plausible-looking. If they don't match, that's a genuine finding — and the next step is figuring out whether the discrepancy is in the query I wrote, the API computing the number, or the UI rendering it.",
+    example: "SELECT COUNT(*) FROM users WHERE last_login > NOW() - INTERVAL '30 days' AND subscription_status = 'active'; compared directly against the UI's displayed count.",
+    followups: ["What would you do if your SQL count and the UI's number are off by a small amount, like 2?", "How would you handle timezone differences between when the query runs and when the UI's number was last calculated?"],
+    good: ["Emphasize confirming the exact business definition first — a mismatched definition between your query and the feature's logic is a common trap."],
+    bad: ["Describing this only abstractly ('I'd check the database') without a concrete query or a plan for what to do if the numbers don't match."]
+  },
+  {
+    q: "How would you use SQL to validate that a financial transaction, like transferring money between two accounts, was processed correctly?",
+    tests: "Connects SQL directly to Level 2's recovery testing concept — checks whether you think about validating exactly-once, consistent outcomes at the data level.",
+    simple: "I'd query both account balances before and after the transfer and confirm the sending account decreased by exactly the transfer amount, the receiving account increased by exactly the same amount, and no duplicate transaction records were created — the same 'exactly-once' idea from recovery testing, verified directly against the data.",
+    strong: "This connects directly to the recovery-testing idea from Level 2 — the outcome needs to happen exactly once, correctly, not zero times and not twice. I'd capture both account balances before the transfer, trigger it, then query both balances again afterward: the sending account should be down by exactly the transfer amount, the receiving account up by exactly the same amount, and the two changes should sum to zero (money doesn't appear or vanish). I'd also directly query the transactions table to confirm exactly one transaction record was created for this transfer, not zero and not a duplicate from a retry — that last check is exactly the kind of thing a UI alone might never reveal, since the UI might show 'success' even if something went wrong underneath at the data level.",
+    example: "If the sending account decreased by $50 but the receiving account only increased by $49.99, or the transactions table shows two records for the same transfer, SQL is what surfaces that — a UI showing 'Transfer successful' would never reveal either problem on its own.",
+    followups: ["What would you check specifically if the transfer failed partway through, like a network drop mid-transaction?", "How does this connect to database transactions and atomicity, if you're familiar with that concept?"],
+    good: ["Explicitly connect this back to the recovery-testing 'exactly-once' concept from Level 2 — that synthesis is exactly what this question is checking for."],
+    bad: ["Saying you'd just check the UI shows a success message, without querying the actual underlying data directly."]
+  },
+  {
+    q: "A bug report says a customer was charged twice for the same order. Walk me through how you'd investigate this using SQL.",
+    tests: "A direct application of this lesson's practical exercise — checks whether you can structure a real investigation, not just write an isolated query.",
+    simple: "First, query the payments table for that specific order ID to confirm whether it really does have two charge records. Then, run a broader GROUP BY/HAVING query across all orders to check whether this is a one-off incident or a wider systemic pattern, which changes how seriously and how urgently the bug needs to be treated.",
+    strong: "I'd start narrow: query the payments table filtered to that specific order ID, to directly confirm with the actual data whether it really was charged twice, rather than assuming the report is accurate as stated. If that confirms two payment records exist for one order, I'd immediately broaden the investigation with a GROUP BY order_id, HAVING COUNT(*) > 1 query across the whole payments table, to see whether this is an isolated incident or a systemic pattern affecting many orders — which completely changes the bug's severity and how urgently it needs to be escalated. I'd also check the timestamps on the duplicate charges; if they're very close together, that points toward something like a double-submit or a retry-on-timeout bug, which is a specific, useful lead for whoever investigates the root cause.",
+    example: "If the broader query reveals 40 other orders with duplicate charges in the same time window, this stops being a one-off customer complaint and becomes a critical, widely-impacting billing defect.",
+    followups: ["What would you check next if the timestamps on the two charges were exactly identical, versus several minutes apart?", "How would this investigation change your severity/priority assessment of the bug?"],
+    good: ["Structure the investigation in two clear stages — confirm the specific complaint, then check for a wider pattern — showing real investigative thinking, not just one isolated query."],
+    bad: ["Only checking the single reported order without considering whether it's part of a broader pattern."]
+  },
+  {
+    q: "Should QA testers have direct UPDATE/DELETE access to a production database? Why or why not?",
+    tests: "A judgment question about process and risk, not just SQL syntax — checks whether you think about database access the way you'd think about any other high-risk, hard-to-reverse action.",
+    simple: "Generally no, or at least very restricted — production data changes are high-risk and hard to reverse, so testers should typically work with read-only access to production (for investigation) and full read/write access only in isolated test or staging environments, with any necessary production changes going through a controlled, reviewed process instead of ad-hoc queries.",
+    strong: "I'd lean strongly toward no, or at minimum, very tightly scoped access. Production data is real, live, and often directly tied to real customers and money — an accidental UPDATE or DELETE without a WHERE clause, or even a correct-looking query run against the wrong environment by mistake, can cause serious, hard-to-reverse damage. For day-to-day testing and defect investigation, I'd want full read/write access to an isolated test or staging database, and read-only access to production specifically for investigating real reported issues — enough to confirm ground truth without the ability to accidentally alter it. If a real fix to production data is genuinely needed, that should go through a controlled, reviewed process — like a script reviewed by someone else, or a change made by someone with that explicit responsibility — rather than an ad-hoc query run directly by whoever happens to be investigating.",
+    example: "A tester investigating a bug should be able to run SELECT queries against production to confirm what's actually stored, but a genuine fix — like correcting a bad value for one specific customer — should go through review, not be run directly and unilaterally by the person who found the bug.",
+    followups: ["What would you do if you noticed you had broader production write access than you felt comfortable with?", "How would you handle a situation where only you can quickly fix a critical production data issue, but the 'proper process' would take hours?"],
+    good: ["Distinguish between read access (useful, lower risk) and write access (high risk, should be tightly controlled) rather than giving a blanket yes or no."],
+    bad: ["Saying testers should have full unrestricted production access 'to be efficient,' with no acknowledgment of the risk."]
+  },
+  {
+    q: "How would you combine API testing from Level 7 with SQL to fully validate that a POST request actually worked?",
+    tests: "A synthesis question connecting two levels — checks whether you understand that a 201 status code alone doesn't prove data was correctly and durably persisted.",
+    simple: "A 201 response only proves the API said it worked — I'd also query the database directly afterward to confirm the record was actually created with the correct data, since a bug could cause the API to return success even if the underlying write failed or saved incorrect values.",
+    strong: "A 201 Created response from the API only tells you the API claims the operation succeeded — it doesn't independently prove the data was actually, correctly persisted to the database. To fully validate a POST request, I'd send the request, confirm the API returns the expected status code and response body, and then separately query the database directly to confirm a row was actually created with exactly the data that was sent — not just that some row exists, but that every field matches what was submitted. This closes a real gap: a bug where the API returns success even though the underlying database write silently failed, or saved a slightly wrong value, would completely pass an API-only test while being a genuinely serious defect.",
+    example: "POSTing a new order with quantity 3 and then querying the orders table directly to confirm the stored quantity is actually 3, not just trusting that the 201 response implies it.",
+    followups: ["What would you do if the API returns 201 but your database query finds no new record at all?", "How would you test this same scenario for an UPDATE request instead of a POST?"],
+    good: ["Explicitly state that a success status code doesn't prove correct persistence — that's the real insight this question is testing for, and it's a genuine, non-obvious gap in API-only testing."],
+    bad: ["Saying a 201 status code is sufficient proof the operation worked correctly, without independently checking the database."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 8 · LESSON 2</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
