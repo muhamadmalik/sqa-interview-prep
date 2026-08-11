@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 12 · Lesson 1 — CI/CD &amp; DevOps Basics</title>
+<style>
+  :root{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05); --radius: 3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+      --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+      --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101512; --surface:#171e1a; --surface-2:#1e2620; --ink:#e6ece7;
+    --ink-muted:#a4b3aa; --ink-faint:#728077; --accent:#42c19c; --accent-ink:#0b1512;
+    --warn:#e2905f; --warn-bg:#2b1f16; --line:#2a332c; --line-strong:#3b463d; --code-bg:#1c2420;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1ee; --surface:#ffffff; --surface-2:#e6e9e5; --ink:#182420;
+    --ink-muted:#53625b; --ink-faint:#7c8a83; --accent:#0e6b57; --accent-ink:#f4faf7;
+    --warn:#a8501f; --warn-bg:#f6e6dc; --line:#d3dad2; --line-strong:#b7c2b8; --code-bg:#e4e9e3;
+    --shadow: 0 1px 2px rgba(20,30,25,0.06), 0 6px 20px rgba(20,30,25,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif; font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  a{ color:var(--accent); }
+  h1,h2,h3{ font-family: "Segoe UI Semibold","Segoe UI", Helvetica, Arial, sans-serif; font-weight:700; text-wrap:balance; letter-spacing:-0.01em; color:var(--ink); margin:0; }
+  .eyebrow{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+  header.band{ border-bottom:1px solid var(--line); background:var(--surface); }
+  .band-inner{ max-width:1160px; margin:0 auto; padding:34px 32px 26px; display:flex; flex-direction:column; gap:10px; }
+  .band-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  h1.title{ font-size:30px; line-height:1.2; max-width:760px; }
+  .subtitle{ color:var(--ink-muted); font-size:16px; max-width:640px; font-family: Georgia, serif;}
+  .status-pill{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:100px; padding:4px 11px; white-space:nowrap; }
+  .lesson-nav{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; color:var(--ink-faint); }
+  .layout{ max-width:1160px; margin:0 auto; display:grid; grid-template-columns: 220px minmax(0,1fr); gap:48px; padding:36px 32px 100px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns: 1fr; } nav.rail{ position:static; order:2; border-top:1px solid var(--line); padding-top:18px; margin-top:8px;} }
+  nav.rail{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; }
+  nav.rail a{ color:var(--ink-muted); text-decoration:none; padding:6px 0; border-left:2px solid transparent; padding-left:10px; transition: color .12s, border-color .12s; }
+  nav.rail a:hover{ color:var(--ink); border-left-color:var(--line-strong); }
+  nav.rail a.done{ color:var(--accent); }
+  nav.rail a.done::after{ content:" ✓"; }
+  nav.rail .rail-label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:14px 0 4px; padding-left:10px; }
+  nav.rail .rail-label:first-child{ margin-top:0; }
+  main{ min-width:0; max-width:700px; }
+  section.block{ margin-bottom:44px; scroll-margin-top:24px; }
+  section.block h2{ font-size:22px; padding-bottom:10px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  section.block h3.sub{ font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:20px 0 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight:600; }
+  p{ margin:0 0 12px; color:var(--ink); }
+  .muted{ color:var(--ink-muted); }
+  .callout{ background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--radius); padding:14px 16px; margin:14px 0; box-shadow:var(--shadow); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.example{ border-left-color: var(--warn); }
+  .callout .tag{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); display:block; margin-bottom:6px; }
+  .callout.example .tag{ color:var(--warn); }
+  ul.tight, ol.tight{ margin:0 0 12px; padding-left:22px; }
+  ul.tight li, ol.tight li{ margin-bottom:6px; }
+  .table-wrap{ overflow-x:auto; margin:16px 0 24px; border:1px solid var(--line); border-radius:var(--radius); }
+  table.spec{ border-collapse:collapse; width:100%; min-width:560px; background:var(--surface); }
+  table.spec th, table.spec td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.spec thead th{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); background:var(--surface-2); border-bottom:1px solid var(--line-strong); }
+  table.spec tbody tr:last-child td{ border-bottom:none; }
+  table.spec td.k{ font-weight:600; color:var(--accent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:13px; white-space:nowrap; }
+  .chiprow{ display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px; }
+  .chip{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; background:var(--surface-2); border:1px solid var(--line); border-radius:100px; padding:5px 12px; color:var(--ink-muted); }
+  /* pipeline flow */
+  .pipeline{ display:flex; align-items:center; flex-wrap:wrap; gap:0; margin:20px 0 8px; }
+  .pipe-stage{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px; box-shadow:var(--shadow); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-align:center; min-width:90px; }
+  .pipe-arrow{ color:var(--ink-faint); padding:0 6px; font-family: ui-monospace, monospace; }
+  .pipe-stage.fast{ border-color: var(--accent); color:var(--accent); }
+  .pipe-cap{ text-align:center; font-size:12.5px; color:var(--ink-faint); margin:10px 0 26px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  .qcard{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; box-shadow:var(--shadow); overflow:hidden; }
+  .qcard-head{ padding:16px 18px 14px; }
+  .qcard-id{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; color:var(--ink-faint); letter-spacing:.05em; }
+  .qcard-q{ font-size:17px; font-weight:600; margin-top:4px; font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif; }
+  .qcard-tests{ font-size:13.5px; color:var(--ink-muted); margin-top:6px; font-style:italic; }
+  .qcard textarea{ width:100%; min-height:74px; resize:vertical; margin-top:12px; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); font-family: Georgia, serif; font-size:14.5px; padding:10px 12px; }
+  .qcard textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .qcard-actions{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .btn-reveal{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent); border:none; border-radius:100px; padding:8px 16px; cursor:pointer; }
+  .btn-reveal:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-reveal:hover{ filter:brightness(1.08); }
+  .qcard-answer{ display:none; border-top:1px solid var(--line); background:var(--surface-2); padding:16px 18px 18px; }
+  .qcard-answer.open{ display:block; }
+  .qcard-answer h4{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin:14px 0 6px; }
+  .qcard-answer h4:first-child{ margin-top:0; }
+  .qcard-answer p{ font-size:15px; margin-bottom:10px; }
+  .qcard-answer ul{ margin:0 0 10px; padding-left:20px; }
+  .qcard-answer li{ font-size:14.5px; margin-bottom:5px; }
+  .answer-good li::marker{ color:var(--accent); }
+  .answer-bad li::marker{ color:var(--warn); }
+  footer.nextline{ max-width:700px; margin:0 auto; padding:0 32px 80px 32px; }
+  @media (max-width:860px){ footer.nextline{ padding-left:32px; } }
+  .nextcard{ border:1px dashed var(--line-strong); border-radius:var(--radius); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .nextcard .l{ font-size:13px; color:var(--ink-muted); }
+  .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
+  code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">SQA Interview Prep</a> &nbsp;·&nbsp; Level 12 — CI/CD &amp; DevOps Basics</div>
+        <h1 class="title">CI/CD &amp; DevOps Basics</h1>
+      </div>
+      <span class="status-pill" id="progress-pill">0 / 8 reviewed</span>
+    </div>
+    <p class="subtitle">Where automated testing actually lives day to day — wired into the pipeline every commit passes through before it ever reaches a user.</p>
+    <div class="lesson-nav"><a href="level11-lesson1.html" style="color:inherit;">← Level 11: Security Basics for QA</a></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail">
+    <div class="rail-label">Concepts</div>
+    <a href="#git" data-track="git">1. Git Basics</a>
+    <a href="#ci" data-track="ci">2. Continuous Integration (CI)</a>
+    <a href="#cd" data-track="cd">3. Continuous Delivery vs Deployment</a>
+    <a href="#tools" data-track="tools">4. Jenkins &amp; GitHub Actions</a>
+    <a href="#pipeline" data-track="pipeline">5. Automated Test Pipelines &amp; Quality Gates</a>
+    <a href="#qa-role" data-track="qa-role">6. QA's Role in CI/CD</a>
+    <div class="rail-label">Practice</div>
+    <a href="#interview">Interview Questions</a>
+  </nav>
+
+  <main>
+
+    <section class="block" id="git">
+      <h2>1. Git Basics</h2>
+      <div class="chiprow">
+        <span class="chip">Git</span><span class="chip">Branch</span><span class="chip">Commit</span>
+        <span class="chip">Pull Request</span><span class="chip">Merge</span>
+      </div>
+      <ul class="tight">
+        <li><b>Git</b> — a version control system tracking every change to a codebase over time.</li>
+        <li><b>Branch</b> — an independent line of development, letting work happen without touching the main codebase until it's ready.</li>
+        <li><b>Commit</b> — a saved snapshot of a specific set of changes, with a message describing what and why.</li>
+        <li><b>Pull Request (PR)</b> — a request to merge one branch's changes into another, typically triggering code review and automated checks first.</li>
+        <li><b>Merge</b> — actually combining one branch's changes into another.</li>
+      </ul>
+      <p class="muted">Build, Release, and Deployment were already covered in Level 1 — this lesson is about what happens automatically <i>between</i> a commit and a deployment.</p>
+    </section>
+
+    <section class="block" id="ci">
+      <h2>2. Continuous Integration (CI)</h2>
+      <p><b>Concept.</b> Developers merge code changes into a shared branch frequently — ideally multiple times a day — with every merge automatically triggering a build and a suite of automated tests.</p>
+      <h3 class="sub">Why it matters</h3>
+      <p>The longer code sits on a separate branch before merging, the more it diverges from everyone else's work, and the more painful and bug-prone the eventual merge becomes. CI is the direct, practical enforcement of Level 1's early-testing principle — instead of discovering integration problems in one big, risky merge at the end, they surface constantly, in small pieces, immediately.</p>
+    </section>
+
+    <section class="block" id="cd">
+      <h2>3. Continuous Delivery vs Continuous Deployment</h2>
+      <p>Both abbreviated "CD," both frequently confused — a genuinely common interview trap.</p>
+      <div class="table-wrap">
+        <table class="spec">
+          <thead><tr><th>Aspect</th><th>Continuous Delivery</th><th>Continuous Deployment</th></tr></thead>
+          <tbody>
+            <tr><td class="k">After CI passes</td><td>Build is automatically prepared and ready to release</td><td>Build is automatically released to production</td></tr>
+            <tr><td class="k">Human approval to release?</td><td>Yes — a person still clicks "deploy"</td><td>No — release happens automatically</td></tr>
+            <tr><td class="k">Risk profile</td><td>A manual checkpoint before anything reaches real users</td><td>Fastest possible path to production, with no human gate</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="tools">
+      <h2>4. Jenkins &amp; GitHub Actions</h2>
+      <p>Two commonly referenced tools for actually building CI/CD pipelines — worth knowing conceptually.</p>
+      <ul class="tight">
+        <li><b>Jenkins</b> — a long-standing, self-hosted, highly configurable open-source automation server with a huge plugin ecosystem, widely used across many kinds of infrastructure.</li>
+        <li><b>GitHub Actions</b> — CI/CD built directly into GitHub, defined through YAML workflow files that trigger automatically on events like a push or a pull request being opened — simpler to set up for a repo already hosted on GitHub.</li>
+      </ul>
+      <p>Both, conceptually, let a team define a sequence of automated steps — build, test, deploy — that run automatically whenever code changes.</p>
+    </section>
+
+    <section class="block" id="pipeline">
+      <h2>5. Automated Test Pipelines &amp; Quality Gates</h2>
+      <p>A real pipeline is a defined sequence of automated stages, and its shape should directly mirror the Testing Pyramid from Level 2: fast, cheap checks run first so the pipeline fails fast; slower, more expensive checks run later, only once the cheap ones have already passed.</p>
+      <div class="pipeline">
+        <div class="pipe-stage fast">Build</div><span class="pipe-arrow">→</span>
+        <div class="pipe-stage fast">Unit Tests</div><span class="pipe-arrow">→</span>
+        <div class="pipe-stage">API / Integration Tests</div><span class="pipe-arrow">→</span>
+        <div class="pipe-stage">Deploy to Staging</div><span class="pipe-arrow">→</span>
+        <div class="pipe-stage">E2E / UI Tests</div><span class="pipe-arrow">→</span>
+        <div class="pipe-stage">Deploy to Production</div>
+      </div>
+      <div class="pipe-cap">Fast &amp; cheap on the left · slow &amp; expensive on the right — same logic as the Testing Pyramid</div>
+
+      <p>A <b>quality gate</b> is a defined condition the pipeline enforces before allowing the next stage — if unit tests fail, the pipeline stops right there; a broken build never even reaches the slower, more expensive E2E stage. This is what actually gives "automated tests" teeth: without a gate, a test could fail and the pipeline would carry on regardless, and the tests would be informational at best.</p>
+    </section>
+
+    <section class="block" id="qa-role">
+      <h2>6. QA's Role in CI/CD</h2>
+      <ul class="tight">
+        <li><b>Making sure automated tests are actually wired into the pipeline</b> — a well-written test that only ever runs manually provides none of CI's benefit.</li>
+        <li><b>Keeping the suite fast and genuinely reliable.</b> A slow or flaky suite in CI doesn't just annoy one person — it blocks every merge for the whole team, which is Level 9's flaky-test trust problem at a much larger, more expensive scale.</li>
+        <li><b>Defining what quality gates should actually block.</b> Deciding which failures are release-blocking versus advisory is a real, deliberate call, not an afterthought.</li>
+        <li><b>Investigating pipeline failures.</b> When a pipeline goes red, someone has to determine quickly whether it's a genuine regression or pipeline noise — and treating every failure as "probably flaky" is exactly the trust erosion Level 9 warned about.</li>
+      </ul>
+    </section>
+
+    <section class="block" id="interview">
+      <h2>Interview Questions — Level 12</h2>
+      <p class="muted">Draft your own answer first, then reveal. This closes out Level 12 — one level left in the course.</p>
+      <div id="qlist"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="nextline">
+  <div class="nextcard">
+    <div class="l">Level 12 complete<b>Level 13 — Real Interview Prep (question banks &amp; mock interviews)</b></div>
+    <div class="l"><a href="index.html" class="btn-reveal" style="text-decoration:none;display:inline-block;">Back to course home →</a></div>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "What is Continuous Integration, and why does merging code frequently actually reduce risk?",
+    tests: "Checks whether you understand the mechanism behind CI's core claim, not just the definition — connects to the early-testing principle from Level 1.",
+    simple: "CI means developers merge changes into a shared branch frequently, with each merge automatically triggering a build and tests — this reduces risk because the longer code stays separate before merging, the more it diverges and the harder and more bug-prone the eventual merge becomes.",
+    strong: "Continuous Integration means developers integrate their changes into a shared branch frequently — ideally multiple times a day — with every merge automatically triggering a build and an automated test suite. This reduces risk because integration problems compound with time: two branches that diverge for a week accumulate far more conflicting or incompatible changes than two branches merged within the same day, making the eventual merge dramatically more painful and error-prone the longer it's delayed. CI is really the early-testing principle from Level 1 enforced structurally — instead of discovering integration issues in one large, risky merge right before a release, they surface constantly, in small, easy-to-diagnose pieces, immediately after each change.",
+    example: "A developer who merges a small change daily catches an integration conflict within hours; a developer who works on a branch for three weeks before merging discovers a much larger, harder-to-untangle set of conflicts all at once.",
+    followups: ["What would you expect to see go wrong on a team that merges rarely, in large batches, instead of practicing CI?", "How does CI relate to the concept of a 'quality gate'?"],
+    good: ["Explain the compounding-divergence mechanism, not just define CI — that's the actual substance behind why frequent integration reduces risk."],
+    bad: ["Defining CI correctly but not explaining why frequency specifically reduces risk."]
+  },
+  {
+    q: "What's the difference between Continuous Delivery and Continuous Deployment? These names are almost identical on purpose.",
+    tests: "The classic confusingly-named pairing — checks whether you know exactly where the human approval gate sits in each.",
+    simple: "Continuous Delivery means every change that passes automated checks is automatically prepared and ready to release, but a human still manually approves the actual release to production. Continuous Deployment goes one step further — passing changes deploy to production automatically, with no human approval step at all.",
+    strong: "Both describe automating everything up through a release-ready build, but they differ in exactly one place: whether a human is still involved in the final release decision. Continuous Delivery automates the pipeline up to the point of being deploy-ready — build, test, package — but a person still makes the explicit decision to actually release it to production. Continuous Deployment removes that human gate entirely: any change that passes all automated checks deploys straight to production with no manual approval step at all. The distinction matters practically because Continuous Deployment demands a very high level of trust in the automated test suite, since nothing else is standing between a change and real users.",
+    example: "A team practicing Continuous Delivery might have every passing build sitting ready, with someone clicking 'deploy' each Tuesday; a team practicing Continuous Deployment ships the moment tests pass, potentially dozens of times a day, with no human in that loop.",
+    followups: ["What would make a team hesitant to move from Continuous Delivery to full Continuous Deployment?", "How does test suite quality factor into whether Continuous Deployment is actually safe for a given team?"],
+    good: ["State precisely where the human gate is (or isn't) in each — that's the exact, narrow distinction being tested here."],
+    bad: ["Treating the two terms as interchangeable, which is exactly the trap their near-identical names set."]
+  },
+  {
+    q: "What is a 'quality gate' in a CI/CD pipeline, and what would you want to have blocking a merge or deployment?",
+    tests: "Checks whether you understand quality gates as the mechanism that gives automated tests real enforcement power, not just informational value.",
+    simple: "A quality gate is a defined condition the pipeline enforces before letting a change proceed to the next stage — like requiring all unit tests to pass before a build can be deployed. I'd want failing tests, and ideally a coverage or critical-severity-bug threshold, to actually block a merge or release, not just get logged as a warning.",
+    strong: "A quality gate is a checkpoint the pipeline enforces before allowing a change to proceed further — if the gate's condition isn't met, the pipeline stops there rather than continuing on regardless. This is what gives automated tests actual teeth: a test suite that runs but never blocks anything is purely informational, and failures can be silently ignored indefinitely. I'd want, at minimum, all unit and critical API tests passing as a hard gate before merge, and I'd want a critical or blocker-severity open bug, from the severity scale in Level 5, to be a real gate on release specifically, not just a note someone might see.",
+    example: "A PR with a failing unit test should be physically unmergeable through the tooling, not just flagged with a warning someone could choose to ignore.",
+    followups: ["What's the risk of making quality gates too strict, blocking merges too aggressively?", "Should a flaky test be allowed to block a quality gate? Why or why not?"],
+    good: ["Explain that a gate actually blocks progress, distinguishing it from a test that merely reports results without consequence."],
+    bad: ["Describing a quality gate as just 'running tests' without the blocking/enforcement mechanism that defines what a gate actually is."]
+  },
+  {
+    q: "How does the Testing Pyramid from Level 2 apply to how you'd structure the stages of a CI/CD pipeline?",
+    tests: "A direct synthesis question connecting Level 2's pyramid concept to real pipeline design — checks whether the concepts are linked in your understanding.",
+    simple: "The pipeline should run fast, cheap checks first — unit tests — so it fails fast and cheaply on obvious problems, and only run slow, expensive checks like full E2E UI tests later, once the build has already survived the earlier, faster stages.",
+    strong: "The Testing Pyramid's logic — many fast, cheap tests at the base, few slow, expensive tests at the top — maps directly onto how a well-designed pipeline should be ordered. Unit tests should run first: they're fast, so a broken build fails within seconds or minutes rather than making everyone wait, and problems at this level are usually the cheapest to diagnose. API and integration tests come next, still relatively fast. Full end-to-end UI tests, the slowest and most expensive layer, run last, ideally only against a build that's already proven itself at the cheaper layers. This ordering means the pipeline gives feedback as fast as possible for the most common category of failure, and reserves the expensive, slow layer for builds that have already earned the right to that level of scrutiny.",
+    example: "A pipeline that runs a 45-minute E2E suite before a 30-second unit test suite wastes enormous time on a build that a unit test would have failed instantly and far more cheaply.",
+    followups: ["What would you do if the E2E stage consistently takes far longer than every other stage combined?", "Should unit tests and API tests ever run in parallel rather than sequentially, and what would that trade off?"],
+    good: ["Explicitly connect stage ordering to the pyramid's fast/cheap-first, slow/expensive-last logic — that synthesis is exactly what this question is checking."],
+    bad: ["Describing pipeline stages without any reference to why they're ordered the way they are."]
+  },
+  {
+    q: "A pipeline fails on your pull request. How do you determine whether it's a real regression or a flaky/environment issue?",
+    tests: "A direct application of Level 9's flaky-test investigation approach, now at the pipeline/team-blocking level rather than a single test in isolation.",
+    simple: "I'd re-run the pipeline to see if the failure is consistent or intermittent, check whether the failure is actually related to my specific change or looks unrelated, and check if the same test has a history of flaking on other unrelated PRs — rather than assuming either 'it's definitely my bug' or 'it's definitely just flaky' without evidence.",
+    strong: "I wouldn't assume either direction without evidence. First, I'd re-run the pipeline — if the exact same failure reproduces consistently, that's a strong signal it's real; if it passes on a re-run with no code change, that's a strong signal of flakiness, echoing the flaky-test investigation approach from Level 9. I'd look closely at whether the failing test is actually related to the area my change touched — a failure in a completely unrelated module is far more likely to be pipeline noise than a real regression from my change. I'd also check whether that same test has a known history of intermittent failures across other, unrelated PRs, which would point toward an existing flaky test rather than something I introduced. I'd treat 'probably just flaky' as a conclusion that needs actual evidence, not a default excuse to bypass the gate.",
+    example: "If the pipeline fails on a payment-related test right after I touched checkout logic, that's likely real; if it fails on an unrelated accessibility test that's flaked on five other unrelated PRs this week, that's likely noise.",
+    followups: ["What would you do if you're under deadline pressure and suspect it's flaky, but can't be fully certain?", "Who should have the authority to override a failing quality gate, and under what circumstances?"],
+    good: ["Apply concrete, evidence-based steps (re-run, relevance check, historical pattern) rather than just guessing based on convenience."],
+    bad: ["Defaulting to 'it's probably just flaky, I'll merge anyway' without any actual verification — exactly the trust-eroding behavior Level 9 warned against."]
+  },
+  {
+    q: "What is QA's role in a CI/CD pipeline, beyond just writing the automated tests that run in it?",
+    tests: "Checks whether you see QA's CI/CD involvement as broader than test authorship alone — ownership of the pipeline's health and decisions.",
+    simple: "Beyond writing tests, QA should make sure those tests are actually wired into the pipeline and running automatically, keep the suite fast and genuinely reliable so it doesn't become a team-wide bottleneck, help define what should actually block a merge or release as a quality gate, and help investigate pipeline failures to determine if they're real or noise.",
+    strong: "Writing the tests is only one part. QA should also make sure those tests are genuinely integrated into the pipeline and running automatically on every relevant change, not just executed manually and separately. QA has a real stake in keeping the suite fast and reliable, since a slow or flaky suite in CI doesn't just annoy one person the way an individual flaky test might — it blocks every merge for the entire team, turning Level 9's trust-erosion problem into something with much higher, team-wide cost. QA should be involved in defining what quality gates actually enforce — deciding which failures are truly release-blocking versus merely advisory is a real, deliberate decision, not something to leave unexamined. And QA should be involved in investigating pipeline failures quickly and accurately, since someone needs to determine whether a red pipeline represents a real regression or pipeline noise, and how that gets handled shapes whether the team trusts the pipeline at all going forward.",
+    example: "A QA engineer noticing the pipeline's E2E stage has become the team's biggest source of delay might push for restructuring which tests run on every commit versus only nightly — a pipeline design decision, not just test-writing.",
+    followups: ["How would you advocate for pipeline changes to a team that sees CI/CD as 'a DevOps problem,' not a QA one?", "What would you do if the team wanted to remove a quality gate you believed was important?"],
+    good: ["List multiple distinct responsibilities (integration, suite health, gate definition, failure investigation) rather than only mentioning test authorship."],
+    bad: ["Describing QA's CI/CD role as ending once the automated tests are written."]
+  },
+  {
+    q: "Why does a flaky or slow test suite become a much bigger problem specifically once it's wired into a CI/CD pipeline, compared to when it's just run manually or occasionally?",
+    tests: "Escalates Level 9's flaky-test trust discussion to pipeline scale — checks whether you understand the compounding, team-wide cost.",
+    simple: "Once it's part of the pipeline, every single merge for every team member is blocked by that same slow or flaky suite — the cost multiplies across the whole team and every change, rather than affecting one person running tests occasionally.",
+    strong: "When a flaky or slow suite is run occasionally by one person, the cost is contained to that person and that moment. Once it's wired into a CI/CD pipeline as a gate, every single team member's every single merge now depends on that same suite — a slow suite adds real delay to every merge across the whole team, all day, every day, and a flaky suite means false failures start blocking real, unrelated work constantly. This is exactly the trust-erosion dynamic from Level 9, but the blast radius is now the entire team's velocity rather than one person's individual test run — which is exactly why suite health becomes a much higher-stakes, more urgent priority once it's load-bearing infrastructure for everyone's daily workflow, not an optional nice-to-have.",
+    example: "A 3-hour, occasionally-flaky suite run manually once a week is an annoyance; the same suite blocking 15 developers' merges multiple times a day is a serious, expensive organizational problem.",
+    followups: ["How would you make the cost of a slow or flaky pipeline visible to leadership in a way that motivates investment in fixing it?", "What would you prioritize first if you had to improve either speed or reliability, but not both, right now?"],
+    good: ["Explicitly frame this as the Level 9 trust problem multiplied by team-wide blocking scope, not just a restatement of 'flaky tests are bad.'"],
+    bad: ["Describing this as basically the same problem as an individual flaky test, without addressing the team-wide blocking multiplier."]
+  },
+  {
+    q: "How would you decide which tests run on every single commit versus only nightly or before a release?",
+    tests: "A practical pipeline design decision combining the Testing Pyramid, risk-based thinking, and pipeline speed considerations from this lesson.",
+    simple: "Fast, high-confidence tests — unit tests and core API tests — run on every commit, since they're cheap enough to not slow the team down. Slower, more expensive tests — full E2E suites, extensive cross-browser or performance testing — run nightly or before a release, when the time cost is more acceptable and doesn't block every individual merge.",
+    strong: "I'd apply the Testing Pyramid directly to this decision: unit tests and fast, high-value API tests should run on every single commit, because they're cheap enough that running them constantly doesn't meaningfully slow the team down, and they catch the most common categories of regression immediately. Slower, more expensive layers — a full end-to-end UI suite, extensive cross-browser compatibility testing, or heavier performance testing — I'd move to a nightly or pre-release cadence, since the value of running them constantly on every commit doesn't outweigh the real cost of adding many extra minutes to every single merge for the whole team. This isn't a fixed, universal split — it's a genuine trade-off between feedback speed and coverage depth that has to be made deliberately, ideally revisited as the suite and the team's needs evolve.",
+    example: "A team might run 2,000 unit tests and 200 API tests on every commit in under 5 minutes, while a 45-minute full E2E and cross-browser suite runs once overnight instead of blocking every individual PR.",
+    followups: ["What would you do if a critical bug only ever gets caught by the nightly suite, after code has already been merged several times that day?", "How would you decide to promote a nightly-only test into the on-every-commit tier?"],
+    good: ["Frame this explicitly as applying the Testing Pyramid's cost/value trade-off to a real pipeline design decision, not an arbitrary split."],
+    bad: ["Suggesting all tests should just run on every commit regardless of cost, ignoring the real trade-off this question is asking about."]
+  }
+];
+
+const qlist = document.getElementById('qlist');
+const revealed = new Set();
+function updatePill(){ document.getElementById('progress-pill').textContent = revealed.size + ' / ' + QUESTIONS.length + ' reviewed'; }
+
+QUESTIONS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const idStr = 'Q-' + String(i+1).padStart(2,'0');
+  card.innerHTML = `
+    <div class="qcard-head">
+      <div class="qcard-id">${idStr} · LEVEL 12</div>
+      <div class="qcard-q">${item.q}</div>
+      <div class="qcard-tests">Tests: ${item.tests}</div>
+      <textarea placeholder="Draft your answer here first (optional, not saved)..."></textarea>
+      <div class="qcard-actions">
+        <button class="btn-reveal" type="button">Reveal model answer</button>
+      </div>
+    </div>
+    <div class="qcard-answer">
+      <h4>Simple version</h4><p>${item.simple}</p>
+      <h4>Interview-ready answer</h4><p>${item.strong}</p>
+      <h4>Example</h4><p>${item.example}</p>
+      <h4>Likely follow-ups</h4><ul>${item.followups.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Good points to hit</h4><ul class="answer-good">${item.good.map(f => `<li>${f}</li>`).join('')}</ul>
+      <h4>Avoid</h4><ul class="answer-bad">${item.bad.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+  `;
+  const btn = card.querySelector('.btn-reveal');
+  const panel = card.querySelector('.qcard-answer');
+  btn.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide model answer' : 'Reveal model answer';
+    if(open){ revealed.add(i); } else { revealed.delete(i); }
+    updatePill();
+  });
+  qlist.appendChild(card);
+});
+
+const sections = document.querySelectorAll('section.block[id]');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const link = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
+      if(link) link.classList.add('done');
+    }
+  });
+}, { threshold: 0.5 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
