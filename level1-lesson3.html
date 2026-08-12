@@ -1,3 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e6b57">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SQA Prep">
 <title>Level 1 · Lesson 3 — Manual/Automation, Requirements, Test Env &amp; Data</title>
 <style>
   :root{
@@ -97,6 +109,9 @@
   .nextcard .l b{ color:var(--ink); display:block; font-size:15.5px; margin-top:2px; }
   code.inline{ font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:0.9em; }
 </style>
+</head>
+<body>
+
 
 <header class="band">
   <div class="band-inner">
@@ -396,3 +411,12 @@ const obs = new IntersectionObserver((entries) => {
 }, { threshold: 0.5 });
 sections.forEach(s => obs.observe(s));
 </script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

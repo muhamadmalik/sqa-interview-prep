@@ -3,6 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e6b57">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SQA Prep">
 <title>SQA Interview Prep — Course Home</title>
 <style>
   :root{
@@ -193,5 +200,12 @@
 </main>
 
 <footer class="page-foot">Built lesson by lesson with Claude. New lessons get added and linked here as they're published.</footer>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
 </body>
 </html>
